@@ -10,6 +10,7 @@ Ein Geschicklichkeitsspiel für iOS im Hochformat (Godot 4): Der Spieler hängt 
 kann nicht laufen und bewegt sich ausschließlich mit einem Grappling Hook vorwärts
 durch einen Tunnel. Ziel ist, das Level so schnell wie möglich zu schaffen.
 Ausführliches Design: `docs/design.md`. Meilensteine: `docs/roadmap.md`.
+Priorisierte nächste Schritte und offene Entscheidungen: `docs/next-steps.md`.
 
 Die drei Säulen, an denen jede Entscheidung gemessen wird:
 1. **Schwunggefühl** – Pendeln muss sich schwer, schnell und kontrollierbar anfühlen

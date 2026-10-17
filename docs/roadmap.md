@@ -1,5 +1,7 @@
 # Roadmap
 
+Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md`.
+
 ## M0 – Grauer Tunnel (erledigt mit diesem Gerüst)
 - [x] Projekt, Autoload, Hauptszene
 - [x] Spieler mit Schwerkraft, Raycast-Haken, Pendel-Constraint
