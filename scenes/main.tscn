@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
 [ext_resource type="Script" path="res://scripts/camera_rig.gd" id="4_camera"]
 [ext_resource type="Script" path="res://scripts/tuning_panel.gd" id="5_tuning"]
 [ext_resource type="Script" path="res://scripts/level_menu.gd" id="6_menu"]
+[ext_resource type="Script" path="res://scripts/ghost.gd" id="7_ghost"]
 
 [sub_resource type="Environment" id="env"]
 background_mode = 1
@@ -15,6 +16,16 @@ ambient_light_energy = 0.7
 fog_enabled = true
 fog_light_color = Color(0.05, 0.05, 0.08, 1)
 fog_density = 0.012
+
+[sub_resource type="StandardMaterial3D" id="mat_ghost"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.6, 0.85, 1, 0.35)
+
+[sub_resource type="CapsuleMesh" id="mesh_ghost"]
+material = SubResource("mat_ghost")
+radius = 0.4
+height = 1.6
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_game")
@@ -28,6 +39,10 @@ shadow_enabled = true
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.6, 0)
+
+[node name="Ghost" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh_ghost")
+script = ExtResource("7_ghost")
 
 [node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("target")]
 script = ExtResource("4_camera")
@@ -101,6 +116,25 @@ theme_override_font_sizes/font_size = 18
 text = "build dev"
 horizontal_alignment = 2
 
+[node name="GoLabel" type="Label" parent="HUD/Safe"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -260.0
+offset_right = 200.0
+offset_bottom = -160.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.2, 1)
+theme_override_font_sizes/font_size = 88
+text = "GO!"
+horizontal_alignment = 1
+
 [node name="FinishPanel" type="PanelContainer" parent="HUD/Safe"]
 visible = false
 layout_mode = 1
@@ -110,9 +144,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -280.0
-offset_top = -200.0
+offset_top = -260.0
 offset_right = 280.0
-offset_bottom = 200.0
+offset_bottom = 260.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -133,9 +167,20 @@ theme_override_font_sizes/font_size = 72
 text = "0.00"
 horizontal_alignment = 1
 
+[node name="Medal" type="Label" parent="HUD/Safe/FinishPanel/Lines"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 44
+horizontal_alignment = 1
+
 [node name="Best" type="Label" parent="HUD/Safe/FinishPanel/Lines"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+
+[node name="Target" type="Label" parent="HUD/Safe/FinishPanel/Lines"]
+modulate = Color(1, 1, 1, 0.7)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
 
 [node name="Again" type="Label" parent="HUD/Safe/FinishPanel/Lines"]
