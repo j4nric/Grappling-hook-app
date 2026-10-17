@@ -1,0 +1,10 @@
+# Godot
+.godot/
+*.translation
+export_presets.cfg.secret
+# iOS build artefacts
+build/
+*.ipa
+*.xcarchive
+# OS
+.DS_Store

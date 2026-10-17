@@ -1,0 +1,60 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
+[ext_resource type="PackedScene" path="res://scenes/test_tunnel.tscn" id="2_tunnel"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
+[ext_resource type="Script" path="res://scripts/camera_rig.gd" id="4_camera"]
+
+[sub_resource type="Environment" id="env"]
+background_mode = 1
+background_color = Color(0.05, 0.05, 0.08, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.45, 0.45, 0.55, 1)
+ambient_light_energy = 0.7
+fog_enabled = true
+fog_light_color = Color(0.05, 0.05, 0.08, 1)
+fog_density = 0.012
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_game")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("env")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.5, -0.866, 0, 0.866, 0.5, 0, 20, 0)
+shadow_enabled = true
+
+[node name="TestTunnel" parent="." instance=ExtResource("2_tunnel")]
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.6, 0)
+
+[node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("target")]
+script = ExtResource("4_camera")
+target = NodePath("../Player")
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig"]
+fov = 75.0
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="TimeLabel" type="Label" parent="HUD"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 300.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 32
+text = "0.00"
+
+[node name="HintLabel" type="Label" parent="HUD"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -48.0
+offset_right = 1000.0
+offset_bottom = -16.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "Left click / swipe: grapple    Right click / tap: release    R: restart"
