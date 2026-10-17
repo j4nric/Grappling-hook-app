@@ -38,6 +38,18 @@ const FLOOR_NORMAL_Y := 0.7
 ## How strongly sideways swipes turn the throw toward the walls.
 @export var throw_yaw_gain := 1.0
 
+@export_group("Aim")
+## The aim preview shows the arc of a throw at this hook speed (m/s), about a
+## good flick. The real throw depends on the flick.
+@export var aim_preview_speed := 35.0
+## Aim assist: if the throw would find nothing to stick to, search this cone
+## (degrees) for the closest wall or ceiling. 0 = off.
+@export var aim_assist_angle := 0.0
+## Game speed while the finger aims (1 = off, 0.5 = half speed).
+@export var aim_time_scale := 1.0
+## Seconds the hook takes to fly back after a miss or letting go.
+@export var hook_retract_time := 0.2
+
 @export_group("Rope")
 ## The hook gives up when it gets further away than this.
 @export var max_rope_length := 45.0
@@ -73,10 +85,17 @@ var rope_length := 0.0
 var _hook_velocity := Vector3.ZERO
 var _attached_time := 0.0
 var _was_on_floor := false
+## Visual only: the hook flies back to the player after a miss or release.
+var _retract_left := 0.0
+var _retract_from := Vector3.ZERO
+## Last throw, shown in the tuning panel to calibrate the throw strength.
+var last_throw_flick := 0.0
+var last_throw_speed := 0.0
 
 @onready var rope := $Rope
 @onready var hook: Node3D = $Hook
 @onready var aim_line := $AimLine
+@onready var aim_marker: Node3D = $AimMarker
 
 
 func _ready() -> void:
@@ -86,6 +105,8 @@ func _ready() -> void:
 	InputRouter.release_requested.connect(release)
 	hook.top_level = true
 	hook.visible = false
+	aim_marker.top_level = true
+	aim_marker.visible = false
 
 
 func _physics_process(delta: float) -> void:
@@ -120,6 +141,8 @@ func _physics_process(delta: float) -> void:
 	if hook_state != HookState.IDLE:
 		rope.update_line(_hook_origin(), anchor)
 		hook.global_position = anchor
+	elif _retract_left > 0.0:
+		_update_retract(delta)
 
 
 ## Rope pull, applied as velocity so the momentum survives letting go.
@@ -211,11 +234,62 @@ func _touches_wall_or_ceiling() -> bool:
 
 ## Screen swipe -> 3D throw direction. Straight up on screen throws forward
 ## (-Z) and up at throw_pitch; sideways swipes turn the throw toward the walls.
+## Aim assist may bend it toward the closest surface the hook can stick to.
 func _throw_direction(swipe: Vector2) -> Vector3:
 	var s := Vector2(swipe.x, -swipe.y).normalized()
 	var yaw := atan2(s.x, s.y) * throw_yaw_gain
 	var pitch := deg_to_rad(throw_pitch)
-	return Vector3(sin(yaw) * cos(pitch), sin(pitch), -cos(yaw) * cos(pitch))
+	var dir := Vector3(sin(yaw) * cos(pitch), sin(pitch), -cos(yaw) * cos(pitch))
+	return _assisted_direction(dir)
+
+
+func _assisted_direction(dir: Vector3) -> Vector3:
+	if aim_assist_angle <= 0.0 or _sticks_along(dir):
+		return dir
+	var side := dir.cross(Vector3.UP).normalized()
+	if side.is_zero_approx():
+		side = Vector3.RIGHT
+	for ring in range(1, 4):
+		var angle := deg_to_rad(aim_assist_angle) * ring / 3.0
+		for k in 12:
+			var axis := side.rotated(dir, TAU * k / 12.0)
+			var candidate := dir.rotated(axis, angle)
+			if _sticks_along(candidate):
+				return candidate
+	return dir
+
+
+## True if a straight ray along dir hits a wall or ceiling within rope range.
+func _sticks_along(dir: Vector3) -> bool:
+	var from := _hook_origin()
+	var query := PhysicsRayQueryParameters3D.create(from, from + dir * max_rope_length)
+	query.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	return not hit.is_empty() and hit.normal.y <= FLOOR_NORMAL_Y
+
+
+## Simulates the hook flight like _fly_hook(). Returns the arc points; the last
+## point is where it sticks (hit = true) or gives up.
+func predict_hook_path(dir: Vector3, speed: float) -> Dictionary:
+	var points := PackedVector3Array()
+	var pos := _hook_origin()
+	var vel := dir * speed + velocity
+	var space := get_world_3d().direct_space_state
+	points.append(pos)
+	for i in 180:
+		vel.y -= hook_gravity / 60.0
+		var next := pos + vel / 60.0
+		var query := PhysicsRayQueryParameters3D.create(pos, next)
+		query.exclude = [get_rid()]
+		var hit := space.intersect_ray(query)
+		if not hit.is_empty():
+			points.append(hit.position)
+			return {"points": points, "hit": hit.normal.y <= FLOOR_NORMAL_Y}
+		if next.distance_to(global_position) > max_rope_length:
+			break
+		pos = next
+		points.append(pos)
+	return {"points": points, "hit": false}
 
 
 ## Downward swipes would throw backwards; they cancel instead.
@@ -228,29 +302,36 @@ func _hook_origin() -> Vector3:
 
 
 func _on_aim_changed(swipe: Vector2) -> void:
+	Engine.time_scale = aim_time_scale
 	if not _is_valid_swipe(swipe):
-		aim_line.visible = false
+		_hide_aim()
 		return
-	var from := _hook_origin()
-	var to := from + _throw_direction(swipe) * max_rope_length
-	var query := PhysicsRayQueryParameters3D.create(from, to)
-	query.exclude = [get_rid()]
-	var hit := get_world_3d().direct_space_state.intersect_ray(query)
-	if not hit.is_empty():
-		to = hit.position
-	aim_line.update_line(from, to)
+	var path := predict_hook_path(_throw_direction(swipe), aim_preview_speed)
+	var points: PackedVector3Array = path.points
+	aim_line.update_points(points, true)
 	aim_line.visible = true
+	aim_marker.visible = path.hit
+	aim_marker.global_position = points[-1]
 
 
 func _on_aim_cancelled() -> void:
+	_hide_aim()
+	Engine.time_scale = 1.0
+
+
+func _hide_aim() -> void:
 	aim_line.visible = false
+	aim_marker.visible = false
 
 
 func throw_hook(swipe: Vector2, flick_velocity: Vector2) -> void:
-	aim_line.visible = false
+	_hide_aim()
+	Engine.time_scale = 1.0
 	if not _is_valid_swipe(swipe):
 		return
 	var speed := clampf(flick_velocity.length() * throw_speed_per_px, hook_min_speed, hook_max_speed)
+	last_throw_flick = flick_velocity.length()
+	last_throw_speed = speed
 	release("throw")
 	anchor = _hook_origin()
 	_hook_velocity = _throw_direction(swipe) * speed + velocity
@@ -261,7 +342,7 @@ func throw_hook(swipe: Vector2, flick_velocity: Vector2) -> void:
 
 
 func _miss() -> void:
-	_set_idle()
+	_set_idle(true)
 	hook_missed.emit()
 
 
@@ -269,18 +350,34 @@ func _miss() -> void:
 func release(reason := "tap") -> void:
 	if hook_state == HookState.IDLE:
 		return
-	_set_idle()
+	_set_idle(reason != "throw" and reason != "reset")
 	rope_released.emit(reason)
 
 
-func _set_idle() -> void:
+## retract: the hook flies back visibly instead of vanishing.
+func _set_idle(retract: bool) -> void:
 	hook_state = HookState.IDLE
-	rope.visible = false
-	hook.visible = false
+	_retract_left = hook_retract_time if retract else 0.0
+	_retract_from = anchor
+	rope.visible = retract
+	hook.visible = retract
+
+
+func _update_retract(delta: float) -> void:
+	_retract_left = maxf(0.0, _retract_left - delta)
+	var t := 1.0 - _retract_left / maxf(hook_retract_time, 0.001)
+	var pos := _retract_from.lerp(_hook_origin(), t)
+	rope.update_line(_hook_origin(), pos)
+	hook.global_position = pos
+	if _retract_left <= 0.0:
+		rope.visible = false
+		hook.visible = false
 
 
 func reset_to(position_3d: Vector3) -> void:
 	release("reset")
-	aim_line.visible = false
+	_set_idle(false)
+	_hide_aim()
+	Engine.time_scale = 1.0
 	global_position = position_3d
 	velocity = Vector3.ZERO

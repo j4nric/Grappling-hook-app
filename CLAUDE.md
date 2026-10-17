@@ -77,6 +77,11 @@ Swipe-Vektor und das Fingertempo der letzten 0,1 s (`FLICK_WINDOW`).
   `max_rope_length` hinaus lassen ihn fallen.
 - Beim Wurf löst sich das alte Seil sofort: Man fliegt mit Schwung weiter,
   während der neue Haken unterwegs ist.
+- Zielen: gestrichelter Bogen = `predict_hook_path()` für `aim_preview_speed`
+  (gleiche Physik wie der echte Flug), Kugel = Treffpunkt. `aim_assist_angle`
+  sucht im Kegel nach einer greifbaren Fläche (0 = aus). `aim_time_scale`
+  verlangsamt das Spiel beim Zielen (1 = aus); der Timer zählt Echtzeit.
+- Fehlwurf/Lösen: Der Haken fliegt in `hook_retract_time` sichtbar zurück.
 
 **Zug** (`_apply_rope_constraint()`): Beim Einhaken gibt es einen Ruck
 (`pull_impulse`). Das Seil wird ab `reel_speed` eingeholt, beschleunigt mit

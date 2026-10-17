@@ -35,19 +35,19 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
 - [x] **Seil durch Hindernisse:** (Lösen umgesetzt) Das Seil ist eine Linie ohne Kollision.
       Wenn ein Hindernis zwischen Spieler und Anker kommt: Seil lösen (einfach)
       oder um die Kante wickeln (aufwendig, später).
-- [ ] **Flugbahn-Vorschau:** Die Ziellinie ist gerade, der Haken fliegt aber
+- [x] **Flugbahn-Vorschau:** (gestrichelter Bogen für `aim_preview_speed` + Zielmarker) Die Ziellinie ist gerade, der Haken fliegt aber
       im Bogen. Optionen: Bogen für ein „mittleres“ Wurftempo anzeigen, oder
       Linie nur als Richtungspfeil (kurz) statt bis zur Wand.
-- [ ] **Zielhilfe (optional):** Leichtes Einrasten auf die nächste Wand-/
+- [x] **Zielhilfe (optional):** (`aim_assist_angle`, Standard 0 = aus, Regler im TUNE) Leichtes Einrasten auf die nächste Wand-/
       Deckenfläche in einem kleinen Kegel um die Wurfrichtung. Erst testen,
       ob es nötig ist.
-- [ ] **Fehlwurf-Feedback:** Fällt der Haken ins Leere, sichtbar einholen
+- [x] **Fehlwurf-Feedback:** Fällt der Haken ins Leere, sichtbar einholen
       (zurückfliegen) statt verschwinden.
-- [ ] **Wurfstärke kalibrieren:** Im TUNE-Panel die Werte des letzten Wurfs
+- [x] **Wurfstärke kalibrieren:** Im TUNE-Panel die Werte des letzten Wurfs
       anzeigen (Fingertempo px/s, Hakentempo m/s). Damit lassen sich
       `throw_speed_per_px`, `hook_min_speed`, `hook_max_speed` am echten Gerät
       sauber einstellen.
-- [ ] **Zeitlupe beim Zielen (Idee):** Solange der Finger zielt, läuft das
+- [x] **Zeitlupe beim Zielen (Idee):** (`aim_time_scale`, Standard 1 = aus, Timer zählt Echtzeit) Solange der Finger zielt, läuft das
       Spiel z. B. mit 30 % Tempo. Erleichtert Zielen im Flug; für Speedrun
       ggf. abschaltbar.
 

@@ -31,7 +31,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if _running:
-		_elapsed += delta
+		# Real time: slow motion while aiming must not shorten the run.
+		_elapsed += delta / maxf(Engine.time_scale, 0.001)
 	if player.global_position.y < kill_y:
 		restart()
 	time_label.text = "%.2f" % _elapsed
