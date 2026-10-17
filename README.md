@@ -6,7 +6,7 @@ eine Stoppuhr.
 ## Auf dem Handy testen
 
 Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
-`.github/workflows/web.yml`) und veröffentlicht sie auf GitHub Pages:
+`.github/workflows/pages.yml`) und veröffentlicht sie auf GitHub Pages:
 
 **https://j4nric.github.io/Grappling-hook-app/**
 
@@ -26,6 +26,10 @@ Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
   getrennt: Safari und Chrome haben eigene Werte), „Reset“ stellt die
   Standardwerte wieder her. **TUNE\*** mit Stern = Werte weichen vom Standard ab. Gute Werte per Screenshot an Claude geben, dann
   werden sie als neue Standardwerte übernommen.
+
+Vorschau: Jeder offene Pull Request ist zusätzlich unter
+`https://j4nric.github.io/Grappling-hook-app/preview/pr-<Nummer>/` spielbar
+(Übersicht: `/preview/`). So lassen sich Experimente testen, ohne `main` zu ändern.
 
 Einmalige Einrichtung: Repo → Settings → Pages → „Build and deployment“ →
 Source: **GitHub Actions**.
