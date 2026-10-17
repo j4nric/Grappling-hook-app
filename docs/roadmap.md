@@ -62,3 +62,5 @@ Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md`.
 | 2026-10-17 | `reel_speed` | 10 → 8 (Start) | Zug baut sich jetzt auf: `reel_acceleration` 30, `reel_max_speed` 30, `pull_impulse` 6 |
 | 2026-10-17 | `zip_release_distance` | neu: 2,5 | Zip-Launch statt Aufprall; `zip_boost` 3 |
 | 2026-10-17 | `floor_friction` | neu: 25 | kein endloses Rutschen am Boden |
+| 2026-10-17 | Kamera-FOV | 75° vertikal → 65° horizontal (`max_fov` 105 → 90, `fov_per_speed` 0,5 → 0,4) | Hochformat zeigte seitlich zu wenig |
+| 2026-10-17 | `look_ahead.y` | 1 → 2,5 | mehr Decke im Bild, man wirft nach oben |

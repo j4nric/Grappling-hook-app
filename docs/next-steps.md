@@ -53,13 +53,13 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
 
 ## 2. Kamera
 
-- [ ] **Sichtfeld im Hochformat:** Seitlich sieht man wenig. `base_fov`
+- [x] **Sichtfeld im Hochformat:** (horizontales FOV 65°, Blick etwas höher) Seitlich sieht man wenig. `base_fov`
       höher setzen oder Kamera auf „Breite halten“ (`keep_aspect`) umstellen,
       am Handy vergleichen.
-- [ ] **Look-Ahead zum Haken:** Kamera schaut leicht Richtung Anker, solange
+- [x] **Look-Ahead zum Haken:** Kamera schaut leicht Richtung Anker, solange
       man gezogen wird.
-- [ ] **Kamera-Roll** beim seitlichen Schwingen (aus M1).
-- [ ] **Kurzer Kamera-Ruck / Screenshake** beim Einhaken und beim Aufprall.
+- [x] **Kamera-Roll** beim seitlichen Schwingen (aus M1).
+- [x] **Kurzer Kamera-Ruck / Screenshake** beim Einhaken und beim Aufprall.
 
 ## 3. Steuerung und Bedienung
 
