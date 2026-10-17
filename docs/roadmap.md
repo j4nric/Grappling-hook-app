@@ -55,4 +55,5 @@
 | 2026-10-17 | `reel_speed` | 4 → 10 | Haken soll spürbar zum Treffpunkt ziehen |
 | 2026-10-17 | `tension_boost` | 2 → 6 | dito |
 | 2026-10-17 | `min_rope_length` | 3 → 2,5 | näher an den Treffpunkt |
+| 2026-10-17 | `min_rope_length` | 2,5 → 0,5 | Seil zieht bis an die Fläche; Lösen bei Wand-/Deckenkontakt statt Hängenbleiben |
 | 2026-10-17 | Wurf-Werte | neu | `throw_speed_per_px` 0,015, Haken 8–70 m/s, `hook_gravity` 25, `throw_pitch` 50° |

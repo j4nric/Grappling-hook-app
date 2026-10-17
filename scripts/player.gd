@@ -31,9 +31,14 @@ const FLOOR_NORMAL_Y := 0.7
 @export var max_rope_length := 45.0
 ## The rope shortens by this much per second while attached (the pull).
 @export var reel_speed := 10.0
-@export var min_rope_length := 2.5
+@export var min_rope_length := 0.5
 ## Extra acceleration toward the anchor; makes the pull feel heavier.
 @export var tension_boost := 6.0
+## Touching a wall or the ceiling while attached lets go of the rope.
+@export var release_on_contact := true
+## No contact release right after the hook sticks (s), so a throw from a wall
+## still pulls.
+@export var contact_release_grace := 0.15
 
 # --- State ---------------------------------------------------------------------
 var hook_state := HookState.IDLE
@@ -41,6 +46,7 @@ var hook_state := HookState.IDLE
 var anchor := Vector3.ZERO
 var rope_length := 0.0
 var _hook_velocity := Vector3.ZERO
+var _attached_time := 0.0
 
 @onready var rope := $Rope
 @onready var hook: Node3D = $Hook
@@ -63,10 +69,15 @@ func _physics_process(delta: float) -> void:
 		HookState.FLYING:
 			_fly_hook(delta)
 		HookState.ATTACHED:
+			_attached_time += delta
 			_apply_rope_constraint(delta)
 
 	velocity = velocity.limit_length(max_speed)
 	move_and_slide()
+
+	if hook_state == HookState.ATTACHED and release_on_contact \
+			and _attached_time >= contact_release_grace and _touches_wall_or_ceiling():
+		release()
 
 	if hook_state != HookState.IDLE:
 		rope.update_line(_hook_origin(), anchor)
@@ -111,10 +122,18 @@ func _fly_hook(delta: float) -> void:
 		anchor = hit.position
 		rope_length = global_position.distance_to(anchor)
 		hook_state = HookState.ATTACHED
+		_attached_time = 0.0
 	elif next.distance_to(global_position) > max_rope_length:
 		release()
 	else:
 		anchor = next
+
+
+func _touches_wall_or_ceiling() -> bool:
+	for i in get_slide_collision_count():
+		if get_slide_collision(i).get_normal().y <= FLOOR_NORMAL_Y:
+			return true
+	return false
 
 
 ## Screen swipe -> 3D throw direction. Straight up on screen throws forward

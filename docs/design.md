@@ -22,6 +22,7 @@ klar – das macht die Ein-Finger-Steuerung überhaupt möglich.
 |---|---|---|
 | Wischen (gedrückt halten) | Zielen: weiße Linie zeigt die Wurfrichtung | fertig |
 | Loslassen | Haken wird geworfen; Wischtempo der letzten 0,1 s = Wurfstärke, Haken fliegt auf einer Bahn und haftet an Wand/Decke, Seil zieht zum Treffpunkt | fertig |
+| Wand/Decke berühren | Seil löst sich automatisch, Schwung bleibt | fertig |
 | Tippen | Seil lösen, Figur fliegt mit Schwung weiter | fertig |
 | Neuer Wurf während Haken aktiv | Altes Seil löst sich beim Wurf | fertig |
 | Zwei-Finger-Tipp | Level neu starten | fertig |

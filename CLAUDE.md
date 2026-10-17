@@ -78,13 +78,18 @@ wird als Geschwindigkeit angewandt (nicht als Positionssprung), deshalb bleibt
 der Schwung beim Loslassen erhalten und `move_and_slide` verhindert Clipping.
 Liegt der Spieler außerhalb der Seillänge, bekommt er genau die nötige
 Geschwindigkeit nach innen → Pendeln. Am Anker wird der Zug abgebremst.
+Berührt der Spieler Wand oder Decke (`release_on_contact`, nach
+`contact_release_grace`), löst sich das Seil automatisch; der Schwung entlang
+der Fläche bleibt. Böden lösen das Seil nicht (sonst käme man nie los).
 
 ## Arbeitsweise
 
 - Starte mit dem Spielgefühl. Bevor Features dazukommen: Läuft der Testtunnel,
   fühlt sich das Pendeln richtig an? Erst dann weiter in `docs/roadmap.md`.
 - Neue Stellschrauben, die man auf dem Handy drehen können soll, in
-  `PARAMS` in `tuning_panel.gd` eintragen.
+  `PARAMS` in `tuning_panel.gd` eintragen. Gespeichert werden nur Werte, die
+  vom Code-Standard abweichen; ändert sich ein Standard im Code, verfällt der
+  gespeicherte Wert dafür automatisch.
 - Jede Änderung an Physik-Tuning-Werten kurz in `docs/roadmap.md` unter
   "Tuning-Log" notieren (Wert vorher → nachher, warum).
 - Testen auf dem Handy: Push auf `main` → Web-Build → https://j4nric.github.io/Grappling-hook-app/

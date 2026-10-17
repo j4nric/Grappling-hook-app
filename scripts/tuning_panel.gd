@@ -5,9 +5,14 @@ extends CanvasLayer
 ## The GUI handles its own input; gameplay input still only runs through
 ## InputRouter.
 
-## Bump the file name when the meaning of values changes, old values are ignored.
-const SAVE_PATH := "user://tuning_v2.cfg"
+## Only values that differ from the code defaults are saved, together with the
+## default they were tuned against. If a default changes in the code, the saved
+## value for it is dropped, so code changes always reach the phone.
+const SAVE_PATH := "user://tuning_v3.cfg"
+## Earlier format that stored every value; only real changes are taken over.
+const LEGACY_SAVE_PATH := "user://tuning_v2.cfg"
 const SECTION := "tuning"
+const DEFAULTS_SECTION := "defaults"
 
 ## [node path relative to the parent, property path, min, max, step]
 const PARAMS := [
@@ -21,7 +26,7 @@ const PARAMS := [
 	["Player", "throw_yaw_gain", 0.0, 2.0, 0.05],
 	["Player", "max_rope_length", 10.0, 100.0, 1.0],
 	["Player", "reel_speed", 0.0, 40.0, 0.5],
-	["Player", "min_rope_length", 0.5, 15.0, 0.25],
+	["Player", "min_rope_length", 0.0, 15.0, 0.25],
 	["Player", "tension_boost", 0.0, 40.0, 0.5],
 	["CameraRig", "follow_speed", 1.0, 20.0, 0.25],
 	["CameraRig", "base_fov", 40.0, 120.0, 1.0],
@@ -181,9 +186,13 @@ func _set_open(open: bool) -> void:
 func _update_toggle_text() -> void:
 	var tuned := false
 	for p in PARAMS:
-		if not is_equal_approx(_sliders[_key(p)].value, snappedf(_defaults[_key(p)], p[4])):
+		if not _is_default(p):
 			tuned = true
 	_toggle.text = "TUNE*" if tuned else "TUNE"
+
+
+func _is_default(p: Array) -> bool:
+	return is_equal_approx(_sliders[_key(p)].value, snappedf(_defaults[_key(p)], p[4]))
 
 
 func _reset() -> void:
@@ -198,16 +207,28 @@ func _reset() -> void:
 func _save() -> void:
 	var cfg := ConfigFile.new()
 	for p in PARAMS:
-		cfg.set_value(SECTION, _key(p), _sliders[_key(p)].value)
+		if not _is_default(p):
+			cfg.set_value(SECTION, _key(p), _sliders[_key(p)].value)
+			cfg.set_value(DEFAULTS_SECTION, _key(p), _defaults[_key(p)])
 	cfg.save(SAVE_PATH)
 
 
 func _load() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SAVE_PATH) != OK:
-		return
-	for p in PARAMS:
-		var value = cfg.get_value(SECTION, _key(p), null)
-		if value != null:
-			_sliders[_key(p)].value = value
+	if cfg.load(SAVE_PATH) == OK:
+		for p in PARAMS:
+			var key := _key(p)
+			if cfg.has_section_key(SECTION, key) and cfg.has_section_key(DEFAULTS_SECTION, key) \
+					and is_equal_approx(cfg.get_value(DEFAULTS_SECTION, key), _defaults[key]):
+				_sliders[key].value = cfg.get_value(SECTION, key)
+	elif cfg.load(LEGACY_SAVE_PATH) == OK:
+		for p in PARAMS:
+			var key := _key(p)
+			if not cfg.has_section_key(SECTION, key):
+				continue
+			var value: float = cfg.get_value(SECTION, key)
+			# 2.5 was the old default of min_rope_length, not a tuned value.
+			if key == "Player/min_rope_length" and is_equal_approx(value, 2.5):
+				continue
+			_sliders[key].value = value
 	_update_toggle_text()
