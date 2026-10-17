@@ -35,8 +35,8 @@ Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md`.
 
 ## M4 – Level und Speedrun
 - [x] 3–5 Level als eigene Szenen, Level-Auswahl
-- [ ] Bestzeiten persistent speichern (`user://`)
-- [ ] Medaillen-Zeiten pro Level
+- [x] Bestzeiten persistent speichern (`user://`)
+- [x] Medaillen-Zeiten pro Level
 - [x] Sofort-Neustart-Geste (Zwei-Finger-Tipp)
 
 ## M5 – iOS
@@ -47,7 +47,7 @@ Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md`.
 ## M6 – Juice
 - [ ] Sound (Haken, Loslassen, Wind, Aufprall)
 - [ ] Screenshake, Hit-Stop beim Einhaken
-- [ ] Ghost der Bestzeit
+- [x] Ghost der Bestzeit
 
 ## Tuning-Log
 

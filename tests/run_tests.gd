@@ -3,7 +3,7 @@ extends SceneTree
 ## godot --headless --fixed-fps 60 --path . --script res://tests/run_tests.gd
 ## Exit code 1 if any check failed.
 
-const TUNING_FILES := ["user://tuning_v2.cfg", "user://tuning_v3.cfg"]
+const SAVED_FILES := ["user://tuning_v2.cfg", "user://tuning_v3.cfg", "user://records.cfg"]
 
 
 func _initialize() -> void:
@@ -36,6 +36,9 @@ func _run() -> void:
 
 
 func _clear_saved_state() -> void:
-	for path in TUNING_FILES:
+	for path in SAVED_FILES:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
+	for file in DirAccess.get_files_at("user://"):
+		if file.begins_with("ghost_"):
+			DirAccess.remove_absolute("user://" + file)

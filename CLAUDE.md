@@ -60,6 +60,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/level.gd` | `Level`: Signale `finished`, `checkpoint_reached`, `killed`, Medaillenzeiten |
 | `scripts/levels.gd` | `Levels.LIST`: Level-Reihenfolge |
 | `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel) |
+| `scripts/records.gd` | `Records`: Bestzeit pro Level, Medaille, Ghost-Daten in `user://` |
+| `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `tools/gen_levels.py` | Level-Generator |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil, Haken-Kugel und Ziellinie |

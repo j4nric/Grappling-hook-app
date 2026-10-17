@@ -79,15 +79,15 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
 
 - [x] **Testlevel fürs Hochformat umbauen** (Tunnel jetzt 14 m hoch) (abhängig von der
       Level-Richtungs-Entscheidung).
-- [ ] **Bestzeit dauerhaft speichern** (`user://`, IndexedDB im Browser).
-- [ ] **Medaillen-Zeiten** (Bronze/Silber/Gold) pro Level, Anzeige im Ziel.
-- [ ] **Countdown bzw. Startsignal** und klarer Start-Moment für den Timer.
+- [x] **Bestzeit dauerhaft speichern** (`user://`, IndexedDB im Browser).
+- [x] **Medaillen-Zeiten** (Bronze/Silber/Gold) pro Level, Anzeige im Ziel.
+- [x] **Countdown bzw. Startsignal** („GO!“ beim ersten Wurf, der Timer startet genau dann) und klarer Start-Moment für den Timer.
 - [x] **Neue Level-Bausteine:** (Eis = `no_hook`, Movers, Lava, Abkürzung in Level 5) nicht greifbare Flächen (z. B. Eis, anders
       gefärbt), bewegliche Hindernisse, Abgründe/Lava als Reset-Zonen,
       Abkürzungen für Speedrunner.
 - [x] **Checkpoints** für längere Level.
 - [x] **3–5 Level + Level-Auswahl** (M4): 5 Level.
-- [ ] **Ghost der Bestzeit** (M6).
+- [x] **Ghost der Bestzeit** (M6).
 
 ## 5. Optik und Lesbarkeit
 

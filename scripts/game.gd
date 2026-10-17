@@ -16,6 +16,8 @@ extends Node3D
 @onready var level_label: Label = $HUD/Safe/LevelLabel
 @onready var version_label: Label = $HUD/Safe/VersionLabel
 @onready var finish_panel: PanelContainer = $HUD/Safe/FinishPanel
+@onready var go_label: Label = $HUD/Safe/GoLabel
+@onready var ghost := $Ghost
 
 var level: Level
 var level_index := 0
@@ -70,29 +72,28 @@ func load_level(index: int) -> void:
 	level.finished.connect(_on_finished)
 	level.checkpoint_reached.connect(func(point: Vector3) -> void: _respawn = point)
 	level.killed.connect(_on_killed)
-	_best = INF
+	_best = Records.best_time(Levels.LIST[index])
 	restart()
 
 
 func open_menu() -> void:
 	var entries := []
 	for path in Levels.LIST:
-		entries.append({"name": _level_name(path)})
+		var scene: Level = load(path).instantiate()
+		var best := Records.best_time(path)
+		var detail := ""
+		if best < INF:
+			detail = "%.2f s  %s" % [best, Records.medal_name(Records.medal(scene, best))]
+		entries.append({"name": scene.level_name, "detail": detail})
+		scene.free()
 	menu.open(entries)
-
-
-func _level_name(path: String) -> String:
-	var state := (load(path) as PackedScene).get_state()
-	for i in state.get_node_property_count(0):
-		if state.get_node_property_name(0, i) == "level_name":
-			return state.get_node_property_value(0, i)
-	return path.get_file().get_basename()
 
 
 func _process(delta: float) -> void:
 	if _running:
 		# Real time: slow motion while aiming must not shorten the run.
 		_elapsed += delta / maxf(Engine.time_scale, 0.001)
+		ghost.update_run(_elapsed, player.global_position)
 	if player.global_position.y < kill_y:
 		_on_killed()
 	time_label.text = "%.2f" % _elapsed
@@ -110,6 +111,8 @@ func restart() -> void:
 	_elapsed = 0.0
 	_running = false
 	_finished = false
+	ghost.reset(Records.load_ghost(Levels.LIST[level_index]))
+	go_label.visible = false
 	_update_hud()
 
 
@@ -123,6 +126,17 @@ func _on_any_input(_a = null, _b = null, _c = null) -> void:
 		restart()
 	elif not _running:
 		_running = true
+		_flash_go()
+
+
+## Start signal: the run (and the timer) starts with the first throw.
+func _flash_go() -> void:
+	go_label.visible = true
+	go_label.modulate.a = 1.0
+	var tween := create_tween()
+	tween.tween_interval(0.3)
+	tween.tween_property(go_label, "modulate:a", 0.0, 0.4)
+	tween.tween_callback(func() -> void: go_label.visible = false)
 
 
 func _on_hook_attached(_point: Vector3, _normal: Vector3) -> void:
@@ -136,13 +150,32 @@ func _on_finished() -> void:
 		return
 	_finished = true
 	_running = false
-	var new_best := _elapsed < _best
+	var path: String = Levels.LIST[level_index]
+	var new_best := Records.submit(path, _elapsed)
+	if new_best:
+		Records.save_ghost(path, ghost.recording())
 	_best = minf(_best, _elapsed)
+	var medal := Records.medal(level, _elapsed)
+	var medal_label: Label = finish_panel.get_node("Lines/Medal")
+	medal_label.text = Records.medal_name(medal).to_upper() if medal != Records.Medal.NONE else "No medal"
+	medal_label.add_theme_color_override("font_color", Records.medal_color(medal))
 	finish_panel.get_node("Lines/Time").text = "%.2f s" % _elapsed
 	finish_panel.get_node("Lines/Best").text = "New best!" if new_best else "Best: %.2f s" % _best
+	finish_panel.get_node("Lines/Target").text = _next_target(medal)
 	finish_panel.get_node("Lines/Again").text = "Tap to play again" if _touch else "Click to play again"
 	finish_panel.get_node("Lines/Buttons/Next").visible = level_index + 1 < Levels.LIST.size()
 	_update_hud()
+
+
+func _next_target(medal: Records.Medal) -> String:
+	match medal:
+		Records.Medal.NONE:
+			return "Bronze: %.2f s" % level.bronze_time
+		Records.Medal.BRONZE:
+			return "Silver: %.2f s" % level.silver_time
+		Records.Medal.SILVER:
+			return "Gold: %.2f s" % level.gold_time
+	return ""
 
 
 func _apply_safe_area() -> void:
@@ -156,7 +189,11 @@ func _apply_safe_area() -> void:
 func _update_hud() -> void:
 	finish_panel.visible = _finished
 	level_label.text = "%d  %s" % [level_index + 1, level.level_name]
-	best_label.text = "" if _best == INF else "Best %.2f" % _best
+	if _best == INF:
+		best_label.text = "Gold %.2f" % level.gold_time
+	else:
+		var medal := Records.medal(level, _best)
+		best_label.text = "Best %.2f  %s" % [_best, Records.medal_name(medal)]
 	if _finished:
 		hint_label.text = ""
 	elif _landscape and _touch:
