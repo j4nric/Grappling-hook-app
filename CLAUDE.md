@@ -66,6 +66,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur |
 | `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo |
 | `assets/sounds/*.wav` | Synthetisierte Sounds, erzeugt von `tools/gen_sounds.py` (numpy) |
+| `scripts/debug_overlay.gd` | Debug-Anzeige (FPS, Tempo, Haken, letzter Wurf) und Auto-Qualität |
+| `tools/gen_splash.py` | Erzeugt `assets/splash.png` (Ladebildschirm) |
 | `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `tools/gen_levels.py` | Level-Generator |

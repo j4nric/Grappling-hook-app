@@ -5,6 +5,9 @@ extends Node3D
 @export var player: CharacterBody3D
 ## Speed (m/s) above which the speed trail shows.
 @export var trail_speed := 18.0
+## 1 = short vibration when the hook bites (native apps and Android browsers;
+## iOS Safari has no vibration). A float so it works as a tuning slider.
+@export var haptics := 1.0
 
 var _sparks: CPUParticles3D
 var _dust: CPUParticles3D
@@ -19,7 +22,10 @@ func _ready() -> void:
 	_trail = _make_particles(Color(0.9, 0.9, 1.0, 0.8), 24, 0.35)
 	_trail.emitting = false
 	_trail.initial_velocity_max = 0.5
-	player.hook_attached.connect(func(point: Vector3, normal: Vector3) -> void: _emit(_sparks, point, normal))
+	player.hook_attached.connect(func(point: Vector3, normal: Vector3) -> void:
+		_emit(_sparks, point, normal)
+		if haptics >= 0.5:
+			Input.vibrate_handheld(25))
 	player.landed.connect(func(speed: float) -> void:
 		if speed > 8.0:
 			_emit(_dust, player.global_position + Vector3.DOWN * 0.8, Vector3.UP))

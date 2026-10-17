@@ -32,6 +32,11 @@ Vorschau: Jeder offene Pull Request ist zusätzlich unter
 `https://j4nric.github.io/Grappling-hook-app/preview/pr-<Nummer>/` spielbar
 (Übersicht: `/preview/`). So lassen sich Experimente testen, ohne `main` zu ändern.
 
+Inhalt: 5 Level (Level-Auswahl beim Start), Medaillen und Bestzeiten pro Level,
+Geist der Bestzeit, Checkpoints, Lava, Eis (Haken hält nicht), bewegliche
+Hindernisse, Sound. TUNE-Tabs: Throw, Rope, Move, Camera, Misc (Lautstärke,
+Debug-Anzeige mit FPS, Auto-Qualität, Vibration).
+
 Einmalige Einrichtung: Repo → Settings → Pages → „Build and deployment“ →
 Source: **GitHub Actions**.
 
