@@ -117,7 +117,7 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
       (`stretch_shrink`), wenn die Bildrate 3 s unter `min_fps` liegt; Schatten aus.
       **Offen:** echte Messung auf deinem iPhone (Debug-Anzeige einschalten).
 - [x] **Ladezeit:** (eigener Ladebildschirm mit Splash und Fortschrittsbalken;
-      der Deploy-Log zeigt, ob Pages `index.wasm` komprimiert ausliefert) Die Engine (`index.wasm`) ist ~39 MB (komprimiert ca.
+      geprüft: Pages liefert `index.wasm` gzip-komprimiert aus, ~10 MB statt 39 MB) Die Engine (`index.wasm`) ist ~39 MB (komprimiert ca.
       10 MB). Eigener Ladebildschirm mit Fortschritt; prüfen, ob GitHub Pages
       komprimiert ausliefert.
 - [x] **Automatische Tests in CI:** Die Headless-Simulationen (Wurf trifft
