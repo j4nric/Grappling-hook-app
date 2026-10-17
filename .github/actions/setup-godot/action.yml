@@ -9,7 +9,7 @@ runs:
   steps:
     - name: Cache Godot and web templates
       id: cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/godot
         key: godot-${{ inputs.version }}-web

@@ -65,6 +65,10 @@ const PARAMS := [
 	["CameraRig", "shake_strength", 0.0, 2.0, 0.05, "Camera"],
 	["World/PixelView", "stretch_shrink", 1.0, 6.0, 1.0, "Camera"],
 	["Sfx", "volume", 0.0, 1.0, 0.05, "Misc"],
+	["Debug", "shown", 0.0, 1.0, 1.0, "Misc"],
+	["Debug", "auto_quality", 0.0, 1.0, 1.0, "Misc"],
+	["Debug", "min_fps", 20.0, 60.0, 1.0, "Misc"],
+	["Effects", "haptics", 0.0, 1.0, 1.0, "Misc"],
 ]
 
 const FONT_SIZE := 26

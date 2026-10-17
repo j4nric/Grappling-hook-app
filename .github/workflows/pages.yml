@@ -36,7 +36,7 @@ jobs:
     if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
@@ -71,7 +71,7 @@ jobs:
           done <<< "$prs"
           echo "<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width'><title>Previews</title><body style='font:20px sans-serif;background:#111;color:#eee'><h1>Grappling Cave</h1><ul>$list</ul>" > site/preview/index.html
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
@@ -87,10 +87,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
       - name: Check compression of the engine download
         run: |
           url="${{ steps.deployment.outputs.page_url }}index.wasm"
           enc=$(curl -sSI -H "Accept-Encoding: gzip, br" "$url" | grep -i '^content-encoding' || echo "content-encoding: none")
-          echo "index.wasm $enc" >> "$GITHUB_STEP_SUMMARY"
+          echo "index.wasm $enc" | tee -a "$GITHUB_STEP_SUMMARY"

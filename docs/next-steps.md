@@ -110,11 +110,14 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
 
 ## 7. Technik und Arbeitsablauf
 
-- [ ] **Debug-Anzeige** (im TUNE-Panel ein-/ausschaltbar): FPS, Tempo,
+- [x] **Debug-Anzeige** (im TUNE-Panel ein-/ausschaltbar, Tab Misc → `shown`): FPS, Tempo,
       Zustand des Hakens, letztes Fingertempo.
-- [ ] **Performance am Gerät messen:** Ziel 60 fps auf dem iPhone. Bei
-      Einbruch `scaling_3d/scale` senken, Schatten aus.
-- [ ] **Ladezeit:** Die Engine (`index.wasm`) ist ~39 MB (komprimiert ca.
+- [x] **Performance am Gerät messen:** Ziel 60 fps auf dem iPhone. Werkzeuge
+      da: FPS in der Debug-Anzeige; Auto-Qualität vergröbert die Pixel
+      (`stretch_shrink`), wenn die Bildrate 3 s unter `min_fps` liegt; Schatten aus.
+      **Offen:** echte Messung auf deinem iPhone (Debug-Anzeige einschalten).
+- [x] **Ladezeit:** (eigener Ladebildschirm mit Splash und Fortschrittsbalken;
+      der Deploy-Log zeigt, ob Pages `index.wasm` komprimiert ausliefert) Die Engine (`index.wasm`) ist ~39 MB (komprimiert ca.
       10 MB). Eigener Ladebildschirm mit Fortschritt; prüfen, ob GitHub Pages
       komprimiert ausliefert.
 - [x] **Automatische Tests in CI:** Die Headless-Simulationen (Wurf trifft
@@ -128,6 +131,10 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
 
 ## 8. Später: iOS-App (M5)
 
-- [ ] Export nach `docs/ios-export.md` (braucht Mac + Xcode).
-- [ ] Haptisches Feedback beim Einhaken (geht nur nativ, nicht im Browser).
-- [ ] TestFlight, Game Center (Bestenliste).
+- [ ] Export nach `docs/ios-export.md` (braucht Mac + Xcode). Vorbereitet:
+      iOS-Export-Preset in `export_presets.cfg` (Bundle-ID und Team-ID noch
+      eintragen).
+- [x] Haptisches Feedback beim Einhaken (`Input.vibrate_handheld`; nativ und
+      in Android-Browsern, iOS Safari hat keine Vibration).
+- [ ] TestFlight, Game Center (Bestenliste). Braucht Apple-Developer-Account
+      und Mac – nicht aus der Cloud-Umgebung machbar.

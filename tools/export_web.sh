@@ -7,9 +7,19 @@ src="$1"; out="$2"; version="$3"
 
 sed -i "s/^config\/version=.*/config\/version=\"${version}\"/" "$src/project.godot"
 mkdir -p "$out"
-godot --headless --path "$src" --import > /dev/null 2>&1 || true
-godot --headless --path "$src" --export-release "Web" "$(realpath "$out")/index.html"
-test -s "$out/index.pck"
+log="$(mktemp)"
+godot --headless --path "$src" --import > "$log" 2>&1 || true
+if ! godot --headless --path "$src" --export-release "Web" "$(realpath "$out")/index.html" >> "$log" 2>&1 \
+    || ! test -s "$out/index.pck"; then
+  cat "$log"
+  echo "Web export failed" >&2
+  exit 1
+fi
+# Missing or broken scripts/resources would give a game that does not start.
+if grep -E "SCRIPT ERROR|Parse Error|Failed loading resource" "$log"; then
+  echo "Errors during the web export" >&2
+  exit 1
+fi
 
 pck="index-${version//[^a-zA-Z0-9]/-}.pck"
 mv "$out/index.pck" "$out/$pck"
