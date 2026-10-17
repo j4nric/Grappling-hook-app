@@ -6,33 +6,33 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
 
 ## Offene Entscheidungen (vor allem anderen klären)
 
-- [ ] **Level-Richtung im Hochformat:** Der Tunnel läuft waagerecht (-Z), das
+- [x] **Level-Richtung im Hochformat:** → waagerecht (Entscheidung 2026-10-17). Der Tunnel läuft waagerecht (-Z), das
       Bild ist hochkant und man wirft nach oben. Variante A: waagerechter
       Tunnel bleibt, Kamera stärker von oben/hinten. Variante B: senkrechte
       Höhle, man klettert nach oben (passt zu Hochformat und „Haken an die
       Decke werfen“). Beeinflusst Kamera, Level-Bau und Wurf-Mapping.
-- [ ] **Ende eines Zugs:** Jetzt zieht das Seil bis an die Fläche und löst
+- [x] **Ende eines Zugs:** → Zip-Launch (Entscheidung 2026-10-17). Jetzt zieht das Seil bis an die Fläche und löst
       sich bei Kontakt, der Aufprall frisst aber den Großteil des Tempos
       (gemessen: 25 → 4 m/s). Alternative „Zip-Launch“: Seil löst sich kurz
       vor dem Treffpunkt automatisch, man fliegt mit vollem Tempo weiter
       (Spider-Man-Gefühl). Beides als Option bauen und am Handy vergleichen?
-- [ ] **Swipe-Start:** Muss der Wisch auf dem Spieler beginnen (wie beim
+- [x] **Swipe-Start:** → überall (Entscheidung 2026-10-17). Muss der Wisch auf dem Spieler beginnen (wie beim
       Pokéball) oder überall (jetzt)? Überall ist toleranter, auf dem Spieler
       ist eindeutiger.
-- [ ] **Tippen = Seil lösen:** Mit Auto-Lösen bei Kontakt noch nötig? Ohne
+- [x] **Tippen = Seil lösen:** → bleibt vorerst (Entscheidung 2026-10-17). Mit Auto-Lösen bei Kontakt noch nötig? Ohne
       Tippen-Geste gäbe es weniger Fehlbedienung.
 
 ## 1. Spielgefühl (höchste Priorität)
 
-- [ ] **Bodenreibung:** Landet man nach dem Lösen auf dem Boden, rutscht man
+- [x] **Bodenreibung:** Landet man nach dem Lösen auf dem Boden, rutscht man
       endlos weiter (keine Reibung). `floor_friction` als `@export` + Regler.
-- [ ] **Tempo-Verlust beim Aufprall** verringern (siehe Entscheidung oben):
+- [x] **Tempo-Verlust beim Aufprall** verringern (Zip-Launch umgesetzt) (siehe Entscheidung oben):
       z. B. Release-Abstand `auto_release_distance`, oder beim Kontakt den
       Geschwindigkeitsanteil entlang der Fläche verstärken.
-- [ ] **Zug-Kurve:** Statt konstantem `reel_speed` ein Zug, der anfangs
+- [x] **Zug-Kurve:** Statt konstantem `reel_speed` ein Zug, der anfangs
       ruckartig startet und dann beschleunigt (Ease-In), plus Höchsttempo
       des Zugs. Macht den Treffer spürbarer.
-- [ ] **Seil durch Hindernisse:** Das Seil ist eine Linie ohne Kollision.
+- [x] **Seil durch Hindernisse:** (Lösen umgesetzt) Das Seil ist eine Linie ohne Kollision.
       Wenn ein Hindernis zwischen Spieler und Anker kommt: Seil lösen (einfach)
       oder um die Kante wickeln (aufwendig, später).
 - [ ] **Flugbahn-Vorschau:** Die Ziellinie ist gerade, der Haken fliegt aber

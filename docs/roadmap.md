@@ -59,3 +59,6 @@ Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md`.
 | 2026-10-17 | `min_rope_length` | 3 → 2,5 | näher an den Treffpunkt |
 | 2026-10-17 | `min_rope_length` | 2,5 → 0,5 | Seil zieht bis an die Fläche; Lösen bei Wand-/Deckenkontakt statt Hängenbleiben |
 | 2026-10-17 | Wurf-Werte | neu | `throw_speed_per_px` 0,015, Haken 8–70 m/s, `hook_gravity` 25, `throw_pitch` 50° |
+| 2026-10-17 | `reel_speed` | 10 → 8 (Start) | Zug baut sich jetzt auf: `reel_acceleration` 30, `reel_max_speed` 30, `pull_impulse` 6 |
+| 2026-10-17 | `zip_release_distance` | neu: 2,5 | Zip-Launch statt Aufprall; `zip_boost` 3 |
+| 2026-10-17 | `floor_friction` | neu: 25 | kein endloses Rutschen am Boden |
