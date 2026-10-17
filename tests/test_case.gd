@@ -16,8 +16,13 @@ func check(condition: bool, message: String) -> void:
 		print("    FAIL: ", message)
 
 
+## Level the test plays (index into Levels.LIST).
+var level_index := 0
+
+
 func load_main() -> void:
 	main = load("res://scenes/main.tscn").instantiate()
+	main.start_level = level_index
 	add_child(main)
 	await get_tree().process_frame
 

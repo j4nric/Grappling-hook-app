@@ -63,7 +63,14 @@ Jedes Level ist ein Tunnel-Abschnitt von 30–90 Sekunden Spielzeit. Bausteine:
 - **Engstellen**: Säulen, die den Schwungweg einschränken
 - **Abzweigungen**: kürzere, aber riskantere Route für Speedrunner
 
-Das Testlevel in `scenes/test_tunnel.tscn` hat je einen Baustein davon.
+Umgesetzt (`tools/gen_levels.py`, 5 Level):
+1. **First Swing** – Grundlagen, eine Lava-Lücke, hängende Blöcke, Säulen
+2. **Lava Gaps** – viele Bodenlücken, Checkpoints
+3. **Ice Ceiling** – Eis-Abschnitte an Decke und Wänden (Haken hält nicht), Zickzack
+4. **Movers** – seitlich und vertikal fahrende Blöcke
+5. **Shortcut** – eine Zwischendecke teilt den Tunnel: oben schnell, aber schwer zu erreichen
+
+Lava/Abgrund setzt auf den letzten Checkpoint zurück, der Timer läuft weiter.
 
 ## Optik
 

@@ -18,6 +18,8 @@ enum HookState { IDLE, FLYING, ATTACHED }
 
 ## The hook does not stick to surfaces facing up more than this (floors).
 const FLOOR_NORMAL_Y := 0.7
+## Surfaces in this group never hold the hook (e.g. ice).
+const NO_HOOK_GROUP := "no_hook"
 
 # --- Tuning (exposed in the inspector, change freely while playing) -----------
 @export_group("Physics")
@@ -53,6 +55,8 @@ const FLOOR_NORMAL_Y := 0.7
 @export_group("Rope")
 ## The hook gives up when it gets further away than this.
 @export var max_rope_length := 45.0
+## Hooks closer than this do not hold: there is nothing left to pull.
+@export var min_hook_distance := 3.0
 ## Speed (m/s) toward the anchor added the moment the hook sticks: the yank.
 @export var pull_impulse := 6.0
 ## The rope shortens this fast right after the hook sticks (m/s) ...
@@ -85,6 +89,9 @@ var rope_length := 0.0
 var _hook_velocity := Vector3.ZERO
 var _attached_time := 0.0
 var _was_on_floor := false
+## Moving body the hook sticks to, and the anchor in its local space.
+var _anchor_body: Node3D = null
+var _anchor_local := Vector3.ZERO
 ## Visual only: the hook flies back to the player after a miss or release.
 var _retract_left := 0.0
 var _retract_from := Vector3.ZERO
@@ -117,6 +124,8 @@ func _physics_process(delta: float) -> void:
 			_fly_hook(delta)
 		HookState.ATTACHED:
 			_attached_time += delta
+			if is_instance_valid(_anchor_body):
+				anchor = _anchor_body.global_transform * _anchor_local
 			_apply_rope_constraint(delta)
 
 	if hook_state != HookState.ATTACHED and is_on_floor():
@@ -131,7 +140,8 @@ func _physics_process(delta: float) -> void:
 	_was_on_floor = is_on_floor()
 
 	if hook_state == HookState.ATTACHED and _attached_time >= contact_release_grace:
-		if zip_release_distance > 0.0 and global_position.distance_to(anchor) <= zip_release_distance:
+		if zip_release_distance > 0.0 and global_position.distance_to(anchor) <= zip_release_distance \
+				and velocity.dot(global_position.direction_to(anchor)) > 0.0:
 			_zip_launch()
 		elif release_on_contact and _touches_wall_or_ceiling():
 			release("contact")
@@ -196,8 +206,21 @@ func _is_rope_blocked() -> bool:
 	return not hit.is_empty() and hit.position.distance_to(anchor) > 0.3
 
 
-## Sticks the hook at point and starts the pull.
-func attach(point: Vector3, normal: Vector3) -> void:
+## True if the hook holds on the surface of this ray hit: walls, ceilings,
+## obstacles; not floors and not surfaces in the no_hook group.
+static func can_stick(hit: Dictionary) -> bool:
+	if hit.is_empty() or hit.normal.y > FLOOR_NORMAL_Y:
+		return false
+	var collider: Object = hit.collider
+	return not (collider is Node and (collider as Node).is_in_group(NO_HOOK_GROUP))
+
+
+## Sticks the hook at point and starts the pull. On a moving body the anchor
+## moves along.
+func attach(point: Vector3, normal: Vector3, body: Object = null) -> void:
+	_anchor_body = body as AnimatableBody3D
+	if _anchor_body:
+		_anchor_local = _anchor_body.global_transform.affine_inverse() * point
 	anchor = point
 	rope_length = global_position.distance_to(anchor)
 	hook_state = HookState.ATTACHED
@@ -215,10 +238,10 @@ func _fly_hook(delta: float) -> void:
 	query.exclude = [get_rid()]
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if not hit.is_empty():
-		if hit.normal.y > FLOOR_NORMAL_Y:
+		if not can_stick(hit) or global_position.distance_to(hit.position) < min_hook_distance:
 			_miss()
 			return
-		attach(hit.position, hit.normal)
+		attach(hit.position, hit.normal, hit.collider)
 	elif next.distance_to(global_position) > max_rope_length:
 		_miss()
 	else:
@@ -265,7 +288,7 @@ func _sticks_along(dir: Vector3) -> bool:
 	var query := PhysicsRayQueryParameters3D.create(from, from + dir * max_rope_length)
 	query.exclude = [get_rid()]
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
-	return not hit.is_empty() and hit.normal.y <= FLOOR_NORMAL_Y
+	return can_stick(hit)
 
 
 ## Simulates the hook flight like _fly_hook(). Returns the arc points; the last
@@ -284,7 +307,8 @@ func predict_hook_path(dir: Vector3, speed: float) -> Dictionary:
 		var hit := space.intersect_ray(query)
 		if not hit.is_empty():
 			points.append(hit.position)
-			return {"points": points, "hit": hit.normal.y <= FLOOR_NORMAL_Y}
+			var holds := can_stick(hit) and global_position.distance_to(hit.position) >= min_hook_distance
+			return {"points": points, "hit": holds}
 		if next.distance_to(global_position) > max_rope_length:
 			break
 		pos = next
@@ -357,6 +381,7 @@ func release(reason := "tap") -> void:
 ## retract: the hook flies back visibly instead of vanishing.
 func _set_idle(retract: bool) -> void:
 	hook_state = HookState.IDLE
+	_anchor_body = null
 	_retract_left = hook_retract_time if retract else 0.0
 	_retract_from = anchor
 	rope.visible = retract

@@ -36,6 +36,7 @@ const PARAMS := [
 	["Player", "throw_pitch", 0.0, 90.0, 1.0, "Throw"],
 	["Player", "throw_yaw_gain", 0.0, 2.0, 0.05, "Throw"],
 	["Player", "max_rope_length", 10.0, 100.0, 1.0, "Throw"],
+	["Player", "min_hook_distance", 0.0, 10.0, 0.25, "Throw"],
 	["Player", "aim_preview_speed", 5.0, 100.0, 1.0, "Throw"],
 	["Player", "aim_assist_angle", 0.0, 30.0, 1.0, "Throw"],
 	["Player", "aim_time_scale", 0.1, 1.0, 0.05, "Throw"],
@@ -75,6 +76,8 @@ var _panel: PanelContainer
 var _toggle: Button
 var _last_throw: Label
 var _copy: Button
+## Pause state before the panel opened (the level menu may pause, too).
+var _was_paused := false
 
 
 func _ready() -> void:
@@ -227,9 +230,11 @@ func _set_open(open: bool) -> void:
 	if open:
 		var p := get_parent().get_node("Player")
 		_last_throw.text = "Last throw: finger %d px/s -> hook %.0f m/s" % [p.last_throw_flick, p.last_throw_speed]
+	if open:
+		_was_paused = get_tree().paused
 	_panel.visible = open
 	_toggle.visible = not open
-	get_tree().paused = open
+	get_tree().paused = open or _was_paused
 	if not open:
 		_save()
 	_update_toggle_text()

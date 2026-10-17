@@ -27,7 +27,12 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   (`var x := …`, Typhinweise bei Parametern und Rückgaben).
 - Pixel-Look kommt aktuell nur aus `rendering/scaling_3d/scale=0.35` in
   `project.godot`. Nicht in Scripts hartkodieren.
-- Vorwärts im Tunnel ist **-Z**. Der Spieler startet bei z=0, das Ziel liegt bei z=-200.
+- Vorwärts im Tunnel ist **-Z**. Der Spieler startet bei z=0. Tunnel: 12 m breit
+  (x −6..6), Boden y=−5, Decke y=9.
+- **Level** entstehen aus `tools/gen_levels.py` (Beschreibungen dort ändern, dann
+  `python3 tools/gen_levels.py`); die erzeugten `scenes/levels/*.tscn` nicht von Hand
+  ändern. Reihenfolge in `scripts/levels.gd`. Medaillenzeiten aus der Bot-Zeit
+  (`tests/test_levels.gd` gibt sie aus).
 - Tuning-Werte sind `@export`-Variablen und werden im Inspector verändert, nicht
   im Code verstreut. Neue Stellschrauben ebenfalls als `@export` anlegen.
 - Gameplay-Input läuft **ausschließlich** über das Autoload `InputRouter`
@@ -50,14 +55,19 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `.github/workflows/ci.yml` | Pull Requests: Tests + Probe-Export |
 | `.github/workflows/test.yml` | Wiederverwendbarer Test-Job (von `ci.yml` und `pages.yml` genutzt) |
 | `tools/export_web.sh` | Web-Export mit Versionsstempel und eindeutigem Paketnamen (Cache-Busting) |
-| `scenes/main.tscn` | Hauptszene: Tunnel + Player + CameraRig + HUD, Script `game.gd` |
+| `scenes/main.tscn` | Hauptszene: Player + CameraRig + HUD + LevelMenu + Tuning; das Level lädt `game.gd` |
+| `scenes/levels/level_*.tscn` | Generierte Level (Start, Finish, Checkpoints, KillZones, Movers) |
+| `scripts/level.gd` | `Level`: Signale `finished`, `checkpoint_reached`, `killed`, Medaillenzeiten |
+| `scripts/levels.gd` | `Levels.LIST`: Level-Reihenfolge |
+| `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel) |
+| `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
+| `tools/gen_levels.py` | Level-Generator |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil, Haken-Kugel und Ziellinie |
-| `scenes/test_tunnel.tscn` | Grauer Testtunnel aus CSG-Boxen, Hindernisse, Ziel-Area |
 | `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `aim_changed`, `aim_cancelled`, `throw_requested` (Swipe + Flick-Tempo), `release_requested`, `restart_requested` |
 | `scripts/player.gd` | Schwerkraft, Hakenwurf (Flugbahn), Seilzug als Geschwindigkeit, Ziel-Vorschau |
 | `scripts/grapple_rope.gd` | Zeichnet eine Linie (Seil, Ziellinie) per ImmediateMesh |
 | `scripts/camera_rig.gd` | Verfolgerkamera: Lag, Look-Ahead (beim Zug Richtung Anker), Tempo-FOV (horizontal), Roll, Shake bei `hook_attached`/`landed` |
-| `scripts/game.gd` | Timer, Ziel-Erkennung, Absturz-Reset, Bestzeit, HUD (Hinweis, Ziel-Bildschirm, Build-Version) |
+| `scripts/game.gd` | Level laden, Timer, Ziel, Checkpoints (Lava/Absturz → letzter Checkpoint, Timer läuft weiter), Neustart, HUD |
 | `scripts/safe_area.gd` | `SafeArea.margins()`: Ränder für Notch/Home-Indikator in Viewport-Einheiten |
 | `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler in Tabs, pausiert das Spiel, speichert in `user://tuning_v3.cfg`, „Copy“ kopiert getunte Werte als Text |
 | `tests/` | Headless-Tests (`run_tests.gd` führt alle `test_*.gd` aus), laufen in CI vor jedem Merge/Deploy |
@@ -74,8 +84,10 @@ Swipe-Vektor und das Fingertempo der letzten 0,1 s (`FLICK_WINDOW`).
 - Tempo: Fingertempo × `throw_speed_per_px`, begrenzt auf
   `hook_min_speed`..`hook_max_speed`. Der Haken erbt die Spielergeschwindigkeit.
 - Flug: Der Haken fliegt mit `hook_gravity` auf einer Bahn, Raycast pro Frame.
-  Trifft er Wand oder Decke, haftet er; Böden (Normale nach oben) und Flüge über
-  `max_rope_length` hinaus lassen ihn fallen.
+  Trifft er Wand oder Decke, haftet er (`can_stick()`); Böden (Normale nach oben),
+  Flächen in der Gruppe `no_hook` (Eis), Treffer näher als `min_hook_distance` und
+  Flüge über `max_rope_length` hinaus lassen ihn fallen. Auf beweglichen Körpern
+  fährt der Anker mit.
 - Beim Wurf löst sich das alte Seil sofort: Man fliegt mit Schwung weiter,
   während der neue Haken unterwegs ist.
 - Zielen: gestrichelter Bogen = `predict_hook_path()` für `aim_preview_speed`
@@ -93,8 +105,8 @@ verhindert Clipping. Liegt der Spieler außerhalb der Seillänge, bekommt er gen
 die nötige Geschwindigkeit nach innen → Pendeln.
 
 **Ende des Zugs** (nach `contact_release_grace`), in dieser Reihenfolge:
-- **Zip-Launch:** näher als `zip_release_distance` am Anker → Seil löst sich,
-  der Spieler fliegt mit vollem Tempo + `zip_boost` weiter.
+- **Zip-Launch:** näher als `zip_release_distance` am Anker und in Bewegung auf ihn
+  zu → Seil löst sich, der Spieler fliegt mit vollem Tempo + `zip_boost` weiter.
 - Berührung von Wand oder Decke (`release_on_contact`) → Seil löst sich.
 - Hindernis zwischen Spieler und Anker (`release_when_blocked`) → Seil löst sich.
 Böden lösen das Seil nie. Am Boden bremst `floor_friction`, solange kein Seil zieht.

@@ -34,7 +34,7 @@ Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md`.
 - [ ] Licht: Fackeln/Kristalle, Nebel, Partikel-Trail
 
 ## M4 – Level und Speedrun
-- [ ] 3–5 Level als eigene Szenen, Level-Auswahl
+- [x] 3–5 Level als eigene Szenen, Level-Auswahl
 - [ ] Bestzeiten persistent speichern (`user://`)
 - [ ] Medaillen-Zeiten pro Level
 - [x] Sofort-Neustart-Geste (Zwei-Finger-Tipp)
@@ -64,3 +64,4 @@ Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md`.
 | 2026-10-17 | `floor_friction` | neu: 25 | kein endloses Rutschen am Boden |
 | 2026-10-17 | Kamera-FOV | 75° vertikal → 65° horizontal (`max_fov` 105 → 90, `fov_per_speed` 0,5 → 0,4) | Hochformat zeigte seitlich zu wenig |
 | 2026-10-17 | `look_ahead.y` | 1 → 2,5 | mehr Decke im Bild, man wirft nach oben |
+| 2026-10-17 | `min_hook_distance` | neu: 3 | Haken direkt über dem Kopf schleuderte rückwärts (Bot-Test) |
