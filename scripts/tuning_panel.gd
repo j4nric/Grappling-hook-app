@@ -36,6 +36,9 @@ const PARAMS := [
 	["Player", "throw_pitch", 0.0, 90.0, 1.0, "Throw"],
 	["Player", "throw_yaw_gain", 0.0, 2.0, 0.05, "Throw"],
 	["Player", "max_rope_length", 10.0, 100.0, 1.0, "Throw"],
+	["Player", "aim_preview_speed", 5.0, 100.0, 1.0, "Throw"],
+	["Player", "aim_assist_angle", 0.0, 30.0, 1.0, "Throw"],
+	["Player", "aim_time_scale", 0.1, 1.0, 0.05, "Throw"],
 	["Player", "pull_impulse", 0.0, 30.0, 0.5, "Rope"],
 	["Player", "reel_speed", 0.0, 40.0, 0.5, "Rope"],
 	["Player", "reel_acceleration", 0.0, 150.0, 1.0, "Rope"],
@@ -65,6 +68,7 @@ var _sliders := {}
 var _labels := {}
 var _panel: PanelContainer
 var _toggle: Button
+var _last_throw: Label
 
 
 func _ready() -> void:
@@ -152,6 +156,10 @@ func _build_ui() -> void:
 	close.pressed.connect(_set_open.bind(false))
 	header.add_child(close)
 
+	_last_throw = Label.new()
+	_last_throw.add_theme_font_size_override("font_size", 22)
+	root.add_child(_last_throw)
+
 	var tabs := TabContainer.new()
 	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(tabs)
@@ -204,6 +212,9 @@ func _circle_texture(diameter: int, color: Color) -> ImageTexture:
 
 
 func _set_open(open: bool) -> void:
+	if open:
+		var p := get_parent().get_node("Player")
+		_last_throw.text = "Last throw: finger %d px/s -> hook %.0f m/s" % [p.last_throw_flick, p.last_throw_speed]
 	_panel.visible = open
 	_toggle.visible = not open
 	get_tree().paused = open

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/grapple_rope.gd" id="2_rope"]
@@ -14,6 +14,18 @@ height = 1.6
 [sub_resource type="StandardMaterial3D" id="mat_hook"]
 shading_mode = 0
 albedo_color = Color(1, 0.88, 0.45, 1)
+
+[sub_resource type="StandardMaterial3D" id="mat_aim"]
+shading_mode = 0
+transparency = 1
+albedo_color = Color(1, 1, 1, 0.7)
+
+[sub_resource type="SphereMesh" id="SphereMesh_aim"]
+material = SubResource("mat_aim")
+radius = 0.35
+height = 0.7
+radial_segments = 8
+rings = 4
 
 [sub_resource type="SphereMesh" id="SphereMesh_hook"]
 material = SubResource("mat_hook")
@@ -43,3 +55,7 @@ color = Color(1, 1, 1, 0.6)
 [node name="Hook" type="MeshInstance3D" parent="."]
 top_level = true
 mesh = SubResource("SphereMesh_hook")
+
+[node name="AimMarker" type="MeshInstance3D" parent="."]
+top_level = true
+mesh = SubResource("SphereMesh_aim")
