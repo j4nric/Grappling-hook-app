@@ -33,6 +33,9 @@ var _hint_dismissed := false
 
 
 func _ready() -> void:
+	# The world is drawn by the pixel viewport (World/PixelView); the root
+	# viewport only draws the HUD.
+	get_viewport().disable_3d = true
 	player.hook_attached.connect(_on_hook_attached)
 	InputRouter.restart_requested.connect(restart)
 	InputRouter.throw_requested.connect(_on_any_input)

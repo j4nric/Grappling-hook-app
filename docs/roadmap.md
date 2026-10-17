@@ -29,9 +29,9 @@ Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md`.
 - [x] Hoch-/Querformat entscheiden → Hochformat
 
 ## M3 – Optik
-- [ ] Pixel-Look feinjustieren (Render-Scale, Palette, Dithering-Shader?)
-- [ ] Einfaches Spielermodell und Seil mit Textur
-- [ ] Licht: Fackeln/Kristalle, Nebel, Partikel-Trail
+- [x] Pixel-Look feinjustieren (SubViewport mit Nearest-Filter)
+- [x] Einfaches Spielermodell und Seil (Röhre)
+- [x] Licht: Fackeln, Lava-Licht, Nebel, Partikel-Trail
 
 ## M4 – Level und Speedrun
 - [x] 3–5 Level als eigene Szenen, Level-Auswahl

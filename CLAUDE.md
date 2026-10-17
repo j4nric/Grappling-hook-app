@@ -25,8 +25,10 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 - Godot **4.7.2** (identisch mit `GODOT_VERSION` in `.github/workflows/pages.yml` und `ci.yml`),
   Renderer "Mobile" (nativ) bzw. "Compatibility" (Web-Build), GDScript mit statischer Typisierung
   (`var x := …`, Typhinweise bei Parametern und Rückgaben).
-- Pixel-Look kommt aktuell nur aus `rendering/scaling_3d/scale=0.35` in
-  `project.godot`. Nicht in Scripts hartkodieren.
+- Pixel-Look: Die 3D-Welt rendert in `World/PixelView` (SubViewportContainer,
+  `stretch_shrink` = Pixelgröße, Nearest-Filter). Die Kamera darin kopiert die
+  Kamera von `CameraRig`; der Root-Viewport zeichnet nur das HUD
+  (`disable_3d`). Nicht in Scripts hartkodieren.
 - Vorwärts im Tunnel ist **-Z**. Der Spieler startet bei z=0. Tunnel: 12 m breit
   (x −6..6), Boden y=−5, Decke y=9.
 - **Level** entstehen aus `tools/gen_levels.py` (Beschreibungen dort ändern, dann
@@ -61,6 +63,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/levels.gd` | `Levels.LIST`: Level-Reihenfolge |
 | `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel) |
 | `scripts/records.gd` | `Records`: Bestzeit pro Level, Medaille, Ghost-Daten in `user://` |
+| `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur |
 | `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `tools/gen_levels.py` | Level-Generator |

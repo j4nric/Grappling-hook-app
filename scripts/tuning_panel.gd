@@ -63,6 +63,7 @@ const PARAMS := [
 	["CameraRig", "roll_per_speed", 0.0, 5.0, 0.1, "Camera"],
 	["CameraRig", "max_roll", 0.0, 45.0, 1.0, "Camera"],
 	["CameraRig", "shake_strength", 0.0, 2.0, 0.05, "Camera"],
+	["World/PixelView", "stretch_shrink", 1.0, 6.0, 1.0, "Camera"],
 ]
 
 const FONT_SIZE := 26
