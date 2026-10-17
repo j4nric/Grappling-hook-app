@@ -174,12 +174,23 @@ func _set_open(open: bool) -> void:
 	get_tree().paused = open
 	if not open:
 		_save()
+	_update_toggle_text()
+
+
+## "TUNE*" shows that saved values differ from the defaults in the code.
+func _update_toggle_text() -> void:
+	var tuned := false
+	for p in PARAMS:
+		if not is_equal_approx(_sliders[_key(p)].value, snappedf(_defaults[_key(p)], p[4])):
+			tuned = true
+	_toggle.text = "TUNE*" if tuned else "TUNE"
 
 
 func _reset() -> void:
 	for p in PARAMS:
 		_sliders[_key(p)].value = _defaults[_key(p)]
 	_save()
+	_update_toggle_text()
 
 
 # --- Persistence --------------------------------------------------------------
@@ -199,3 +210,4 @@ func _load() -> void:
 		var value = cfg.get_value(SECTION, _key(p), null)
 		if value != null:
 			_sliders[_key(p)].value = value
+	_update_toggle_text()
