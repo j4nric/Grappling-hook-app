@@ -57,6 +57,11 @@ const PARAMS := [
 	["CameraRig", "max_fov", 60.0, 140.0, 1.0, "Camera"],
 	["CameraRig", "offset:y", 0.0, 8.0, 0.25, "Camera"],
 	["CameraRig", "offset:z", 2.0, 15.0, 0.25, "Camera"],
+	["CameraRig", "look_ahead:y", -5.0, 10.0, 0.25, "Camera"],
+	["CameraRig", "anchor_look_weight", 0.0, 1.0, 0.05, "Camera"],
+	["CameraRig", "roll_per_speed", 0.0, 5.0, 0.1, "Camera"],
+	["CameraRig", "max_roll", 0.0, 45.0, 1.0, "Camera"],
+	["CameraRig", "shake_strength", 0.0, 2.0, 0.05, "Camera"],
 ]
 
 const FONT_SIZE := 26

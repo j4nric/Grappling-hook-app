@@ -56,7 +56,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `aim_changed`, `aim_cancelled`, `throw_requested` (Swipe + Flick-Tempo), `release_requested`, `restart_requested` |
 | `scripts/player.gd` | Schwerkraft, Hakenwurf (Flugbahn), Seilzug als Geschwindigkeit, Ziel-Vorschau |
 | `scripts/grapple_rope.gd` | Zeichnet eine Linie (Seil, Ziellinie) per ImmediateMesh |
-| `scripts/camera_rig.gd` | Verfolgerkamera mit Nachzieh-Lag, Look-Ahead, Tempo-FOV |
+| `scripts/camera_rig.gd` | Verfolgerkamera: Lag, Look-Ahead (beim Zug Richtung Anker), Tempo-FOV (horizontal), Roll, Shake bei `hook_attached`/`landed` |
 | `scripts/game.gd` | Timer, Ziel-Erkennung, Absturz-Reset, Bestzeit, HUD inkl. Build-Version |
 | `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler für Player-/Kamera-Exports, pausiert das Spiel, speichert in `user://tuning.cfg` |
 | `tests/` | Headless-Tests (`run_tests.gd` führt alle `test_*.gd` aus), laufen in CI vor jedem Merge/Deploy |
