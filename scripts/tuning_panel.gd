@@ -11,29 +11,49 @@ extends CanvasLayer
 const SAVE_PATH := "user://tuning_v3.cfg"
 ## Earlier format that stored every value; only real changes are taken over.
 const LEGACY_SAVE_PATH := "user://tuning_v2.cfg"
+## Code defaults at the time of the legacy format. Legacy values equal to these
+## were never tuned and are ignored.
+const LEGACY_DEFAULTS := {
+	"Player/gravity": 22.0, "Player/max_speed": 50.0,
+	"Player/throw_speed_per_px": 0.015, "Player/hook_min_speed": 8.0,
+	"Player/hook_max_speed": 70.0, "Player/hook_gravity": 25.0,
+	"Player/throw_pitch": 50.0, "Player/throw_yaw_gain": 1.0,
+	"Player/max_rope_length": 45.0, "Player/reel_speed": 10.0,
+	"Player/min_rope_length": 2.5, "Player/tension_boost": 6.0,
+	"CameraRig/follow_speed": 6.0, "CameraRig/base_fov": 75.0,
+	"CameraRig/fov_per_speed": 0.5, "CameraRig/max_fov": 105.0,
+	"CameraRig/offset:y": 2.5, "CameraRig/offset:z": 7.0,
+}
 const SECTION := "tuning"
 const DEFAULTS_SECTION := "defaults"
 
-## [node path relative to the parent, property path, min, max, step]
+## [node path relative to the parent, property path, min, max, step, tab]
 const PARAMS := [
-	["Player", "gravity", 5.0, 60.0, 0.5],
-	["Player", "max_speed", 10.0, 120.0, 1.0],
-	["Player", "throw_speed_per_px", 0.002, 0.03, 0.001],
-	["Player", "hook_min_speed", 0.0, 40.0, 1.0],
-	["Player", "hook_max_speed", 10.0, 150.0, 1.0],
-	["Player", "hook_gravity", 0.0, 80.0, 1.0],
-	["Player", "throw_pitch", 0.0, 90.0, 1.0],
-	["Player", "throw_yaw_gain", 0.0, 2.0, 0.05],
-	["Player", "max_rope_length", 10.0, 100.0, 1.0],
-	["Player", "reel_speed", 0.0, 40.0, 0.5],
-	["Player", "min_rope_length", 0.0, 15.0, 0.25],
-	["Player", "tension_boost", 0.0, 40.0, 0.5],
-	["CameraRig", "follow_speed", 1.0, 20.0, 0.25],
-	["CameraRig", "base_fov", 40.0, 120.0, 1.0],
-	["CameraRig", "fov_per_speed", 0.0, 2.0, 0.05],
-	["CameraRig", "max_fov", 60.0, 140.0, 1.0],
-	["CameraRig", "offset:y", 0.0, 8.0, 0.25],
-	["CameraRig", "offset:z", 2.0, 15.0, 0.25],
+	["Player", "throw_speed_per_px", 0.002, 0.03, 0.001, "Throw"],
+	["Player", "hook_min_speed", 0.0, 40.0, 1.0, "Throw"],
+	["Player", "hook_max_speed", 10.0, 150.0, 1.0, "Throw"],
+	["Player", "hook_gravity", 0.0, 80.0, 1.0, "Throw"],
+	["Player", "throw_pitch", 0.0, 90.0, 1.0, "Throw"],
+	["Player", "throw_yaw_gain", 0.0, 2.0, 0.05, "Throw"],
+	["Player", "max_rope_length", 10.0, 100.0, 1.0, "Throw"],
+	["Player", "pull_impulse", 0.0, 30.0, 0.5, "Rope"],
+	["Player", "reel_speed", 0.0, 40.0, 0.5, "Rope"],
+	["Player", "reel_acceleration", 0.0, 150.0, 1.0, "Rope"],
+	["Player", "reel_max_speed", 5.0, 80.0, 1.0, "Rope"],
+	["Player", "tension_boost", 0.0, 40.0, 0.5, "Rope"],
+	["Player", "min_rope_length", 0.0, 15.0, 0.25, "Rope"],
+	["Player", "zip_release_distance", 0.0, 10.0, 0.25, "Rope"],
+	["Player", "zip_boost", 0.0, 20.0, 0.5, "Rope"],
+	["Player", "contact_release_grace", 0.0, 1.0, 0.05, "Rope"],
+	["Player", "gravity", 5.0, 60.0, 0.5, "Move"],
+	["Player", "max_speed", 10.0, 120.0, 1.0, "Move"],
+	["Player", "floor_friction", 0.0, 100.0, 1.0, "Move"],
+	["CameraRig", "follow_speed", 1.0, 20.0, 0.25, "Camera"],
+	["CameraRig", "base_fov", 40.0, 120.0, 1.0, "Camera"],
+	["CameraRig", "fov_per_speed", 0.0, 2.0, 0.05, "Camera"],
+	["CameraRig", "max_fov", 60.0, 140.0, 1.0, "Camera"],
+	["CameraRig", "offset:y", 0.0, 8.0, 0.25, "Camera"],
+	["CameraRig", "offset:z", 2.0, 15.0, 0.25, "Camera"],
 ]
 
 const FONT_SIZE := 26
@@ -132,35 +152,45 @@ func _build_ui() -> void:
 	close.pressed.connect(_set_open.bind(false))
 	header.add_child(close)
 
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	root.add_child(scroll)
-	var rows := VBoxContainer.new()
-	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	rows.add_theme_constant_override("separation", 4)
-	scroll.add_child(rows)
-
+	var tabs := TabContainer.new()
+	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(tabs)
+	var tab_rows := {}
 	for p in PARAMS:
-		var row := HBoxContainer.new()
-		rows.add_child(row)
-		var label := Label.new()
-		label.custom_minimum_size = Vector2(LABEL_WIDTH, 0)
-		label.add_theme_font_size_override("font_size", 22)
-		label.clip_text = true
-		row.add_child(label)
-		_labels[_key(p)] = label
-		var slider := HSlider.new()
-		slider.min_value = p[2]
-		slider.max_value = p[3]
-		slider.step = p[4]
-		slider.custom_minimum_size = Vector2(0, ROW_HEIGHT)
-		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		slider.value = _defaults[_key(p)]
-		slider.value_changed.connect(func(v: float) -> void: _set_value(p, v))
-		row.add_child(slider)
-		_sliders[_key(p)] = slider
-		_set_value(p, slider.value)
+		var tab_name: String = p[5]
+		if not tab_rows.has(tab_name):
+			var scroll := ScrollContainer.new()
+			scroll.name = tab_name
+			scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+			tabs.add_child(scroll)
+			var rows := VBoxContainer.new()
+			rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			rows.add_theme_constant_override("separation", 4)
+			scroll.add_child(rows)
+			tab_rows[tab_name] = rows
+		_add_row(tab_rows[tab_name], p)
+
+
+func _add_row(rows: VBoxContainer, p: Array) -> void:
+	var row := HBoxContainer.new()
+	rows.add_child(row)
+	var label := Label.new()
+	label.custom_minimum_size = Vector2(LABEL_WIDTH, 0)
+	label.add_theme_font_size_override("font_size", 22)
+	label.clip_text = true
+	row.add_child(label)
+	_labels[_key(p)] = label
+	var slider := HSlider.new()
+	slider.min_value = p[2]
+	slider.max_value = p[3]
+	slider.step = p[4]
+	slider.custom_minimum_size = Vector2(0, ROW_HEIGHT)
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value = _defaults[_key(p)]
+	slider.value_changed.connect(func(v: float) -> void: _set_value(p, v))
+	row.add_child(slider)
+	_sliders[_key(p)] = slider
+	_set_value(p, slider.value)
 
 
 func _circle_texture(diameter: int, color: Color) -> ImageTexture:
@@ -227,8 +257,7 @@ func _load() -> void:
 			if not cfg.has_section_key(SECTION, key):
 				continue
 			var value: float = cfg.get_value(SECTION, key)
-			# 2.5 was the old default of min_rope_length, not a tuned value.
-			if key == "Player/min_rope_length" and is_equal_approx(value, 2.5):
+			if LEGACY_DEFAULTS.has(key) and is_equal_approx(value, LEGACY_DEFAULTS[key]):
 				continue
 			_sliders[key].value = value
 	_update_toggle_text()

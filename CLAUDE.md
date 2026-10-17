@@ -75,15 +75,24 @@ Swipe-Vektor und das Fingertempo der letzten 0,1 s (`FLICK_WINDOW`).
 - Beim Wurf löst sich das alte Seil sofort: Man fliegt mit Schwung weiter,
   während der neue Haken unterwegs ist.
 
-**Zug** (`_apply_rope_constraint()`): Das Seil wird mit `reel_speed` bis
-`min_rope_length` eingeholt, `tension_boost` zieht zusätzlich zum Anker. Alles
-wird als Geschwindigkeit angewandt (nicht als Positionssprung), deshalb bleibt
-der Schwung beim Loslassen erhalten und `move_and_slide` verhindert Clipping.
-Liegt der Spieler außerhalb der Seillänge, bekommt er genau die nötige
-Geschwindigkeit nach innen → Pendeln. Am Anker wird der Zug abgebremst.
-Berührt der Spieler Wand oder Decke (`release_on_contact`, nach
-`contact_release_grace`), löst sich das Seil automatisch; der Schwung entlang
-der Fläche bleibt. Böden lösen das Seil nicht (sonst käme man nie los).
+**Zug** (`_apply_rope_constraint()`): Beim Einhaken gibt es einen Ruck
+(`pull_impulse`). Das Seil wird ab `reel_speed` eingeholt, beschleunigt mit
+`reel_acceleration` bis `reel_max_speed`; `tension_boost` zieht zusätzlich zum
+Anker. Alles wird als Geschwindigkeit angewandt (nicht als Positionssprung),
+deshalb bleibt der Schwung beim Loslassen erhalten und `move_and_slide`
+verhindert Clipping. Liegt der Spieler außerhalb der Seillänge, bekommt er genau
+die nötige Geschwindigkeit nach innen → Pendeln.
+
+**Ende des Zugs** (nach `contact_release_grace`), in dieser Reihenfolge:
+- **Zip-Launch:** näher als `zip_release_distance` am Anker → Seil löst sich,
+  der Spieler fliegt mit vollem Tempo + `zip_boost` weiter.
+- Berührung von Wand oder Decke (`release_on_contact`) → Seil löst sich.
+- Hindernis zwischen Spieler und Anker (`release_when_blocked`) → Seil löst sich.
+Böden lösen das Seil nie. Am Boden bremst `floor_friction`, solange kein Seil zieht.
+
+**Signale** von `player.gd` für Kamera, Sound und Effekte: `hook_thrown`,
+`hook_attached(point, normal)`, `hook_missed`, `rope_released(reason)`
+(`zip`, `contact`, `blocked`, `tap`, `throw`, `reset`), `landed(impact_speed)`.
 
 ## Arbeitsweise
 
