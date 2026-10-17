@@ -2,6 +2,10 @@ extends Node3D
 ## Level flow: level loading, timer, finish, checkpoints, lava and falls,
 ## restart, HUD.
 
+## The first throw of a run: the timer starts.
+signal run_started
+signal level_loaded(level: Level)
+
 ## Falling below this Y counts like lava.
 @export var kill_y := -30.0
 ## Level to start directly (index into Levels.LIST); -1 opens the level menu.
@@ -77,6 +81,7 @@ func load_level(index: int) -> void:
 	level.killed.connect(_on_killed)
 	_best = Records.best_time(Levels.LIST[index])
 	restart()
+	level_loaded.emit(level)
 
 
 func open_menu() -> void:
@@ -130,6 +135,7 @@ func _on_any_input(_a = null, _b = null, _c = null) -> void:
 	elif not _running:
 		_running = true
 		_flash_go()
+		run_started.emit()
 
 
 ## Start signal: the run (and the timer) starts with the first throw.

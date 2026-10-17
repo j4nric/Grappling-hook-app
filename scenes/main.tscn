@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/level_menu.gd" id="6_menu"]
 [ext_resource type="Script" path="res://scripts/ghost.gd" id="7_ghost"]
 [ext_resource type="Script" path="res://scripts/effects.gd" id="8_effects"]
+[ext_resource type="Script" path="res://scripts/sfx.gd" id="9_sfx"]
 
 [sub_resource type="Environment" id="env"]
 background_mode = 1
@@ -49,6 +50,11 @@ script = ExtResource("7_ghost")
 [node name="Effects" type="Node3D" parent="." node_paths=PackedStringArray("player")]
 script = ExtResource("8_effects")
 player = NodePath("../Player")
+
+[node name="Sfx" type="Node" parent="." node_paths=PackedStringArray("player", "game")]
+script = ExtResource("9_sfx")
+player = NodePath("../Player")
+game = NodePath("..")
 
 [node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("target", "view_camera")]
 script = ExtResource("4_camera")

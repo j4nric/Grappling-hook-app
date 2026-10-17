@@ -104,9 +104,9 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
 
 ## 6. Sound (M6)
 
-- [ ] Wurf, Einhaken, Seil-Zug, Aufprall, Wind abhängig vom Tempo.
-- [ ] iOS: Audio startet erst nach der ersten Berührung (Browser-Regel),
-      beim ersten Touch aktivieren.
+- [x] Wurf, Einhaken, Seil-Zug, Aufprall, Wind abhängig vom Tempo. (synthetisiert: `tools/gen_sounds.py`)
+- [x] iOS: Audio startet erst nach der ersten Berührung (Browser-Regel),
+      beim ersten Touch aktivieren. (Godot setzt den AudioContext bei Eingaben fort)
 
 ## 7. Technik und Arbeitsablauf
 
