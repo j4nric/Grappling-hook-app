@@ -6,7 +6,7 @@ eine Stoppuhr.
 ## Auf dem Handy testen
 
 Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
-`.github/workflows/web.yml`) und veröffentlicht sie auf GitHub Pages:
+`.github/workflows/pages.yml`) und veröffentlicht sie auf GitHub Pages:
 
 **https://j4nric.github.io/Grappling-hook-app/**
 
