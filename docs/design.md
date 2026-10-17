@@ -9,6 +9,8 @@ die eigene Bestzeit.
 
 ## Perspektive
 
+Hochformat (entschieden am 2026-10-17): einhändig spielbar, Daumen wischt nach oben.
+
 Dritte Person, Kamera hinter und leicht über der Figur, Blick nach vorn in den
 Tunnel (-Z). Der Tunnel ist ein Schlauch: breit genug zum Schwingen, eng genug,
 dass Zielen nur "wohin im Querschnitt" bedeutet. Die Vorwärtsrichtung ist immer
@@ -70,7 +72,5 @@ klein halten (z. B. 16–32 Farben).
 
 ## Offene Fragen
 
-- Hochkant oder Querformat? Querformat passt zum Spider-Man-Gefühl, Hochkant
-  ist bequemer für einhändiges Spielen. Mit dem Prototyp beides ausprobieren.
 - Soll man mehrfach hintereinander Haken werfen können (Ketten), ohne loszulassen?
 - Soll es Items geben (Boost, Doppelhaken) oder bleibt es pur?

@@ -19,7 +19,7 @@
 
 ## Projekt-Einstellungen, die für iOS relevant sind
 - `display/window/handheld/orientation` in `project.godot`
-  (0 = Querformat, 1 = Hochkant)
+  (0 = Querformat, 1 = Hochkant; das Spiel nutzt 1)
 - Renderer bleibt "Mobile"
 - `scaling_3d/scale` kann auf dem Gerät weiter reduziert werden, falls die
   Bildrate einbricht; das verstärkt zugleich den Pixel-Look

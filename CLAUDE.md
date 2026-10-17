@@ -6,7 +6,7 @@ und Bezeichner auf Englisch.
 
 ## Was das Spiel ist
 
-Ein Geschicklichkeitsspiel für iOS (Godot 4): Der Spieler hängt in einer 3D-Höhle,
+Ein Geschicklichkeitsspiel für iOS im Hochformat (Godot 4): Der Spieler hängt in einer 3D-Höhle,
 kann nicht laufen und bewegt sich ausschließlich mit einem Grappling Hook vorwärts
 durch einen Tunnel. Ziel ist, das Level so schnell wie möglich zu schaffen.
 Ausführliches Design: `docs/design.md`. Meilensteine: `docs/roadmap.md`.
@@ -28,8 +28,11 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 - Vorwärts im Tunnel ist **-Z**. Der Spieler startet bei z=0, das Ziel liegt bei z=-200.
 - Tuning-Werte sind `@export`-Variablen und werden im Inspector verändert, nicht
   im Code verstreut. Neue Stellschrauben ebenfalls als `@export` anlegen.
-- Input läuft **ausschließlich** über das Autoload `InputRouter`
+- Gameplay-Input läuft **ausschließlich** über das Autoload `InputRouter`
   (`scripts/input_router.gd`). Kein anderes Script liest `InputEvent` direkt.
+  Ausnahme: GUI-Controls (Tuning-Panel) verarbeiten ihre eigenen Eingaben;
+  Controls in der Gruppe `blocks_gameplay_input` schlucken Touches, damit sie
+  keinen Haken auslösen.
 - Szenen sind handgeschriebene `.tscn`-Textdateien; bleibe bei diesem Format und
   halte sie klein. UIDs fehlen absichtlich, Godot ergänzt sie beim ersten Öffnen.
   Die von Godot erzeugten `*.gd.uid`- und `*.import`-Dateien werden mit committet.
@@ -50,6 +53,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/grapple_rope.gd` | Zeichnet das Seil als Linie (ImmediateMesh) |
 | `scripts/camera_rig.gd` | Verfolgerkamera mit Nachzieh-Lag, Look-Ahead, Tempo-FOV |
 | `scripts/game.gd` | Timer, Ziel-Erkennung, Absturz-Reset, Bestzeit, HUD inkl. Build-Version |
+| `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler für Player-/Kamera-Exports, pausiert das Spiel, speichert in `user://tuning.cfg` |
 | `docs/` | Design, Roadmap, iOS-Export |
 
 ## Wie die Physik funktioniert (Kern des Spiels)
@@ -84,6 +88,8 @@ Wischendes. Erster Treffer auf Geometrie = Anker, sofern innerhalb
 
 - Starte mit dem Spielgefühl. Bevor Features dazukommen: Läuft der Testtunnel,
   fühlt sich das Pendeln richtig an? Erst dann weiter in `docs/roadmap.md`.
+- Neue Stellschrauben, die man auf dem Handy drehen können soll, in
+  `PARAMS` in `tuning_panel.gd` eintragen.
 - Jede Änderung an Physik-Tuning-Werten kurz in `docs/roadmap.md` unter
   "Tuning-Log" notieren (Wert vorher → nachher, warum).
 - Testen auf dem Handy: Push auf `main` → Web-Build → https://j4nric.github.io/Grappling-hook-app/

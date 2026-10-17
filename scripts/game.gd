@@ -16,7 +16,7 @@ var _running := false
 var _finished := false
 var _best := INF
 var _touch := DisplayServer.is_touchscreen_available()
-var _portrait := false
+var _landscape := false
 
 
 func _ready() -> void:
@@ -36,9 +36,9 @@ func _process(delta: float) -> void:
 		restart()
 	time_label.text = "%.2f" % _elapsed
 	var size := get_viewport().get_visible_rect().size
-	var portrait := size.y > size.x
-	if portrait != _portrait:
-		_portrait = portrait
+	var landscape := size.x > size.y
+	if landscape != _landscape:
+		_landscape = landscape
 		_update_hint()
 
 
@@ -72,9 +72,9 @@ func _update_hint() -> void:
 		hint_label.text = "Finished in %.2f s  |  Best: %.2f s  |  Tap/%s to restart" % [_elapsed, _best, restart_text]
 		return
 	var best_text := "" if _best == INF else "   Best: %.2f s" % _best
-	if _portrait:
-		hint_label.text = "Rotate your phone to landscape" + best_text
+	if _landscape and _touch:
+		hint_label.text = "Hold your phone upright (portrait)" + best_text
 	elif _touch:
-		hint_label.text = "Swipe: grapple    Tap: release    Two-finger tap: restart" + best_text
+		hint_label.text = "Swipe: grapple   Tap: release\nTwo-finger tap: restart" + best_text
 	else:
 		hint_label.text = "Left click: grapple    Right click: release    R: restart" + best_text

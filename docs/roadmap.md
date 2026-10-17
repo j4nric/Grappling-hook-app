@@ -8,6 +8,8 @@
 - [x] Maus und Touch über InputRouter
 - [x] Web-Build per GitHub Actions → GitHub Pages zum Testen auf dem Handy
 - [x] Zwei-Finger-Tipp = Neustart, Touch-Hinweise im HUD, Build-Version im HUD
+- [x] Hochformat (720×1280)
+- [x] Tuning-Panel mit Reglern zum Einstellen auf dem Handy
 
 ## M1 – Schwunggefühl (Ziel: 1–2 Wochen nur hier bleiben)
 - [ ] Projekt in Godot öffnen, Script-Fehler beheben, erster Durchlauf
@@ -21,7 +23,7 @@
 - [ ] Wischtempo → Reichweite (siehe `docs/design.md`)
 - [ ] Optional: sichtbar fliegender Haken statt Sofort-Raycast
 - [ ] Tap/Swipe-Schwellen auf echtem Gerät testen
-- [ ] Hoch-/Querformat entscheiden
+- [x] Hoch-/Querformat entscheiden → Hochformat
 
 ## M3 – Optik
 - [ ] Pixel-Look feinjustieren (Render-Scale, Palette, Dithering-Shader?)

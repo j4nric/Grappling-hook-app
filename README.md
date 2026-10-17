@@ -10,12 +10,16 @@ Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
 
 **https://j4nric.github.io/Grappling-hook-app/**
 
-- Link in Safari öffnen, Handy quer halten. Für Vollbild: Teilen →
+- Link in Safari öffnen, Handy hochkant halten. Für Vollbild: Teilen →
   „Zum Home-Bildschirm“, dann über das Icon starten.
 - Rechts oben steht `build <commit>`. Daran erkennst du, welche Version läuft.
   Ein neuer Build ist ca. 3–5 Minuten nach dem Push online (Status im Tab
   „Actions“). Zeigt das Spiel noch den alten Hash: Seite neu laden.
 - Steuerung: Wischen = Haken, Tippen = loslassen, Zwei-Finger-Tipp = Neustart.
+- **TUNE** (rechts oben) öffnet Regler für Physik und Kamera. Das Spiel pausiert,
+  „Play“ macht weiter. Die Werte bleiben im Browser gespeichert, „Reset“ stellt
+  die Standardwerte wieder her. Gute Werte per Screenshot an Claude geben, dann
+  werden sie als neue Standardwerte übernommen.
 
 Einmalige Einrichtung: Repo → Settings → Pages → „Build and deployment“ →
 Source: **GitHub Actions**.

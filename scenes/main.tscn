@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/test_tunnel.tscn" id="2_tunnel"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
 [ext_resource type="Script" path="res://scripts/camera_rig.gd" id="4_camera"]
+[ext_resource type="Script" path="res://scripts/tuning_panel.gd" id="5_tuning"]
 
 [sub_resource type="Environment" id="env"]
 background_mode = 1
@@ -44,7 +45,7 @@ offset_left = 16.0
 offset_top = 12.0
 offset_right = 300.0
 offset_bottom = 60.0
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 40
 text = "0.00"
 
 [node name="HintLabel" type="Label" parent="HUD"]
@@ -53,11 +54,11 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 16.0
-offset_top = -48.0
+offset_top = -96.0
 offset_right = -16.0
-offset_bottom = -16.0
+offset_bottom = -24.0
 grow_vertical = 0
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 autowrap_mode = 3
 text = "Left click / swipe: grapple    Right click / tap: release    R: restart"
 
@@ -69,8 +70,11 @@ anchor_right = 1.0
 offset_left = -316.0
 offset_top = 12.0
 offset_right = -16.0
-offset_bottom = 36.0
+offset_bottom = 40.0
 grow_horizontal = 0
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 18
 text = "build dev"
 horizontal_alignment = 2
+
+[node name="Tuning" type="CanvasLayer" parent="."]
+script = ExtResource("5_tuning")

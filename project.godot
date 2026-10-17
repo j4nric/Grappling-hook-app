@@ -18,16 +18,18 @@ InputRouter="*res://scripts/input_router.gd"
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
+window/size/viewport_width=720
+window/size/viewport_height=1280
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/handheld/orientation=0
+window/handheld/orientation=1
 
 [input_devices]
 
 pointing/emulate_touch_from_mouse=false
-pointing/emulate_mouse_from_touch=false
+; Needed so the tuning sliders react to touch. InputRouter ignores the
+; emulated mouse events and reads the real touches instead.
+pointing/emulate_mouse_from_touch=true
 
 [physics]
 
