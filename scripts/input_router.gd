@@ -30,7 +30,11 @@ var _start_pos := Vector2.ZERO
 var _start_time := 0.0
 ## Recent pointer samples as (x, y, time) for the flick velocity.
 var _samples: Array[Vector3] = []
-var _touch_count := 0
+## Touch indices of the current gesture. Never assume the first finger is
+## index 0: iOS Safari reports large arbitrary touch identifiers.
+var _touches := {}
+## Index of the finger that aims and throws, -1 if none.
+var _primary_touch := -1
 ## Set once a second finger touches; the gesture then only counts as restart.
 var _multi_touch := false
 
@@ -54,7 +58,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventScreenDrag:
-		if event.index == 0 and not _multi_touch:
+		if event.index == _primary_touch and not _multi_touch:
 			_pointer_moved(event.position)
 	elif event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
@@ -64,7 +68,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_pointer_released(event.position)
 		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			release_requested.emit()
-	elif event is InputEventMouseMotion and _touch_count == 0:
+	elif event is InputEventMouseMotion and _touches.is_empty():
 		_pointer_moved(event.position)
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_R:
 		restart_requested.emit()
@@ -72,21 +76,27 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _handle_touch(event: InputEventScreenTouch) -> void:
 	if event.pressed:
-		_touch_count += 1
-		if event.index == 0:
+		if _primary_touch == -1:
+			# New gesture; also drops touches whose release got lost.
+			_touches = {event.index: true}
+			_primary_touch = event.index
+			_multi_touch = false
 			_pointer_pressed(event.position)
-		elif _pointer_down:
+		else:
+			_touches[event.index] = true
 			_multi_touch = true
 			_cancel_aim()
 		return
 
-	_touch_count = maxi(0, _touch_count - 1)
+	_touches.erase(event.index)
 	if _multi_touch:
 		_pointer_down = false
-		if _touch_count == 0:
+		if _touches.is_empty():
 			_multi_touch = false
+			_primary_touch = -1
 			restart_requested.emit()
-	elif event.index == 0:
+	elif event.index == _primary_touch:
+		_primary_touch = -1
 		_pointer_released(event.position)
 
 
