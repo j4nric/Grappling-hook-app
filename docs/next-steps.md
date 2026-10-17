@@ -121,10 +121,10 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
       Decke, Flick-Messung bei 60 fps, Tuning speichern/laden) ins Repo
       (`tests/`) und vor dem Deploy laufen lassen. Ein kaputter Build kommt
       dann nicht mehr aufs Handy.
-- [ ] **Vorschau-Builds für Branches:** Experimente (z. B. Zip-Launch vs.
+- [x] **Vorschau-Builds für Branches:** Experimente (z. B. Zip-Launch vs.
       Aufprall) parallel unter eigener URL testen, ohne `main` zu ändern.
 - [x] **Godot-Version** bei Updates an drei Stellen gleich halten
-      (`web.yml`, `CLAUDE.md`, README) – CI prüft das.
+      (`pages.yml`, `ci.yml`, `CLAUDE.md`, README) – CI prüft das.
 
 ## 8. Später: iOS-App (M5)
 

@@ -22,7 +22,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 
 ## Stack und Konventionen
 
-- Godot **4.7.2** (identisch mit `GODOT_VERSION` in `.github/workflows/web.yml`),
+- Godot **4.7.2** (identisch mit `GODOT_VERSION` in `.github/workflows/pages.yml` und `ci.yml`),
   Renderer "Mobile" (nativ) bzw. "Compatibility" (Web-Build), GDScript mit statischer Typisierung
   (`var x := …`, Typhinweise bei Parametern und Rückgaben).
 - Pixel-Look kommt aktuell nur aus `rendering/scaling_3d/scale=0.35` in
@@ -46,7 +46,10 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 |---|---|
 | `project.godot` | Projekteinstellungen, Autoload, Render-Scale für Pixel-Look |
 | `export_presets.cfg` | Export-Preset "Web" (ohne Threads, läuft auf GitHub Pages/iOS Safari) |
-| `.github/workflows/web.yml` | Tests für jeden PR und Push; bei Push auf `main` Web-Export und Deploy nach GitHub Pages |
+| `.github/workflows/pages.yml` | Web-Export + Deploy nach GitHub Pages: `main` unter `/`, jeder offene PR unter `/preview/pr-N/` |
+| `.github/workflows/ci.yml` | Pull Requests: Tests + Probe-Export |
+| `.github/workflows/test.yml` | Wiederverwendbarer Test-Job (von `ci.yml` und `pages.yml` genutzt) |
+| `tools/export_web.sh` | Web-Export mit Versionsstempel und eindeutigem Paketnamen (Cache-Busting) |
 | `scenes/main.tscn` | Hauptszene: Tunnel + Player + CameraRig + HUD, Script `game.gd` |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil, Haken-Kugel und Ziellinie |
 | `scenes/test_tunnel.tscn` | Grauer Testtunnel aus CSG-Boxen, Hindernisse, Ziel-Area |
@@ -115,6 +118,8 @@ Böden lösen das Seil nie. Am Boden bremst `floor_friction`, solange kein Seil 
   `--fixed-fps 60` ist wichtig: `InputRouter` misst das Fingertempo über die
   Frame-Zeit.
 - Änderungen laufen als PR pro Themengebiet; CI (Tests + Export) muss grün sein.
+  Jeder offene PR ist am Handy spielbar unter
+  https://j4nric.github.io/Grappling-hook-app/preview/pr-N/ (Übersicht: `/preview/`).
 - Zum Testen ohne Editor: `godot --path . --headless --quit` prüft, ob das Projekt
   ohne Script-Fehler lädt. Zum Spielen: `godot --path .` oder im Editor F5.
 - Commit-Nachrichten: kurzer Imperativ auf Deutsch, z. B. "Seil-Einholen verlangsamt".
