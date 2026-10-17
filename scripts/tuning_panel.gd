@@ -74,6 +74,7 @@ var _labels := {}
 var _panel: PanelContainer
 var _toggle: Button
 var _last_throw: Label
+var _copy: Button
 
 
 func _ready() -> void:
@@ -150,6 +151,12 @@ func _build_ui() -> void:
 	title.text = "Tuning"
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
+	_copy = Button.new()
+	_copy.text = "Copy"
+	_copy.custom_minimum_size = Vector2(120, ROW_HEIGHT)
+	# Arm on press: the copy itself runs in the browser's touchend handler.
+	_copy.button_down.connect(_copy_values)
+	header.add_child(_copy)
 	var reset := Button.new()
 	reset.text = "Reset"
 	reset.custom_minimum_size = Vector2(120, ROW_HEIGHT)
@@ -239,6 +246,35 @@ func _update_toggle_text() -> void:
 
 func _is_default(p: Array) -> bool:
 	return is_equal_approx(_sliders[_key(p)].value, snappedf(_defaults[_key(p)], p[4]))
+
+
+## Tuned values as text, to send them to Claude without a screenshot.
+func values_text() -> String:
+	var lines: PackedStringArray = []
+	for p in PARAMS:
+		if not _is_default(p):
+			lines.append("%s = %s (default %s)" % [_key(p), str(snappedf(_sliders[_key(p)].value, p[4])), str(snappedf(_defaults[_key(p)], p[4]))])
+	if lines.is_empty():
+		return "Grappling Cave tuning: all values at default"
+	return "Grappling Cave tuning:\n" + "\n".join(lines)
+
+
+func _copy_values() -> void:
+	var text := values_text()
+	if OS.has_feature("web"):
+		# Browsers (iOS Safari above all) only allow clipboard writes inside a
+		# real input event handler. Godot handles input a frame later, so the
+		# write is armed now and runs when the finger lifts.
+		JavaScriptBridge.eval("""
+			window.gcCopyText = %s;
+			const gcCopy = () => navigator.clipboard.writeText(window.gcCopyText).catch(() => {});
+			window.addEventListener('touchend', gcCopy, {once: true, capture: true});
+			window.addEventListener('mouseup', gcCopy, {once: true, capture: true});
+		""" % JSON.stringify(text))
+	else:
+		DisplayServer.clipboard_set(text)
+	_copy.text = "Copied"
+	get_tree().create_timer(1.5, true, false, true).timeout.connect(func() -> void: _copy.text = "Copy")
 
 
 func _reset() -> void:
