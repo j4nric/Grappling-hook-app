@@ -45,7 +45,7 @@ Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md`.
 - [ ] TestFlight
 
 ## M6 – Juice
-- [ ] Sound (Haken, Loslassen, Wind, Aufprall)
+- [x] Sound (Haken, Loslassen, Wind, Aufprall)
 - [ ] Screenshake, Hit-Stop beim Einhaken
 - [x] Ghost der Bestzeit
 

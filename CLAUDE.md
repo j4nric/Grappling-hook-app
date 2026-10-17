@@ -64,6 +64,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel) |
 | `scripts/records.gd` | `Records`: Bestzeit pro Level, Medaille, Ghost-Daten in `user://` |
 | `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur |
+| `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo |
+| `assets/sounds/*.wav` | Synthetisierte Sounds, erzeugt von `tools/gen_sounds.py` (numpy) |
 | `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `tools/gen_levels.py` | Level-Generator |
