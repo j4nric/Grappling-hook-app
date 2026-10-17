@@ -25,7 +25,8 @@ Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
   „Play“ macht weiter. Die Werte bleiben im Browser gespeichert (pro Browser
   getrennt: Safari und Chrome haben eigene Werte), „Reset“ stellt die
   Standardwerte wieder her. **TUNE\*** mit Stern = Werte weichen vom Standard ab. Gute Werte per Screenshot an Claude geben, dann
-  werden sie als neue Standardwerte übernommen.
+  werden sie als neue Standardwerte übernommen. Noch einfacher: **Copy** kopiert
+  alle veränderten Werte als Text, den du mir in den Chat einfügst.
 
 Vorschau: Jeder offene Pull Request ist zusätzlich unter
 `https://j4nric.github.io/Grappling-hook-app/preview/pr-<Nummer>/` spielbar

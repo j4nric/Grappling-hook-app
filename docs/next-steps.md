@@ -63,15 +63,15 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
 
 ## 3. Steuerung und Bedienung
 
-- [ ] **Hinweistext ausblenden** nach dem ersten erfolgreichen Wurf; im Ziel
+- [x] **Hinweistext ausblenden** nach dem ersten erfolgreichen Wurf; im Ziel
       wieder einblenden.
-- [ ] **Neustart nach dem Ziel:** Großer „Nochmal“-Hinweis statt nur
+- [x] **Neustart nach dem Ziel:** Großer „Nochmal“-Hinweis statt nur
       Zwei-Finger-Tipp.
-- [ ] **Tuning-Werte teilen:** Button „Werte kopieren“ im TUNE-Panel (Text in
+- [x] **Tuning-Werte teilen:** (Button „Copy“, im Browser getestet) Button „Werte kopieren“ im TUNE-Panel (Text in
       die Zwischenablage), damit getunte Werte ohne Screenshot zu mir kommen.
       Prüfen, ob iOS Safari das aus Godot heraus erlaubt; sonst Werte als
       Text im Panel anzeigen.
-- [ ] **Safe Area prüfen:** Als Home-Bildschirm-App (`black-translucent`)
+- [x] **Safe Area prüfen:** (Statusleiste jetzt `black`, HUD mit Mindestabständen bzw. OS-Safe-Area) Als Home-Bildschirm-App (`black-translucent`)
       liegt der Inhalt unter Uhr/Dynamic Island. Timer und TUNE ggf. nach
       unten versetzen bzw. `DisplayServer.get_display_safe_area()` nutzen.
 

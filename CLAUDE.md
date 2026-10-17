@@ -57,8 +57,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/player.gd` | Schwerkraft, Hakenwurf (Flugbahn), Seilzug als Geschwindigkeit, Ziel-Vorschau |
 | `scripts/grapple_rope.gd` | Zeichnet eine Linie (Seil, Ziellinie) per ImmediateMesh |
 | `scripts/camera_rig.gd` | Verfolgerkamera: Lag, Look-Ahead (beim Zug Richtung Anker), Tempo-FOV (horizontal), Roll, Shake bei `hook_attached`/`landed` |
-| `scripts/game.gd` | Timer, Ziel-Erkennung, Absturz-Reset, Bestzeit, HUD inkl. Build-Version |
-| `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler für Player-/Kamera-Exports, pausiert das Spiel, speichert in `user://tuning.cfg` |
+| `scripts/game.gd` | Timer, Ziel-Erkennung, Absturz-Reset, Bestzeit, HUD (Hinweis, Ziel-Bildschirm, Build-Version) |
+| `scripts/safe_area.gd` | `SafeArea.margins()`: Ränder für Notch/Home-Indikator in Viewport-Einheiten |
+| `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler in Tabs, pausiert das Spiel, speichert in `user://tuning_v3.cfg`, „Copy“ kopiert getunte Werte als Text |
 | `tests/` | Headless-Tests (`run_tests.gd` führt alle `test_*.gd` aus), laufen in CI vor jedem Merge/Deploy |
 | `.github/actions/setup-godot/` | Lädt Godot + Web-Vorlagen in CI (gecacht) |
 | `docs/` | Design, Roadmap, nächste Schritte, iOS-Export |
