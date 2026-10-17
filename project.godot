@@ -9,6 +9,8 @@ config/name="Grappling Cave"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
+; Overwritten by CI with the commit hash, shown in the HUD.
+config/version="dev"
 
 [autoload]
 
@@ -35,6 +37,8 @@ common/physics_ticks_per_second=60
 
 renderer/rendering_method="mobile"
 renderer/rendering_method.mobile="mobile"
+; Browsers only support WebGL 2 -> Compatibility renderer for the web build.
+renderer/rendering_method.web="gl_compatibility"
 scaling_3d/scale=0.35
 textures/canvas_textures/default_texture_filter=0
 textures/default_filters/texture_filter=0

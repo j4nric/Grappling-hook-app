@@ -21,6 +21,7 @@ klar – das macht die Ein-Finger-Steuerung überhaupt möglich.
 | Wisch | Haken fliegt in Richtung des Wisch-Endpunkts; Ankerpunkt = erster Wandtreffer | M0: Endpunkt wird genutzt, Wischtempo noch nicht |
 | Tippen | Seil loslassen, Figur fliegt mit Schwung weiter | fertig |
 | Wisch während Haken aktiv | Neuer Haken (alter löst sich) | fertig |
+| Zwei-Finger-Tipp | Level neu starten | fertig |
 
 Geplantes "Wurf"-Gefühl (M2): Wie beim Pokéball in Pokémon GO soll das Tempo des
 Wischs eine Rolle spielen. Vorschlag: Wischgeschwindigkeit skaliert die maximale

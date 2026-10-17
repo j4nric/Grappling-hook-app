@@ -6,6 +6,8 @@
 - [x] Verfolgerkamera mit Lag und Tempo-FOV
 - [x] Timer, Ziel, Absturz-Reset, Bestzeit (nur in der Session)
 - [x] Maus und Touch über InputRouter
+- [x] Web-Build per GitHub Actions → GitHub Pages zum Testen auf dem Handy
+- [x] Zwei-Finger-Tipp = Neustart, Touch-Hinweise im HUD, Build-Version im HUD
 
 ## M1 – Schwunggefühl (Ziel: 1–2 Wochen nur hier bleiben)
 - [ ] Projekt in Godot öffnen, Script-Fehler beheben, erster Durchlauf
@@ -30,7 +32,7 @@
 - [ ] 3–5 Level als eigene Szenen, Level-Auswahl
 - [ ] Bestzeiten persistent speichern (`user://`)
 - [ ] Medaillen-Zeiten pro Level
-- [ ] Sofort-Neustart-Geste
+- [x] Sofort-Neustart-Geste (Zwei-Finger-Tipp)
 
 ## M5 – iOS
 - [ ] Export nach `docs/ios-export.md`

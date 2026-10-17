@@ -9,6 +9,7 @@ extends Node
 ## Touch:    swipe       -> grapple at swipe end point (swipe vector + duration
 ##                          are passed along for the later "throw" feel)
 ##           tap         -> release
+##           two-finger tap -> restart level
 
 signal grapple_requested(screen_pos: Vector2, swipe: Vector2, duration: float)
 signal release_requested
@@ -21,6 +22,9 @@ const TAP_MAX_DURATION := 0.25
 var _touch_active := false
 var _touch_start_pos := Vector2.ZERO
 var _touch_start_time := 0.0
+var _touch_count := 0
+## Set once a second finger touches; the gesture then only counts as restart.
+var _multi_touch := false
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -34,12 +38,24 @@ func _unhandled_input(event: InputEvent) -> void:
 		restart_requested.emit()
 
 	# --- Touch ---------------------------------------------------------------
-	elif event is InputEventScreenTouch and event.index == 0:
+	elif event is InputEventScreenTouch:
 		if event.pressed:
-			_touch_active = true
-			_touch_start_pos = event.position
-			_touch_start_time = _now()
-		elif _touch_active:
+			_touch_count += 1
+			if event.index == 0:
+				_touch_active = true
+				_multi_touch = false
+				_touch_start_pos = event.position
+				_touch_start_time = _now()
+			else:
+				_multi_touch = true
+			return
+		_touch_count = maxi(0, _touch_count - 1)
+		if _multi_touch:
+			_touch_active = false
+			if _touch_count == 0:
+				_multi_touch = false
+				restart_requested.emit()
+		elif event.index == 0 and _touch_active:
 			_touch_active = false
 			var swipe: Vector2 = event.position - _touch_start_pos
 			var duration: float = _now() - _touch_start_time

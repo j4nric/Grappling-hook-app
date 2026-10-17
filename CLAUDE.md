@@ -20,7 +20,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 
 ## Stack und Konventionen
 
-- Godot **4.4 oder neuer**, Renderer "Mobile", GDScript mit statischer Typisierung
+- Godot **4.7.2** (identisch mit `GODOT_VERSION` in `.github/workflows/web.yml`),
+  Renderer "Mobile" (nativ) bzw. "Compatibility" (Web-Build), GDScript mit statischer Typisierung
   (`var x := …`, Typhinweise bei Parametern und Rückgaben).
 - Pixel-Look kommt aktuell nur aus `rendering/scaling_3d/scale=0.35` in
   `project.godot`. Nicht in Scripts hartkodieren.
@@ -31,6 +32,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   (`scripts/input_router.gd`). Kein anderes Script liest `InputEvent` direkt.
 - Szenen sind handgeschriebene `.tscn`-Textdateien; bleibe bei diesem Format und
   halte sie klein. UIDs fehlen absichtlich, Godot ergänzt sie beim ersten Öffnen.
+  Die von Godot erzeugten `*.gd.uid`- und `*.import`-Dateien werden mit committet.
 - Keine externen Addons ohne Rücksprache.
 
 ## Dateiüberblick
@@ -38,14 +40,16 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | Pfad | Zweck |
 |---|---|
 | `project.godot` | Projekteinstellungen, Autoload, Render-Scale für Pixel-Look |
+| `export_presets.cfg` | Export-Preset "Web" (ohne Threads, läuft auf GitHub Pages/iOS Safari) |
+| `.github/workflows/web.yml` | Baut bei Push auf `main` den Web-Export und deployt nach GitHub Pages |
 | `scenes/main.tscn` | Hauptszene: Tunnel + Player + CameraRig + HUD, Script `game.gd` |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil-Node |
 | `scenes/test_tunnel.tscn` | Grauer Testtunnel aus CSG-Boxen, Hindernisse, Ziel-Area |
-| `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `grapple_requested`, `release_requested`, `restart_requested` |
+| `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `grapple_requested`, `release_requested`, `restart_requested` (Zwei-Finger-Tipp) |
 | `scripts/player.gd` | Schwerkraft, Raycast-Haken, Pendel-Constraint, Seil-Einholen |
 | `scripts/grapple_rope.gd` | Zeichnet das Seil als Linie (ImmediateMesh) |
 | `scripts/camera_rig.gd` | Verfolgerkamera mit Nachzieh-Lag, Look-Ahead, Tempo-FOV |
-| `scripts/game.gd` | Timer, Ziel-Erkennung, Absturz-Reset, Bestzeit, HUD |
+| `scripts/game.gd` | Timer, Ziel-Erkennung, Absturz-Reset, Bestzeit, HUD inkl. Build-Version |
 | `docs/` | Design, Roadmap, iOS-Export |
 
 ## Wie die Physik funktioniert (Kern des Spiels)
@@ -82,6 +86,11 @@ Wischendes. Erster Treffer auf Geometrie = Anker, sofern innerhalb
   fühlt sich das Pendeln richtig an? Erst dann weiter in `docs/roadmap.md`.
 - Jede Änderung an Physik-Tuning-Werten kurz in `docs/roadmap.md` unter
   "Tuning-Log" notieren (Wert vorher → nachher, warum).
+- Testen auf dem Handy: Push auf `main` → Web-Build → https://j4nric.github.io/Grappling-hook-app/
+  Die Build-Version (Commit-Hash) steht rechts oben im HUD. Der Workflow
+  schreibt sie vor dem Export in `application/config/version`.
+- Web-Export lokal: `godot --headless --path . --export-release "Web" build/web/index.html`
+  (braucht die Web-Exportvorlagen `web_nothreads_*`).
 - Zum Testen ohne Editor: `godot --path . --headless --quit` prüft, ob das Projekt
   ohne Script-Fehler lädt. Zum Spielen: `godot --path .` oder im Editor F5.
 - Commit-Nachrichten: kurzer Imperativ auf Deutsch, z. B. "Seil-Einholen verlangsamt".
