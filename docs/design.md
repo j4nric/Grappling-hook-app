@@ -20,17 +20,18 @@ klar – das macht die Ein-Finger-Steuerung überhaupt möglich.
 
 | Geste | Wirkung | Status |
 |---|---|---|
-| Wisch | Haken fliegt in Richtung des Wisch-Endpunkts; Ankerpunkt = erster Wandtreffer | M0: Endpunkt wird genutzt, Wischtempo noch nicht |
-| Tippen | Seil loslassen, Figur fliegt mit Schwung weiter | fertig |
-| Wisch während Haken aktiv | Neuer Haken (alter löst sich) | fertig |
+| Wischen (gedrückt halten) | Zielen: weiße Linie zeigt die Wurfrichtung | fertig |
+| Loslassen | Haken wird geworfen; Wischtempo der letzten 0,1 s = Wurfstärke, Haken fliegt auf einer Bahn und haftet an Wand/Decke, Seil zieht zum Treffpunkt | fertig |
+| Tippen | Seil lösen, Figur fliegt mit Schwung weiter | fertig |
+| Neuer Wurf während Haken aktiv | Altes Seil löst sich beim Wurf | fertig |
 | Zwei-Finger-Tipp | Level neu starten | fertig |
 
-Geplantes "Wurf"-Gefühl (M2): Wie beim Pokéball in Pokémon GO soll das Tempo des
-Wischs eine Rolle spielen. Vorschlag: Wischgeschwindigkeit skaliert die maximale
-Hakenreichweite; ein kurzer, langsamer Wisch erreicht nur nahe Wände. Der Haken
-könnte sichtbar fliegen (kurze Flugzeit statt Sofort-Raycast), damit sich der
-Wurf körperlich anfühlt. Zu prüfen: Fühlt sich Flugzeit gut an oder frustriert sie
-im Speedrun?
+"Wurf"-Gefühl: Wie beim Pokéball in Pokémon GO zählt das Tempo des Fingers
+kurz vor dem Loslassen. Schnell schnippen = schneller, gerader Wurf; Finger
+stehen lassen und dann loslassen = schwacher Wurf, der Haken fällt herunter.
+Der Haken fliegt sichtbar (Flugzeit bei starkem Wurf ca. 0,2–0,3 s).
+Zu prüfen: Fühlt sich die Flugzeit gut an oder frustriert sie im Speedrun?
+Falls gezieltes langsames Loslassen trotzdem treffen soll: `hook_min_speed` erhöhen.
 
 ## Spielgefühl ("Spider-Man-Faktor")
 

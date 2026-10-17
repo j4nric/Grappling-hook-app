@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/grapple_rope.gd" id="2_rope"]
@@ -10,6 +10,17 @@ height = 1.6
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
 radius = 0.4
 height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="mat_hook"]
+shading_mode = 0
+albedo_color = Color(1, 0.88, 0.45, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_hook"]
+material = SubResource("mat_hook")
+radius = 0.25
+height = 0.5
+radial_segments = 8
+rings = 4
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_player")
@@ -23,3 +34,12 @@ mesh = SubResource("CapsuleMesh_body")
 [node name="Rope" type="MeshInstance3D" parent="."]
 top_level = true
 script = ExtResource("2_rope")
+
+[node name="AimLine" type="MeshInstance3D" parent="."]
+top_level = true
+script = ExtResource("2_rope")
+color = Color(1, 1, 1, 0.6)
+
+[node name="Hook" type="MeshInstance3D" parent="."]
+top_level = true
+mesh = SubResource("SphereMesh_hook")

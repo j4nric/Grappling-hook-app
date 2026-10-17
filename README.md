@@ -15,7 +15,11 @@ Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
 - Rechts oben steht `build <commit>`. Daran erkennst du, welche Version läuft.
   Ein neuer Build ist ca. 3–5 Minuten nach dem Push online (Status im Tab
   „Actions“). Zeigt das Spiel noch den alten Hash: Seite neu laden.
-- Steuerung: Wischen = Haken, Tippen = loslassen, Zwei-Finger-Tipp = Neustart.
+- Steuerung: Vom Spieler aus nach oben wischen = zielen (weiße Linie), loslassen =
+  Haken werfen. Wie beim Pokéball zählt das Tempo kurz vor dem Loslassen:
+  schnell schnippen = weiter, gerader Wurf; Finger stehen lassen = schwacher Wurf,
+  der Haken fällt herunter. Der Haken zieht dich zum Treffpunkt, bis du neu wirfst.
+  Tippen = Seil lösen, Zwei-Finger-Tipp = Neustart.
 - **TUNE** (rechts oben) öffnet Regler für Physik und Kamera. Das Spiel pausiert,
   „Play“ macht weiter. Die Werte bleiben im Browser gespeichert, „Reset“ stellt
   die Standardwerte wieder her. Gute Werte per Screenshot an Claude geben, dann
@@ -30,9 +34,8 @@ Source: **GitHub Actions**.
 2. Godot öffnen → "Importieren" → `project.godot` dieses Ordners wählen.
 3. F5 (Projekt ausführen).
 
-Steuerung am Desktop: Linksklick = Haken werfen, Rechtsklick = loslassen,
-R = neu starten. Auf dem Handy: Wischen = Haken, Tippen = loslassen,
-Zwei-Finger-Tipp = neu starten.
+Steuerung am Desktop: Maus gedrückt ziehen = zielen, loslassen = Haken werfen,
+Rechtsklick = Seil lösen, R = neu starten.
 
 ## Struktur
 

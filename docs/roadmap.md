@@ -15,13 +15,14 @@
 - [ ] Projekt in Godot öffnen, Script-Fehler beheben, erster Durchlauf
 - [ ] Tuning-Werte in `player.gd` und `camera_rig.gd` so lange drehen, bis ein
       Durchlauf durch den Testtunnel Spaß macht
-- [ ] Wand-Clipping durch das direkte Setzen der Position beheben
-- [ ] Haken ablehnen, wenn der Anker hinter der Figur liegt (verhindert Rückwärts-Schwünge)
+- [x] Wand-Clipping durch das direkte Setzen der Position beheben (Zug als Geschwindigkeit)
+- [x] Haken ablehnen, wenn der Anker hinter der Figur liegt (Swipes nach unten werden verworfen)
 - [ ] Kamera-Roll beim seitlichen Schwingen testen
 
 ## M2 – Wurf-Gefühl und Touch
-- [ ] Wischtempo → Reichweite (siehe `docs/design.md`)
-- [ ] Optional: sichtbar fliegender Haken statt Sofort-Raycast
+- [x] Wischtempo → Wurfstärke (Pokéball-Wurf, siehe `docs/design.md`)
+- [x] Sichtbar fliegender Haken mit Flugbahn statt Sofort-Raycast
+- [x] Ziel-Vorschau während des Wischens
 - [ ] Tap/Swipe-Schwellen auf echtem Gerät testen
 - [x] Hoch-/Querformat entscheiden → Hochformat
 
@@ -51,3 +52,7 @@
 | Datum | Wert | vorher → nachher | Grund |
 |---|---|---|---|
 | 2026-10-17 | alle | Startwerte | noch ungetestet |
+| 2026-10-17 | `reel_speed` | 4 → 10 | Haken soll spürbar zum Treffpunkt ziehen |
+| 2026-10-17 | `tension_boost` | 2 → 6 | dito |
+| 2026-10-17 | `min_rope_length` | 3 → 2,5 | näher an den Treffpunkt |
+| 2026-10-17 | Wurf-Werte | neu | `throw_speed_per_px` 0,015, Haken 8–70 m/s, `hook_gravity` 25, `throw_pitch` 50° |

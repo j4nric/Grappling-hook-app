@@ -5,17 +5,24 @@ extends CanvasLayer
 ## The GUI handles its own input; gameplay input still only runs through
 ## InputRouter.
 
-const SAVE_PATH := "user://tuning.cfg"
+## Bump the file name when the meaning of values changes, old values are ignored.
+const SAVE_PATH := "user://tuning_v2.cfg"
 const SECTION := "tuning"
 
 ## [node path relative to the parent, property path, min, max, step]
 const PARAMS := [
 	["Player", "gravity", 5.0, 60.0, 0.5],
 	["Player", "max_speed", 10.0, 120.0, 1.0],
+	["Player", "throw_speed_per_px", 0.002, 0.03, 0.001],
+	["Player", "hook_min_speed", 0.0, 40.0, 1.0],
+	["Player", "hook_max_speed", 10.0, 150.0, 1.0],
+	["Player", "hook_gravity", 0.0, 80.0, 1.0],
+	["Player", "throw_pitch", 0.0, 90.0, 1.0],
+	["Player", "throw_yaw_gain", 0.0, 2.0, 0.05],
 	["Player", "max_rope_length", 10.0, 100.0, 1.0],
-	["Player", "reel_speed", 0.0, 20.0, 0.25],
+	["Player", "reel_speed", 0.0, 40.0, 0.5],
 	["Player", "min_rope_length", 0.5, 15.0, 0.25],
-	["Player", "tension_boost", 0.0, 20.0, 0.25],
+	["Player", "tension_boost", 0.0, 40.0, 0.5],
 	["CameraRig", "follow_speed", 1.0, 20.0, 0.25],
 	["CameraRig", "base_fov", 40.0, 120.0, 1.0],
 	["CameraRig", "fov_per_speed", 0.0, 2.0, 0.05],
@@ -25,7 +32,8 @@ const PARAMS := [
 ]
 
 const FONT_SIZE := 26
-const ROW_HEIGHT := 56.0
+const ROW_HEIGHT := 52.0
+const LABEL_WIDTH := 340.0
 
 var _defaults := {}
 var _sliders := {}
@@ -53,7 +61,8 @@ func _target(p: Array) -> Node:
 
 func _set_value(p: Array, value: float) -> void:
 	_target(p).set_indexed(p[1], value)
-	_labels[_key(p)].text = "%s   %s" % [_key(p), str(snappedf(value, p[4]))]
+	var prefix := "cam " if p[0] == "CameraRig" else ""
+	_labels[_key(p)].text = "%s%s  %s" % [prefix, p[1], str(snappedf(value, p[4]))]
 
 
 # --- UI -------------------------------------------------------------------------
@@ -128,8 +137,13 @@ func _build_ui() -> void:
 	scroll.add_child(rows)
 
 	for p in PARAMS:
+		var row := HBoxContainer.new()
+		rows.add_child(row)
 		var label := Label.new()
-		rows.add_child(label)
+		label.custom_minimum_size = Vector2(LABEL_WIDTH, 0)
+		label.add_theme_font_size_override("font_size", 22)
+		label.clip_text = true
+		row.add_child(label)
 		_labels[_key(p)] = label
 		var slider := HSlider.new()
 		slider.min_value = p[2]
@@ -139,7 +153,7 @@ func _build_ui() -> void:
 		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		slider.value = _defaults[_key(p)]
 		slider.value_changed.connect(func(v: float) -> void: _set_value(p, v))
-		rows.add_child(slider)
+		row.add_child(slider)
 		_sliders[_key(p)] = slider
 		_set_value(p, slider.value)
 

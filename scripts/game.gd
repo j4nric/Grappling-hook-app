@@ -23,7 +23,7 @@ func _ready() -> void:
 	_start_position = player.global_position
 	finish.body_entered.connect(_on_finish_body_entered)
 	InputRouter.restart_requested.connect(restart)
-	InputRouter.grapple_requested.connect(_on_any_input)
+	InputRouter.throw_requested.connect(_on_any_input)
 	InputRouter.release_requested.connect(_on_any_input)
 	version_label.text = "build %s" % ProjectSettings.get_setting("application/config/version", "dev")
 	_update_hint()
@@ -75,6 +75,6 @@ func _update_hint() -> void:
 	if _landscape and _touch:
 		hint_label.text = "Hold your phone upright (portrait)" + best_text
 	elif _touch:
-		hint_label.text = "Swipe: grapple   Tap: release\nTwo-finger tap: restart" + best_text
+		hint_label.text = "Swipe up and let go: throw hook\nTap: let go   Two-finger tap: restart" + best_text
 	else:
-		hint_label.text = "Left click: grapple    Right click: release    R: restart" + best_text
+		hint_label.text = "Drag and release: throw hook   Right click: let go   R: restart" + best_text

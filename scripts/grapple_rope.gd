@@ -1,6 +1,8 @@
 extends MeshInstance3D
-## Draws the rope as a single world-space line. Purely visual.
+## Draws a single world-space line (rope, aim preview). Purely visual.
 ## Replace later with a textured/segmented rope if wanted.
+
+@export var color := Color(0.91, 0.77, 0.28)
 
 var _mesh := ImmediateMesh.new()
 
@@ -10,7 +12,9 @@ func _ready() -> void:
 	mesh = _mesh
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_color = Color(0.91, 0.77, 0.28)
+	mat.albedo_color = color
+	if color.a < 1.0:
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material_override = mat
 	visible = false
 

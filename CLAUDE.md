@@ -14,8 +14,9 @@ Ausführliches Design: `docs/design.md`. Meilensteine: `docs/roadmap.md`.
 Die drei Säulen, an denen jede Entscheidung gemessen wird:
 1. **Schwunggefühl** – Pendeln muss sich schwer, schnell und kontrollierbar anfühlen
    (Vorbild: moderne Spider-Man-Spiele). Das ist das Spiel. Alles andere ist Beiwerk.
-2. **Ein Finger** – Wischen wirft den Haken (wie ein Pokéball-Wurf in Pokémon GO),
-   Tippen lässt los. Keine Buttons, kein Joystick.
+2. **Ein Finger** – Wischen zielt, Loslassen wirft den Haken; das Wischtempo kurz
+   vor dem Loslassen bestimmt die Wurfstärke (wie ein Pokéball-Wurf in Pokémon GO).
+   Tippen löst das Seil. Keine Buttons, kein Joystick (außer dem Debug-Button TUNE).
 3. **Speedrun** – Timer, Bestzeit, Wiederspielbarkeit statt vieler Level.
 
 ## Stack und Konventionen
@@ -46,11 +47,11 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `export_presets.cfg` | Export-Preset "Web" (ohne Threads, läuft auf GitHub Pages/iOS Safari) |
 | `.github/workflows/web.yml` | Baut bei Push auf `main` den Web-Export und deployt nach GitHub Pages |
 | `scenes/main.tscn` | Hauptszene: Tunnel + Player + CameraRig + HUD, Script `game.gd` |
-| `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil-Node |
+| `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil, Haken-Kugel und Ziellinie |
 | `scenes/test_tunnel.tscn` | Grauer Testtunnel aus CSG-Boxen, Hindernisse, Ziel-Area |
-| `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `grapple_requested`, `release_requested`, `restart_requested` (Zwei-Finger-Tipp) |
-| `scripts/player.gd` | Schwerkraft, Raycast-Haken, Pendel-Constraint, Seil-Einholen |
-| `scripts/grapple_rope.gd` | Zeichnet das Seil als Linie (ImmediateMesh) |
+| `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `aim_changed`, `aim_cancelled`, `throw_requested` (Swipe + Flick-Tempo), `release_requested`, `restart_requested` |
+| `scripts/player.gd` | Schwerkraft, Hakenwurf (Flugbahn), Seilzug als Geschwindigkeit, Ziel-Vorschau |
+| `scripts/grapple_rope.gd` | Zeichnet eine Linie (Seil, Ziellinie) per ImmediateMesh |
 | `scripts/camera_rig.gd` | Verfolgerkamera mit Nachzieh-Lag, Look-Ahead, Tempo-FOV |
 | `scripts/game.gd` | Timer, Ziel-Erkennung, Absturz-Reset, Bestzeit, HUD inkl. Build-Version |
 | `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler für Player-/Kamera-Exports, pausiert das Spiel, speichert in `user://tuning.cfg` |
@@ -58,31 +59,25 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 
 ## Wie die Physik funktioniert (Kern des Spiels)
 
-`player.gd::_apply_rope_constraint()`:
-- Der Spieler fällt frei (Schwerkraft).
-- Ist ein Haken gesetzt, darf der Abstand zum Anker nie größer als `rope_length`
-  sein. Liegt er darüber, wird die Position auf die Seilkugel zurückgezogen und der
-  vom Anker wegzeigende Geschwindigkeitsanteil entfernt. Übrig bleibt die
-  Tangentialgeschwindigkeit → Pendeln.
-- `reel_speed` verkürzt das Seil kontinuierlich (Zug nach oben/vorn),
-  `tension_boost` zieht zusätzlich leicht zum Anker. Beides macht den Schwung
-  "schwerer". Die Werte sind erste Schätzungen und müssen im Spiel getunt werden.
+**Wurf** (`player.gd::throw_hook()`): `InputRouter` misst beim Loslassen den
+Swipe-Vektor und das Fingertempo der letzten 0,1 s (`FLICK_WINDOW`).
+- Richtung: Swipe gerade nach oben = nach vorn (-Z) und um `throw_pitch` nach
+  oben; seitliche Swipes drehen den Wurf Richtung Wand (`throw_yaw_gain`).
+  Swipes nach unten werden verworfen.
+- Tempo: Fingertempo × `throw_speed_per_px`, begrenzt auf
+  `hook_min_speed`..`hook_max_speed`. Der Haken erbt die Spielergeschwindigkeit.
+- Flug: Der Haken fliegt mit `hook_gravity` auf einer Bahn, Raycast pro Frame.
+  Trifft er Wand oder Decke, haftet er; Böden (Normale nach oben) und Flüge über
+  `max_rope_length` hinaus lassen ihn fallen.
+- Beim Wurf löst sich das alte Seil sofort: Man fliegt mit Schwung weiter,
+  während der neue Haken unterwegs ist.
 
-Der Haken selbst: Raycast von der Kamera durch den Bildschirmpunkt des Klicks/
-Wischendes. Erster Treffer auf Geometrie = Anker, sofern innerhalb
-`max_rope_length`.
-
-## Bekannte Schwächen des Prototyps (bewusst offen gelassen)
-
-- `global_position` wird im Constraint direkt gesetzt → kann in Wände clippen.
-  Falls das stört: stattdessen Korrektur als Geschwindigkeit anwenden oder
-  `move_and_collide` für den Rückzug nutzen.
-- Wisch-Geschwindigkeit und -Richtung werden an `grapple_requested` übergeben,
-  aber noch nicht genutzt. Der "Wurf" (Reichweite aus Wischtempo, Flugbahn des
-  Hakens) ist Meilenstein M2.
-- Das Seil ist eine gerade Linie ohne Kollision; es kann durch Hindernisse gehen.
-- Kein Modell, keine Animation, kein Sound. Bewusst – erst das Gefühl.
-- Finish-Erkennung nur per Area3D, kein Checkpoint-System.
+**Zug** (`_apply_rope_constraint()`): Das Seil wird mit `reel_speed` bis
+`min_rope_length` eingeholt, `tension_boost` zieht zusätzlich zum Anker. Alles
+wird als Geschwindigkeit angewandt (nicht als Positionssprung), deshalb bleibt
+der Schwung beim Loslassen erhalten und `move_and_slide` verhindert Clipping.
+Liegt der Spieler außerhalb der Seillänge, bekommt er genau die nötige
+Geschwindigkeit nach innen → Pendeln. Am Anker wird der Zug abgebremst.
 
 ## Arbeitsweise
 
