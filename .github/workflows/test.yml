@@ -1,0 +1,35 @@
+# Reusable: headless tests. Called by ci.yml (pull requests) and pages.yml (main).
+name: Tests
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Godot version is the same everywhere
+        run: |
+          v=$(grep -oP "GODOT_VERSION: \K[0-9.]+" .github/workflows/pages.yml)
+          for f in CLAUDE.md README.md .github/workflows/ci.yml; do
+            grep -q "$v" "$f" || { echo "::error file=$f::mentions no Godot $v"; exit 1; }
+          done
+          echo "GODOT_VERSION=$v" >> "$GITHUB_ENV"
+
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
+
+      - name: Import project
+        run: godot --headless --path . --import 2>&1 | tail -n 5
+
+      - name: Run tests
+        run: |
+          set -o pipefail
+          godot --headless --fixed-fps 60 --path . --script res://tests/run_tests.gd 2>&1 | tee test.log
+          if grep -q "SCRIPT ERROR" test.log; then
+            echo "::error::Script errors during the tests"
+            exit 1
+          fi

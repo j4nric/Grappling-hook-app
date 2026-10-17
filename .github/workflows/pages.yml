@@ -1,0 +1,96 @@
+# Publishes the game on GitHub Pages so every change is playable on the phone:
+#   main            -> https://<owner>.github.io/<repo>/
+#   open PR #N      -> https://<owner>.github.io/<repo>/preview/pr-N/
+# Runs on pushes to main and whenever a pull request changes. Each run builds
+# main plus every open pull request from this repository, because a Pages
+# deployment always replaces the whole site.
+name: Web-Build
+
+on:
+  push:
+    branches: [main]
+  # pull_request_target runs in the context of main, which may deploy to
+  # Pages. Only branches of this repository are built (no forks).
+  pull_request_target:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.7.2
+
+jobs:
+  test:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/test.yml
+
+  build:
+    needs: test
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
+
+      - name: Export main
+        run: |
+          cp tools/export_web.sh "$RUNNER_TEMP/export_web.sh"
+          "$RUNNER_TEMP/export_web.sh" . site "$(git rev-parse --short=7 HEAD)"
+
+      - name: Export open pull requests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p site/preview
+          list="<li><a href=\"../\">main</a></li>"
+          prs=$(gh pr list --state open --json number,headRefOid,isCrossRepository \
+            --jq '.[] | select(.isCrossRepository | not) | "\(.number) \(.headRefOid)"')
+          while read -r number sha; do
+            [ -z "$number" ] && continue
+            git fetch -q origin "$sha"
+            git worktree add -q "$RUNNER_TEMP/pr-$number" "$sha"
+            if "$RUNNER_TEMP/export_web.sh" "$RUNNER_TEMP/pr-$number" "site/preview/pr-$number" "pr$number-${sha::7}"; then
+              list="$list<li><a href=\"pr-$number/\">PR #$number</a></li>"
+              echo "- PR #$number: preview/pr-$number/" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning::Export of PR #$number failed"
+            fi
+          done <<< "$prs"
+          echo "<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width'><title>Previews</title><body style='font:20px sans-serif;background:#111;color:#eee'><h1>Grappling Cave</h1><ul>$list</ul>" > site/preview/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Check compression of the engine download
+        run: |
+          url="${{ steps.deployment.outputs.page_url }}index.wasm"
+          enc=$(curl -sSI -H "Accept-Encoding: gzip, br" "$url" | grep -i '^content-encoding' || echo "content-encoding: none")
+          echo "index.wasm $enc" >> "$GITHUB_STEP_SUMMARY"
