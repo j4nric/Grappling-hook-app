@@ -19,10 +19,6 @@ permissions:
   contents: read
   pull-requests: read
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 env:
   GODOT_VERSION: 4.7.2
 
@@ -33,7 +29,15 @@ jobs:
 
   build:
     needs: test
-    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    # A merged pull request needs no run of its own: the push to main that
+    # comes with the merge rebuilds everything (with tests).
+    if: >-
+      ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped')
+      && !(github.event.action == 'closed' && github.event.pull_request.merged) }}
+    # Job-level, so skipped runs never cancel the push run.
+    concurrency:
+      group: pages
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -78,6 +82,10 @@ jobs:
   deploy:
     needs: build
     if: ${{ !cancelled() && needs.build.result == 'success' }}
+    # Deployments queue up instead of running at the same time.
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       pages: write
