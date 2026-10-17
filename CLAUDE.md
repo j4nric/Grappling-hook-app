@@ -46,7 +46,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 |---|---|
 | `project.godot` | Projekteinstellungen, Autoload, Render-Scale für Pixel-Look |
 | `export_presets.cfg` | Export-Preset "Web" (ohne Threads, läuft auf GitHub Pages/iOS Safari) |
-| `.github/workflows/web.yml` | Baut bei Push auf `main` den Web-Export und deployt nach GitHub Pages |
+| `.github/workflows/web.yml` | Tests für jeden PR und Push; bei Push auf `main` Web-Export und Deploy nach GitHub Pages |
 | `scenes/main.tscn` | Hauptszene: Tunnel + Player + CameraRig + HUD, Script `game.gd` |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil, Haken-Kugel und Ziellinie |
 | `scenes/test_tunnel.tscn` | Grauer Testtunnel aus CSG-Boxen, Hindernisse, Ziel-Area |
@@ -56,7 +56,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/camera_rig.gd` | Verfolgerkamera mit Nachzieh-Lag, Look-Ahead, Tempo-FOV |
 | `scripts/game.gd` | Timer, Ziel-Erkennung, Absturz-Reset, Bestzeit, HUD inkl. Build-Version |
 | `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler für Player-/Kamera-Exports, pausiert das Spiel, speichert in `user://tuning.cfg` |
-| `docs/` | Design, Roadmap, iOS-Export |
+| `tests/` | Headless-Tests (`run_tests.gd` führt alle `test_*.gd` aus), laufen in CI vor jedem Merge/Deploy |
+| `.github/actions/setup-godot/` | Lädt Godot + Web-Vorlagen in CI (gecacht) |
+| `docs/` | Design, Roadmap, nächste Schritte, iOS-Export |
 
 ## Wie die Physik funktioniert (Kern des Spiels)
 
@@ -98,6 +100,12 @@ der Fläche bleibt. Böden lösen das Seil nicht (sonst käme man nie los).
   schreibt sie vor dem Export in `application/config/version`.
 - Web-Export lokal: `godot --headless --path . --export-release "Web" build/web/index.html`
   (braucht die Web-Exportvorlagen `web_nothreads_*`).
+- **Tests:** `godot --headless --fixed-fps 60 --path . --script res://tests/run_tests.gd`
+  (Exit-Code 1 bei Fehlern). Neue Mechaniken bekommen einen Test in
+  `tests/test_*.gd` (erbt von `test_case.gd`, Helfer für Touch/Swipe und Warten).
+  `--fixed-fps 60` ist wichtig: `InputRouter` misst das Fingertempo über die
+  Frame-Zeit.
+- Änderungen laufen als PR pro Themengebiet; CI (Tests + Export) muss grün sein.
 - Zum Testen ohne Editor: `godot --path . --headless --quit` prüft, ob das Projekt
   ohne Script-Fehler lädt. Zum Spielen: `godot --path .` oder im Editor F5.
 - Commit-Nachrichten: kurzer Imperativ auf Deutsch, z. B. "Seil-Einholen verlangsamt".

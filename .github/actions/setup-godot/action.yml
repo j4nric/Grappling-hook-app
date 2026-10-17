@@ -1,0 +1,40 @@
+name: Setup Godot
+description: Installs the Godot editor (headless use) and the web export templates, cached.
+inputs:
+  version:
+    description: Godot version, e.g. 4.7.2
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Cache Godot and web templates
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ~/godot
+        key: godot-${{ inputs.version }}-web
+
+    - name: Download Godot
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        V: ${{ inputs.version }}
+      run: |
+        mkdir -p ~/godot/templates
+        cd ~/godot
+        base="https://github.com/godotengine/godot/releases/download/${V}-stable"
+        curl -sSfL -o godot.zip "$base/Godot_v${V}-stable_linux.x86_64.zip"
+        unzip -q godot.zip && mv "Godot_v${V}-stable_linux.x86_64" godot && rm godot.zip
+        curl -sSfL -o templates.tpz "$base/Godot_v${V}-stable_export_templates.tpz"
+        unzip -q -j templates.tpz templates/web_nothreads_release.zip templates/web_nothreads_debug.zip templates/version.txt -d templates
+        rm templates.tpz
+
+    - name: Install templates and put godot on PATH
+      shell: bash
+      env:
+        V: ${{ inputs.version }}
+      run: |
+        dir=~/.local/share/godot/export_templates/${V}.stable
+        mkdir -p "$dir"
+        cp ~/godot/templates/* "$dir/"
+        echo "$HOME/godot" >> "$GITHUB_PATH"
