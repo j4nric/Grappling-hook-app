@@ -37,6 +37,9 @@ var _touches := {}
 var _primary_touch := -1
 ## Set once a second finger touches; the gesture then only counts as restart.
 var _multi_touch := false
+## Unscaled frame clock (s). Frame time instead of wall time keeps slow motion
+## out of the flick speed and makes headless tests with --fixed-fps exact.
+var _clock := 0.0
 
 
 func _ready() -> void:
@@ -45,6 +48,10 @@ func _ready() -> void:
 	# Every drag sample counts for the flick speed; accumulated input would
 	# merge the fast last part of a flick into the release position.
 	Input.use_accumulated_input = false
+
+
+func _process(delta: float) -> void:
+	_clock += delta / maxf(Engine.time_scale, 0.001)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -176,4 +183,4 @@ func _is_over_gui(pos: Vector2) -> bool:
 
 
 func _now() -> float:
-	return Time.get_ticks_usec() / 1000000.0
+	return _clock
