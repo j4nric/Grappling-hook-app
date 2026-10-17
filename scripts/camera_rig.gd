@@ -4,6 +4,9 @@ extends Node3D
 ## hook), speed FOV, roll when swinging sideways and shake on impacts.
 
 @export var target: Node3D
+## Camera that actually renders (inside the low-res pixel viewport). It copies
+## this rig's camera every frame.
+@export var view_camera: Camera3D
 @export var offset := Vector3(0.0, 2.5, 7.0)
 ## Higher = snappier follow. Lower = more lag / more sense of speed.
 @export var follow_speed := 6.0
@@ -92,6 +95,11 @@ func _physics_process(delta: float) -> void:
 
 	var target_fov := clampf(base_fov + velocity.length() * fov_per_speed, base_fov, max_fov)
 	camera.fov = lerpf(camera.fov, target_fov, 1.0 - exp(-fov_lerp_speed * delta))
+
+	if view_camera:
+		view_camera.global_transform = camera.global_transform
+		view_camera.fov = camera.fov
+		view_camera.keep_aspect = camera.keep_aspect
 
 
 func _is_pulled() -> bool:

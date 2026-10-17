@@ -91,16 +91,16 @@ Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
 
 ## 5. Optik und Lesbarkeit
 
-- [ ] **Licht:** Die Höhle ist zu dunkel, Wände sind schwer zu erkennen.
+- [x] **Licht:** (Fackeln alle 24 m, Lava-Licht, helleres Umgebungslicht, Risse im Boden) Die Höhle ist zu dunkel, Wände sind schwer zu erkennen.
       Fackeln/Kristalle als Punktlichter, Umgebungslicht anheben, Nebel
       anpassen. Wichtig fürs Zielen, deshalb früh angehen.
-- [ ] **Greifbare Flächen erkennbar machen** (Farbe/Textur), sobald es
+- [x] **Greifbare Flächen erkennbar machen** (Eis blau leuchtend) (Farbe/Textur), sobald es
       nicht greifbare Flächen gibt.
-- [ ] **Pixel-Look feinjustieren:** prüfen, ob das Hochskalieren im Web
+- [x] **Pixel-Look feinjustieren:** (war bilinear → jetzt SubViewport mit Nearest, `stretch_shrink` 2) prüfen, ob das Hochskalieren im Web
       unscharf (bilinear) oder pixelig (nearest) ist; ggf. SubViewport mit
       Nearest-Filter.
-- [ ] **Einfaches Spielermodell, Haken-Modell, Seil mit Textur.**
-- [ ] **Partikel:** Funken beim Einhaken, Staub beim Aufprall, Speed-Trail.
+- [x] **Einfaches Spielermodell, Haken-Modell, Seil mit Textur.** (Seil als dünne Röhre)
+- [x] **Partikel:** Funken beim Einhaken, Staub beim Aufprall, Speed-Trail.
 
 ## 6. Sound (M6)
 

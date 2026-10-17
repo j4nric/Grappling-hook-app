@@ -17,11 +17,21 @@ FLOOR_Y = -5.0
 CEIL_Y = 9.0
 HALF_W = 6.0
 LAVA_Y = -9.0
+# Geometry is cut into pieces of at most this length (m): alternating tones
+# show speed, and each piece only gets the few lights near it.
+CHUNK = 16.0
+TORCH_SPACING = 24.0
+# Dark cracks across the floor every few meters: a motion cue.
+CRACK_SPACING = 4.0
 
 # Materials: name -> (albedo rgb, emission rgb or None)
 MATERIALS = {
-    "rock": ((0.36, 0.34, 0.31), None),
-    "floor": ((0.24, 0.23, 0.21), None),
+    "rock": ((0.42, 0.38, 0.33), None),
+    "rock2": ((0.33, 0.3, 0.27), None),
+    "floor": ((0.4, 0.36, 0.31), None),
+    "floor2": ((0.34, 0.3, 0.26), None),
+    "crack": ((0.12, 0.1, 0.09), None),
+    "torch": ((1.0, 0.7, 0.3), (1.0, 0.55, 0.2)),
     "obstacle": ((0.52, 0.31, 0.25), None),
     "ice": ((0.55, 0.8, 0.95), (0.1, 0.25, 0.35)),
     "lava": ((1.0, 0.35, 0.05), (1.0, 0.3, 0.0)),
@@ -58,7 +68,7 @@ LEVELS = [
           floor=[(10.0, -30.0), (-50.0, -70.0), (-95.0, -110.0), (-140.0, -150.0), (-180.0, -250.0)],
           blocks=[(-3, 6, -60, 6, 6, 3, False), (3, 6, -125, 6, 6, 3, False)],
           checkpoints=[-102.0, -185.0]),
-    level("Ice Ceiling", 220, (17.0, 23.0, 32.0),
+    level("Ice Ceiling", 220, (8.5, 11.0, 15.5),
           floor=[(10.0, -110.0), (-125.0, -230.0)],
           ceiling_ice=[(-35.0, -60.0), (-80.0, -105.0), (-150.0, -175.0)],
           left_ice=[(-80.0, -105.0)], right_ice=[(-150.0, -175.0)],
@@ -140,6 +150,17 @@ class Scene:
                   props=f'shape = SubResource("{self.box_shape(*size)}")')
 
 
+def chunks(a, b):
+    """Splits the span a > b into pieces of at most CHUNK; yields (a, b, tone)."""
+    z = a
+    while z > b + 0.001:
+        nxt = max(b, (int(z // CHUNK) - (1 if z % CHUNK == 0 else 0)) * CHUNK)
+        if nxt >= z:
+            nxt = max(b, z - CHUNK)
+        yield z, nxt, int(-((z + nxt) / 2) // CHUNK) % 2
+        z = nxt
+
+
 def spans(total_from, total_to, special):
     """Splits [total_from, total_to] (descending z) into (z_from, z_to, is_special)."""
     cuts = sorted({total_from, total_to, *[z for s in special for z in s]}, reverse=True)
@@ -165,18 +186,34 @@ def build(index, lv):
 
     # Floor spans; gaps get lava below.
     sc.node("Floor", "Node3D", "Geometry")
-    for i, (a, b) in enumerate(lv["floor"]):
-        sc.csg(f"Floor{i}", "Geometry/Floor", (0, FLOOR_Y - 0.5, (a + b) / 2), (12, 1, a - b), "floor")
+    n = 0
+    for a0, b0 in lv["floor"]:
+        for a, b, tone in chunks(a0, b0):
+            sc.csg(f"Floor{n}", "Geometry/Floor", (0, FLOOR_Y - 0.5, (a + b) / 2), (12, 1, a - b),
+                   "floor2" if tone else "floor")
+            n += 1
+    sc.node("Cracks", "Node3D", "Geometry")
+    n = 0
+    for a0, b0 in lv["floor"]:
+        z = a0 - CRACK_SPACING / 2
+        while z > b0:
+            sc.node(f"Crack{n}", "MeshInstance3D", "Geometry/Cracks", (0, FLOOR_Y + 0.01, z),
+                    f'mesh = SubResource("{sc.box_mesh(12, 0.02, 0.25, "crack")}")')
+            z -= CRACK_SPACING
+            n += 1
 
     for side, x, ice in (("Ceiling", None, lv["ceiling_ice"]), ("WallLeft", -HALF_W - 0.5, lv["left_ice"]),
                          ("WallRight", HALF_W + 0.5, lv["right_ice"])):
         sc.node(side, "Node3D", "Geometry")
-        for i, (a, b, is_ice) in enumerate(spans(z_back, z_end, ice)):
-            if x is None:
-                pos, size = (0, CEIL_Y + 0.5, (a + b) / 2), (12, 1, a - b)
-            else:
-                pos, size = (x, (FLOOR_Y + CEIL_Y) / 2, (a + b) / 2), (1, CEIL_Y - FLOOR_Y + 2, a - b)
-            sc.csg(f"{side}{i}", f"Geometry/{side}", pos, size, "rock", is_ice)
+        n = 0
+        for a0, b0, is_ice in spans(z_back, z_end, ice):
+            for a, b, tone in chunks(a0, b0):
+                if x is None:
+                    pos, size = (0, CEIL_Y + 0.5, (a + b) / 2), (12, 1, a - b)
+                else:
+                    pos, size = (x, (FLOOR_Y + CEIL_Y) / 2, (a + b) / 2), (1, CEIL_Y - FLOOR_Y + 2, a - b)
+                sc.csg(f"{side}{n}", f"Geometry/{side}", pos, size, "rock2" if tone else "rock", is_ice)
+                n += 1
     sc.csg("WallBack", "Geometry", (0, (FLOOR_Y + CEIL_Y) / 2, z_back + 0.5), (12, CEIL_Y - FLOOR_Y + 2, 1), "rock")
     sc.csg("WallEnd", "Geometry", (0, (FLOOR_Y + CEIL_Y) / 2, z_end - 0.5), (12, CEIL_Y - FLOOR_Y + 2, 1), "rock")
 
@@ -204,10 +241,24 @@ def build(index, lv):
     for (a1, b1), (a2, b2) in zip(floor, floor[1:]):
         if b1 > a2:
             gaps.append((b1, a2))
+    # Torches along the walls, alternating sides.
+    sc.node("Lights", "Node3D")
+    z, i = 6.0, 0
+    while z > -length:
+        x = -HALF_W if i % 2 == 0 else HALF_W
+        sc.node(f"Torch{i}", "OmniLight3D", "Lights", (x * 0.85, 5.0, z),
+                "light_color = Color(1, 0.62, 0.3, 1)\nlight_energy = 2.5\nomni_range = 16.0")
+        sc.node(f"TorchMesh{i}", "MeshInstance3D", "Lights", (x * 0.97, 4.5, z),
+                f'mesh = SubResource("{sc.box_mesh(0.3, 0.6, 0.3, "torch")}")')
+        z -= TORCH_SPACING if i > 0 else 6.0 + TORCH_SPACING / 2
+        i += 1
+
     sc.node("KillZones", "Node3D")
     for i, (a, b) in enumerate(gaps):
         sc.node(f"LavaMesh{i}", "MeshInstance3D", "Geometry", (0, LAVA_Y, (a + b) / 2),
                 f'mesh = SubResource("{sc.box_mesh(12, 0.5, a - b, "lava")}")')
+        sc.node(f"LavaLight{i}", "OmniLight3D", "Lights", (0, LAVA_Y + 4, (a + b) / 2),
+                "light_color = Color(1, 0.35, 0.1, 1)\nlight_energy = 2.5\nomni_range = 14.0")
         sc.area(f"Lava{i}", "KillZones", (0, LAVA_Y + 1.5, (a + b) / 2), (12, 3, a - b))
 
     sc.node("Checkpoints", "Node3D")
