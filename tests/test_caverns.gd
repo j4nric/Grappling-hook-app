@@ -34,14 +34,14 @@ func run() -> void:
 	var space: PhysicsDirectSpaceState3D = main.get_world_3d().direct_space_state
 	# Level 1: hall 3 (ceiling 30 m) leads into the lower hall 4 (24 m) at
 	# z = -175 over a slanted slab.
-	main.load_level(0)
+	main.load_level(level_named("level_01"))
 	await wait_frames(2)
 	var hit := _ray(space, Vector3(0, 20, -165), Vector3(0, 40, -165))
 	check(not hit.is_empty() and hit.normal.z > 0.2, "a lower hall starts with a slanted ceiling (normal %s)" % [hit.get("normal")])
 
 	# Level 5: the first gate (hall 2, x = -8, 14 m wide, z = -75) is ice with
 	# an open slit.
-	main.load_level(4)
+	main.load_level(level_named("level_05"))
 	await wait_frames(2)
 	var through := _ray(space, Vector3(-8, 15, -60), Vector3(-8, 15, -80))
 	check(through.is_empty() or through.position.z < -76.0, "the gate slit is open")

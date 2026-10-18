@@ -77,6 +77,7 @@ const PARAMS := [
 	["CameraRig", "collision_margin", 0.0, 2.0, 0.1, "Camera"],
 	["World/PixelView", "stretch_shrink", 1.0, 6.0, 1.0, "Camera"],
 	["Sfx", "volume", 0.0, 1.0, 0.05, "Misc"],
+	["Music", "volume", 0.0, 1.0, 0.05, "Misc"],
 	["Debug", "shown", 0.0, 1.0, 1.0, "Misc"],
 	["Debug", "auto_quality", 0.0, 1.0, 1.0, "Misc"],
 	["Debug", "min_fps", 20.0, 60.0, 1.0, "Misc"],

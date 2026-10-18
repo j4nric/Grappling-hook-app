@@ -85,6 +85,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/records.gd` | `Records`: Bestzeit, Zwischenzeiten, TUNE*-Markierung und Ghost pro Level-Version (`Records.id()` = Schlüssel + Layout-Hash) in `user://` |
 | `scripts/settings.gd` | `Settings`: Geist und Ton an/aus (Pause-Menü), in `user://settings.cfg` |
 | `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur |
+| `scripts/music.gd` | Musik: drei synchrone Spuren (`AudioStreamSynchronized`), Puls und Arpeggio nach Tempo und Flow; Spuren von `tools/gen_music.py` (QOA-komprimiert, nahtlos) |
 | `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo |
 | `assets/sounds/*.wav` | Synthetisierte Sounds, erzeugt von `tools/gen_sounds.py` (numpy) |
 | `scripts/debug_overlay.gd` | Debug-Anzeige (FPS, Tempo, Haken, letzter Wurf) und Auto-Qualität |
@@ -94,7 +95,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Checkpoints, Ziel aus `segments` |
 | `scripts/cave_generator.gd` | `CaveGenerator`: prozedurale Höhle aus einem Seed (faire Hallenfolge, Medaillen aus Zeitschätzung); „Daily Cave“ (Seed = Datum) und „Random Cave“ |
 | `scripts/levels.gd` | `Levels`: feste Level (`LIST`) plus prozedurale Pfade `cave://daily/<seed>`, `cave://random/<seed>`; `Levels.instantiate(path)` |
-| `scripts/level.gd` | `Level`: Name, Medaillen, `segments`, `layout_seed`, `kill_y`; Signale `finished`, `checkpoint_reached`, `killed` |
+| `scripts/level.gd` | `Level`: Name, Medaillen, `segments`, `layout_seed`, `kill_y`, `hints` (Tutorial-Hinweise nach Position); Signale `finished`, `checkpoint_reached`, `killed` |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil, Haken-Kugel und Ziellinie |
 | `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `aim_changed`, `aim_cancelled`, `throw_requested` (Swipe + Flick-Tempo), `release_requested`, `restart_requested` |
 | `scripts/player.gd` | Schwerkraft, Hakenwurf (Flugbahn), Seilzug als Geschwindigkeit, Ziel-Vorschau |

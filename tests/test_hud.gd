@@ -38,3 +38,16 @@ func run() -> void:
 	check(tuning.values_text().contains("all values at default"), "values text without changes")
 	tuning._sliders["Player/gravity"].value = 30.0
 	check(tuning.values_text().contains("Player/gravity = 30"), "values text lists changed values")
+
+	# Tutorial: hints change along the way.
+	levels = Levels.LIST
+	main.level_list = Levels.LIST
+	main.load_level(level_named("level_00"))
+	await wait_frames(3)
+	var tutorial_hint: Label = main.get_node("HUD/Safe/HintLabel")
+	check(tutorial_hint.text.begins_with("Swipe up"), "tutorial starts with the throw hint (%s)" % tutorial_hint.text)
+	InputRouter.throw_requested.emit(Vector2(0, -300), Vector2(0, -3000))
+	await wait_frames(2)
+	player().global_position = Vector3(0, 10, -100)
+	await wait_frames(3)
+	check(tutorial_hint.text.begins_with("Ice does not hold"), "further in, the ice hint shows (%s)" % tutorial_hint.text)

@@ -26,6 +26,11 @@ var levels: Array[String] = TUNNELS
 var level_index := 0
 
 
+## Index of a level scene ("level_02") in Levels.LIST.
+static func level_named(file: String) -> int:
+	return Levels.LIST.find("res://scenes/levels/%s.tscn" % file)
+
+
 func load_main() -> void:
 	main = load("res://scenes/main.tscn").instantiate()
 	main.level_list = levels

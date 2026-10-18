@@ -3,6 +3,7 @@ class_name Levels
 ## A procedural level is a path "cave://<kind>/<seed>" (kind: daily, random).
 
 const LIST: Array[String] = [
+	"res://scenes/levels/level_00.tscn",
 	"res://scenes/levels/level_01.tscn",
 	"res://scenes/levels/level_02.tscn",
 	"res://scenes/levels/level_03.tscn",
