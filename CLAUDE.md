@@ -114,7 +114,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/settings.gd` | `Settings`: Geist und Ton an/aus (Pause-Menü), in `user://settings.cfg` |
 | `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur |
 | `scripts/music.gd` | Musik: drei synchrone Spuren (`AudioStreamSynchronized`), Puls und Arpeggio nach Tempo und Flow; Spuren von `tools/gen_music.py` (QOA-komprimiert, nahtlos) |
-| `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo |
+| `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo; Bus „Cave“ mit Reverb nach Größe der Halle (`Level.hall_at()`) |
 | `assets/sounds/*.wav` | Synthetisierte Sounds mit eingebackenem Höhlen-Hall, erzeugt von `tools/gen_sounds.py` (numpy); `amb_*` sind Schleifen |
 | `scripts/ambient_sound.gd` | `AmbientSound`: 3D-Geräusch im Level (Lava, Aufwind, Kristall als Schleife, Tropfen in Abständen), spielt nur in Hörweite; platziert von `CavernBuilder` |
 | `scripts/debug_overlay.gd` | Debug-Anzeige (FPS, Tempo, Haken, letzter Wurf) und Auto-Qualität |
@@ -131,13 +131,13 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/speed_ring.gd` | `SpeedRing`: Ring, Durchfliegen gibt mindestens `boost_speed` nach vorn |
 | `scripts/level.gd` | `Level`: Name, Medaillen, `segments`, `layout_seed`, `kill_y`, `hints` (Tutorial-Hinweise nach Position); Signale `finished`, `checkpoint_reached`, `killed` |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Figur, Seil, Haken und Ziellinie |
-| `scripts/player_figure.gd` | `PlayerFigure`: Gelenkfigur (Meshes an Gelenk-Pivots), Posen aus dem Zustand (Seilarm zum Anker, Beine im Fahrtwind, Salto beim Zip, Hocke bei Landung), Kopflampe, Schal; `player.gd` ruft `update_pose()` |
+| `scripts/player_figure.gd` | `PlayerFigure`: Gelenkfigur (Meshes an Gelenk-Pivots), Posen aus dem Zustand (Seilarm zum Anker, Beine im Fahrtwind, Salto beim Zip, Hocke bei Landung), schlaffer Sturz (`go_limp()`), Kopflampe, Schal; `player.gd` ruft `update_pose()` |
 | `scripts/verlet_band.gd` | `VerletBand`: Schal als Verlet-Kette, als Band gezeichnet |
 | `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `aim_changed`, `aim_cancelled`, `throw_requested` (Swipe + Flick-Tempo), `release_requested`, `restart_requested` |
 | `scripts/player.gd` | Schwerkraft, Hakenwurf (Flugbahn), Seilzug als Geschwindigkeit, Ziel-Vorschau |
 | `scripts/grapple_rope.gd` | Zeichnet eine Linie (Seil, Ziellinie) per ImmediateMesh |
 | `scripts/camera_rig.gd` | Verfolgerkamera: Lag, Look-Ahead (beim Zug Richtung Anker), Tempo-FOV (horizontal), Roll, Shake, Wand-Kollision; unter der Decke tiefer und nach oben blickend (`ceiling_near`), Ziel-Umkreisung (`start_orbit`) |
-| `scripts/game.gd` | Level laden, Timer, Ziel, Checkpoints (Lava/Absturz → letzter Checkpoint, Timer läuft weiter), Neustart, HUD |
+| `scripts/game.gd` | Level laden, Timer, Ziel, Checkpoints (Lava/Absturz → Figur fällt `fall_show_time` schlaff, Timer steht so lange, dann letzter Checkpoint, Timer läuft weiter), Neustart, HUD, Lauf-Codes teilen/laden |
 | `scripts/safe_area.gd` | `SafeArea.margins()`: Ränder für Notch/Home-Indikator in Viewport-Einheiten |
 | `tools/gen_textures.py` | Malt die Texturen (`assets/textures/`) und schreibt die Materialbibliothek (`assets/materials/`) |
 | `scenes/props/` | Wiederverwendbare Deko: Lichtkegel, leuchtender Kristall |
@@ -213,6 +213,10 @@ frontale Crashs nicht. Boden + bewegtes Hindernis von oben = `crushed` → Check
 `hook_attached(point, normal)`, `hook_missed`, `rope_released(reason)`
 (`zip`, `contact`, `blocked`, `tap`, `chain`, `broke`, `reset`), `landed(impact_speed)`,
 `deflected(impact_speed)`, `crushed`.
+**Sturz:** Lava, Absturz unter `kill_y` oder Zerquetschen → `game.gd` ruft
+`player.fall()`: keine Physik, kein Input, die Figur fliegt schlaff weiter
+(`PlayerFigure.go_limp()`), nach `fall_show_time` Respawn per `reset_to()`.
+Tests setzen `fall_show_time` 0 (`test_case.gd`), damit Bot-Zeiten gleich bleiben.
 
 **Zeit:** `Engine.time_scale` nie direkt setzen, sondern über `TimeScale`
 (`scripts/time_scale.gd`): Zielen-Zeitlupe (`set_aim`), Hit-Stop (`hit_stop`) und

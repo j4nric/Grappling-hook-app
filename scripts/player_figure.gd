@@ -4,7 +4,8 @@ extends Node3D
 ## elbows, hips, knees), posed every rendered frame from the player's state.
 ## The rope arm reaches for the anchor or the flying hook, the free arm and
 ## the legs trail in the airflow, a zip launch throws a somersault, landings
-## crouch. A scarf (verlet band) shows speed and direction.
+## crouch. A scarf (verlet band) shows speed and direction. On a fatal fall
+## the figure goes limp (go_limp()) and tumbles on by itself until snap().
 ## Purely visual: player.gd calls update_pose() from its _process.
 
 const JACKET := Color(0.72, 0.22, 0.16)
@@ -23,6 +24,14 @@ const SCARF := Color(0.95, 0.85, 0.3)
 @export var flip_time := 0.45
 ## From this speed (m/s) the body lies into the flight (head first).
 @export var dive_speed := 18.0
+## Limp fall: gravity (m/s²) and how fast the body tumbles (rad/s).
+@export var limp_gravity := 25.0
+@export var limp_spin := 6.0
+
+## Falling limp (go_limp()): moves by itself, update_pose() ignores the body.
+var limp := false
+var _limp_velocity := Vector3.ZERO
+var _limp_axis := Vector3.RIGHT
 
 var hips: Node3D
 var chest: Node3D
@@ -67,8 +76,20 @@ func land(strength: float) -> void:
 	_crouch = maxf(_crouch, clampf(strength, 0.0, 1.0))
 
 
+## Lava or a fall: the figure flies on with the speed it had (a little
+## slower, with a small hop), tumbles and lets its limbs flop.
+func go_limp(velocity: Vector3) -> void:
+	limp = true
+	flip = 1.0
+	_limp_velocity = velocity * 0.6 + Vector3.UP * 4.0
+	# Head over heels in the flight direction (the same fall looks the same).
+	var side := Vector3(velocity.x, 0.0, velocity.z).cross(Vector3.UP)
+	_limp_axis = (side.normalized() if side.length() > 0.5 else _body.x) + Vector3.UP * 0.3
+
+
 ## Teleport: no smoothing from the old place.
 func snap(origin: Vector3) -> void:
+	limp = false
 	global_position = origin
 	_body = Basis.IDENTITY
 	scarf.reset(origin)
@@ -83,6 +104,9 @@ func hand_position() -> Vector3:
 ## null: aiming direction).
 func update_pose(delta: float, origin: Vector3, state: Dictionary) -> void:
 	_clock += delta
+	if limp:
+		_fall_limp(delta)
+		return
 	global_position = origin
 	var velocity: Vector3 = state.velocity
 	var speed := velocity.length()
@@ -155,6 +179,28 @@ func update_pose(delta: float, origin: Vector3, state: Dictionary) -> void:
 	head.rotation.x = lerpf(head.rotation.x, drift * 0.5, k)
 
 	scarf.step(delta, chest.to_global(Vector3(0.0, 0.48, 0.12)), velocity)
+
+
+## One frame of the limp fall: ballistic flight, tumbling body, limbs
+## loose and slow (low stiffness), each swinging at its own beat.
+func _fall_limp(delta: float) -> void:
+	_limp_velocity.y -= limp_gravity * delta
+	global_position += _limp_velocity * delta
+	_body = (Basis(_limp_axis.normalized(), limp_spin * delta) * _body).orthonormalized()
+	basis = _body
+	var k := 1.0 - exp(-5.0 * delta)
+	var t := _clock
+	_rotate_to(arm_r, Vector3(2.4 + sin(t * 7.0) * 0.6, 0.0, 0.9 + sin(t * 5.3) * 0.4), k)
+	_rotate_to(arm_l, Vector3(2.2 + sin(t * 6.1 + 1.0) * 0.6, 0.0, -1.0 + sin(t * 4.7) * 0.4), k)
+	_bend(elbow_r, 0.8 + sin(t * 8.0) * 0.5, k)
+	_bend(elbow_l, 0.7 + sin(t * 7.3 + 2.0) * 0.5, k)
+	_rotate_to(leg_r, Vector3(0.9 + sin(t * 5.0) * 0.5, 0.0, 0.3), k)
+	_rotate_to(leg_l, Vector3(-0.3 + sin(t * 5.7 + 1.5) * 0.5, 0.0, -0.3), k)
+	_bend(knee_r, 1.2 + sin(t * 6.4) * 0.4, k)
+	_bend(knee_l, 0.6 + sin(t * 6.9 + 0.5) * 0.4, k)
+	chest.rotation.x = lerpf(chest.rotation.x, sin(t * 4.0) * 0.4, k)
+	head.rotation.x = lerpf(head.rotation.x, 0.6 + sin(t * 5.0) * 0.4, k)
+	scarf.step(delta, chest.to_global(Vector3(0.0, 0.48, 0.12)), _limp_velocity)
 
 
 ## Points a limb pivot (rest pose: hanging down, -Y) at a world position.

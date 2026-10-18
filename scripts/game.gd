@@ -11,6 +11,10 @@ signal level_loaded(level: Level)
 @export var max_timer_step := 0.1
 ## Level to start directly (index into level_list); -1 opens the level menu.
 @export var start_level := -1
+## Lava or a fall: the figure tumbles limp this long (s) before the picture
+## fades to the checkpoint. The run timer stands still meanwhile, so the
+## show costs no time (the lost way does). 0 = straight back.
+@export var fall_show_time := 0.7
 
 @onready var player := $Player
 @onready var menu := $LevelMenu
@@ -84,6 +88,9 @@ var best_flow := 0
 const FLOW_MIN_SHOWN := 2
 ## Play not yet written to Stats (see _flush_stats()).
 var _stats_piece := {}
+## Seconds left of the limp fall before the respawn (0: none).
+var _falling := 0.0
+var _fade_tween: Tween
 var _last_position := Vector3.ZERO
 ## Longer steps per frame are teleports (respawn), not flown meters.
 const MAX_STATS_STEP := 5.0
@@ -190,7 +197,11 @@ func open_menu() -> void:
 
 
 func _process(delta: float) -> void:
-	if _running:
+	if _falling > 0.0:
+		_falling -= delta
+		if _falling <= 0.0:
+			_respawn_now()
+	elif _running:
 		# Real time while aiming (slow motion must not shorten the run), game
 		# time during a hit-stop (juice must not cost time).
 		_elapsed += minf(TimeScale.timer_delta(delta), max_timer_step)
@@ -200,7 +211,7 @@ func _process(delta: float) -> void:
 		_update_ghost_delta()
 		_count_stats(minf(TimeScale.timer_delta(delta), max_timer_step))
 	TimeScale.update(delta)
-	if player.global_position.y < level.kill_y:
+	if player.global_position.y < level.kill_y and _falling <= 0.0:
 		_on_killed()
 	_update_darkness(delta)
 	time_label.text = "%.2f" % (replay.time if replay.is_playing() else _elapsed)
@@ -215,6 +226,7 @@ func _process(delta: float) -> void:
 
 ## Back to the start of the level, timer reset.
 func restart() -> void:
+	_falling = 0.0
 	replay.stop()
 	_flush_stats()
 	_respawn = level.start_position()
@@ -238,20 +250,35 @@ func restart() -> void:
 	_update_hud()
 
 
-## Lava or a fall: back to the last checkpoint, the timer keeps running.
+## Lava or a fall: the figure falls limp for a moment, then back to the
+## last checkpoint; the timer keeps running (but not during the fall).
 func _on_killed() -> void:
-	if replay.is_playing():
+	if replay.is_playing() or _falling > 0.0:
 		return
-	player.reset_to(_respawn)
 	_set_flow(0)
+	if fall_show_time <= 0.0:
+		_respawn_now()
+		return
+	_falling = fall_show_time
+	player.fall()
+	_fade_tween = fade.create_tween()
+	_fade_tween.tween_interval(fall_show_time * 0.45)
+	_fade_tween.tween_property(fade, "color:a", 1.0, fall_show_time * 0.55)
+
+
+func _respawn_now() -> void:
+	_falling = 0.0
+	player.reset_to(_respawn)
 	_blink(RESPAWN_FADE)
 
 
 ## Hides a jump of the picture: black, then fading back in.
 func _blink(seconds: float) -> void:
+	if _fade_tween:
+		_fade_tween.kill()
 	fade.color.a = 1.0
-	var tween := fade.create_tween()
-	tween.tween_property(fade, "color:a", 0.0, seconds)
+	_fade_tween = fade.create_tween()
+	_fade_tween.tween_property(fade, "color:a", 0.0, seconds)
 
 
 ## Only a throw starts the run; after the finish it plays again.

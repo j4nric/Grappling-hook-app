@@ -190,6 +190,10 @@ var replaying := false:
 		replaying = value
 		reset_to(global_position)
 
+## Fallen (lava, a fall into the depth): no physics and no input until
+## reset_to(); the figure falls limp meanwhile (see fall()).
+var fallen := false
+
 @onready var rope := $Rope
 @onready var hook: Node3D = $Hook
 @onready var flight_rope := $FlightRope
@@ -221,7 +225,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if replaying:
+	if replaying or fallen:
 		return
 	velocity.y -= gravity * delta
 	_since_throw += delta
@@ -625,7 +629,7 @@ func _hide_aim() -> void:
 ## Throws the hook. The attached rope keeps pulling until the new hook bites.
 ## While a hook flies, the swipe is buffered instead.
 func throw_hook(swipe: Vector2, flick_velocity: Vector2) -> void:
-	if replaying:
+	if replaying or fallen:
 		return
 	_hide_aim()
 	TimeScale.set_aim(1.0)
@@ -671,7 +675,7 @@ func _miss() -> void:
 ## Lets go of the attached rope (a tap without a rope calls back a hook in
 ## the air). Signals only if something was out.
 func release(reason := "tap") -> void:
-	if replaying:
+	if replaying or fallen:
 		return
 	if not _attached:
 		if _flying and reason == "tap":
@@ -709,7 +713,29 @@ func replay_step(pos: Vector3, vel: Vector3, rope_anchor: Vector3, jump := false
 		figure.snap(pos)
 
 
+## Lava or a fall: the body stops where it is, the rope goes, and the
+## figure tumbles on limp with the speed it had (until reset_to()).
+func fall() -> void:
+	if replaying or fallen:
+		return
+	if _attached:
+		_rope_visual.retract(anchor, hook_retract_time)
+	if _flying:
+		_flight_visual.retract(flight_position, hook_retract_time)
+	_attached = false
+	_flying = false
+	_anchor_body = null
+	_buffered = []
+	_update_state()
+	_hide_aim()
+	TimeScale.reset()
+	figure.go_limp(velocity)
+	velocity = Vector3.ZERO
+	fallen = true
+
+
 func reset_to(position_3d: Vector3) -> void:
+	fallen = false
 	_attached = false
 	_flying = false
 	_anchor_body = null

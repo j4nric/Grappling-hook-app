@@ -38,20 +38,27 @@ Vorschau: Jeder offene Pull Request ist zusätzlich unter
 `https://j4nric.github.io/Grappling-hook-app/preview/pr-<Nummer>/` spielbar
 (Übersicht: `/preview/`). So lassen sich Experimente testen, ohne `main` zu ändern.
 
-Inhalt: Tutorial und 6 Höhlen-Level (weite Hallen über einem Abgrund: Lava,
+Inhalt: Tutorial und 8 Höhlen-Level (weite, hohe Hallen über einem Abgrund: Lava,
 Eis-Decken, fahrende Blöcke, Eis-Tore, Aufwinde, brüchige Stalaktiten,
-Tempo-Ringe, dunkle Hallen), dazu **Daily Cave** (jeden Tag eine neue, für alle
+Tempo-Ringe, dunkle Hallen, offene Decken mit schwebenden Steinen in „Skyway“;
+Arbeitslevel „Wide Cave“), dazu **Daily Cave** (jeden Tag eine neue, für alle
 gleiche Höhle) und **Random Cave** (bei jeder Wahl neu). Medaillen, Bestzeiten,
 Zwischenzeiten an Checkpoints, Geist der Bestzeit mit Abstand im HUD, **Replay**
 der Bestzeit im Ziel, **Stats** im Level-Menü (Läufe, Meter, Haken, Flow,
-Spielzeit), Flow-Zähler für Haken in Folge, Musik, die mit dem Tempo anzieht,
-Höhlen-Hall und Geräusche an ihren Orten (Lava, Aufwind, Kristalle, Tropfen).
+Spielzeit, Kurve der Zielzeiten je Level), Flow-Zähler für Haken in Folge, Musik, die mit dem Tempo anzieht,
+Höhlen-Hall, der sich nach der Hallengröße richtet, und Geräusche an ihren Orten
+(Lava, Aufwind, Kristalle, Tropfen).
 Gespielt wird mit einer Gelenkfigur mit Schal; das Seil hängt durch und
-schlängelt sich zurück.
-Pause (**II**): Medaillenziele, Geist und Ton an/aus.
+schlängelt sich zurück, bei einem Sturz fällt die Figur schlaff.
+Pause (**II**): Medaillenziele, Geist und Ton an/aus, **Share run** (beste Zeit
+als Text-Code kopieren und an Freunde schicken), **Load run** (Code einfügen:
+der Lauf fährt als oranger Rivalen-Geist mit).
 TUNE-Tabs: Throw, Rope, Move, Camera, Misc (Lautstärken, Debug-Anzeige mit FPS,
-Auto-Qualität, Vibration, Hit-Stop, Speed-Lines). Rekorde mit veränderten Werten
-werden mit * markiert.
+Auto-Qualität, Vibration, Hit-Stop, Speed-Lines) und **Cave** (Höhlen-Editor:
+jede Halle des Levels ändern – Länge, Breite, Höhe, offene Decke, schwebende
+Steine, Hindernisse – mit Skizzen; „Copy layout“ schickt das Ergebnis als Text).
+Wertesätze **A/B/C** zum schnellen Vergleichen, **Paste** fügt kopierte Werte
+wieder ein. Rekorde mit veränderten Werten werden mit * markiert.
 
 Grafik, Sound und Musik sind komplett prozedural erzeugt (`tools/gen_*.py`).
 
