@@ -1,6 +1,6 @@
 # Roadmap
 
-Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md` (Runde 2).
+Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md` (Runde 3).
 Runde 1 (2026-10-17, PRs #1–#12): Tests/CI, Vorschau-Builds, Zip-Launch, Wurf-Feedback,
 Kamera, HUD, 5 Level, Speedrun, Optik, Sound, Debug/Auto-Qualität.
 Runde 2 (2026-10-18, PRs #13–#24): Eingabe-/Timer-Bugs, Physik-Interpolation,
