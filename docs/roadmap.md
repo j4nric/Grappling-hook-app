@@ -78,10 +78,13 @@ Musik nach Tempo, Tutorial.
 - [x] TUNE-Regler mit Klarname, Erklärung und animierter Skizze
 - [x] Am Handy getunte Werte als Standard, höhere Regler-Grenzen
 
-## M10 – Grund-Design der Level (Runde 5, geplant)
-- [ ] Höhlen-Editor im TUNE-Panel, Licht für breite Hallen
-- [ ] Level an die neue Reichweite anpassen, Hallen-Vorlagen
-- [ ] Siehe `next-steps.md`
+## M10 – Grund-Design der Level (Runde 5)
+- [x] Seilende löst wie ein Zip, festes Test-Tuning für Mechanik-Tests
+- [x] Neue Optik: Felsmodelle, Texturen (Moos, Adern, Wurzeln, Pilze, Bernstein), Deckenkristalle, Ausgangsmarken
+- [x] Offene Decke mit schwebenden Steinen, Höhlen-Editor im TUNE-Panel mit Skizzen
+- [x] Alle Level breiter und höher nach Hallen-Vorlagen, neues Level „Skyway“
+- [x] Tuning-Sätze A/B/C und Einfügen, Läufe als Code teilen (Rivalen-Geist), Zielzeiten-Kurve
+- [x] Sturz als Ragdoll, Nachhall je Halle, Leistungsmessung breiter Hallen
 
 ## Tuning-Log
 

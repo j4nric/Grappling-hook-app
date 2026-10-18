@@ -37,6 +37,9 @@ const TEST_TUNING := {
 		"anchor_look_weight": 0.3, "roll_per_speed": 1.2, "max_roll": 12.0, "shake_strength": 0.35},
 }
 
+## The limp fall before a respawn (game.gd fall_show_time): off in tests,
+## so a death respawns at once as the tests and the bot's timings expect.
+var fall_show_time := 0.0
 ## Levels the game gets (tests of the real levels use Levels.LIST).
 var levels: Array[String] = TUNNELS
 ## Level the test plays (index into levels).
@@ -52,6 +55,7 @@ func load_main() -> void:
 	main = load("res://scenes/main.tscn").instantiate()
 	main.level_list = levels
 	main.start_level = level_index
+	main.fall_show_time = fall_show_time
 	if levels == TUNNELS:
 		# Before entering the tree: the tuning panel takes these as defaults.
 		for node_path: String in TEST_TUNING:

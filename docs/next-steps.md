@@ -92,11 +92,14 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 4. Präsentation
 
-- [ ] **Sound-Mix überarbeiten (M):** Du spielst mit Ton aus – zu laut, zu
-      viel, oder bestimmte Sounds? *Rückmeldung nötig.*
-- [ ] **Sturz als Ragdoll (M):** Die Figur fällt bei Lava/Absturz schlaff,
+- [ ] ~~**Sound-Mix überarbeiten (M):**~~ (Entscheidung 2: alles gut, bleibt so)
+- [x] **Sturz als Ragdoll (M):** (umgesetzt: die Figur fliegt bei Lava/Absturz
+      schlaff weiter und überschlägt sich 0,7 s, dann Abblende zum Checkpoint;
+      der Timer steht in der Zeit still, `fall_show_time` in `game.gd`) Die Figur fällt bei Lava/Absturz schlaff,
       statt hart zu verschwinden.
-- [ ] **Hall je Halle (S):** große Hallen mehr Nachhall als enge Gänge.
+- [x] **Hall je Halle (S):** (umgesetzt: Bus „Cave“ mit Reverb, Raumgröße und
+      Anteil folgen der Halle, in der man ist; offene Hallen hallen weniger, der
+      Wind bleibt trocken) große Hallen mehr Nachhall als enge Gänge.
 
 ## 5. Technik und Qualität
 
@@ -110,15 +113,19 @@ Größe: S = klein, M = mittel, L = groß.
       Zielhilfe, und Startverzögerungen ändern in prozeduralen Höhlen nichts
       (gleiche Zeit bei jedem Start) – Varianten über die Wurfrichtung statt
       über den Start.
-- [ ] **Leistung in breiten Hallen (S):** mehr Fläche und Lichter im Bild;
+- [x] **Leistung in breiten Hallen (S):** (gemessen im Browser-Build an festen
+      Standpunkten: Wide Cave 108–111 Draw-Calls, Skyway 83–119, dagegen Gates
+      162, Tutorial 144, Lava Deep 129; je 9–13 k Dreiecke, höchstens 10 Lichter.
+      Breite Hallen sind nicht teurer – die Felsmodelle laufen als MultiMesh, die
+      Sichtweite schneidet weit Entferntes ab. Nichts zu tun.) mehr Fläche und Lichter im Bild;
       Browser-Messung wie in Runde 3 wiederholen.
 
-## Offene Entscheidungen
+## Entscheidungen (Runde 5)
 
-1. Soll das Seil am kürzesten Punkt automatisch lösen (Zip)?
-2. Sound: was stört – Lautstärke, bestimmte Sounds, Musik?
-3. Wird die Wide Cave die Vorlage für alle Level (alle breiter und höher)?
-4. Medaillen künftig aus deinen Läufen statt aus dem Bot?
+1. Seil löst am kürzesten Punkt automatisch (Zip): **ja** (umgesetzt).
+2. Sound: **alles gut**, kein Umbau.
+3. Wide Cave als Vorlage für alle Level: **ja** (umgesetzt).
+4. Medaillen aus deinen Läufen: **nein**, sie bleiben aus Bot-Zeiten.
 
 ## Auf dem Gerät (nur mit dem iPhone möglich)
 

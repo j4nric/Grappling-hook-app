@@ -33,3 +33,16 @@ func run() -> void:
 	p.global_position = Vector3(0, 0, -102)
 	await wait_frames(3)
 	check(not sfx._players["checkpoint"].playing, "the same checkpoint dings only once")
+
+	# Hall reverb: big halls ring longer than narrow passages, open ones less.
+	var narrow: Vector2 = sfx.reverb_for(CavernBuilder.full_segment({"template": "narrows"}))
+	var cathedral: Vector2 = sfx.reverb_for(CavernBuilder.full_segment({"template": "cathedral"}))
+	var open_hall: Vector2 = sfx.reverb_for(CavernBuilder.full_segment({"template": "cathedral", "open": true}))
+	check(cathedral.x > narrow.x + 0.3 and cathedral.y > narrow.y * 3.0, "a cathedral rings longer than a narrow passage (%s, %s)" % [cathedral, narrow])
+	check(open_hall.y < cathedral.y, "an open hall rings less")
+	check(sfx._players["hook"].bus == "Cave" and sfx._wind.bus == "Master", "the sounds ring in the cave, the wind stays dry")
+	var level := Level.new()
+	level.segments = [{"length": 50.0, "width": 30.0}, {"length": 80.0, "width": 90.0}]
+	check(level.hall_at(10.0).width == 30.0 and level.hall_at(-60.0).width == 90.0 and level.hall_at(-500.0).width == 90.0,
+			"the hall at a position is found")
+	level.free()

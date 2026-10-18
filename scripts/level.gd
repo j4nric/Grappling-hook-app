@@ -30,6 +30,8 @@ signal ring_passed
 @export var hints: Array = []
 
 var _built := false
+## Full segments (hall_at()), made on first use.
+var _halls: Array = []
 ## Dark halls as [z_from, z_to] (forward is -Z), from the builder.
 var dark_ranges: Array = []
 
@@ -66,6 +68,19 @@ func version() -> String:
 	# The full halls (with their templates): a changed template is a new version.
 	var halls := segments.map(func(seg: Dictionary) -> Dictionary: return CavernBuilder.full_segment(seg))
 	return "%08x" % (hash(level_name + var_to_str(halls) + str(layout_seed)) & 0xffffffff)
+
+
+## The hall (full segment, see CavernBuilder.full_segment()) at a z, the
+## first or last one before or after the cave; {} for a level without halls.
+func hall_at(z: float) -> Dictionary:
+	if _halls.size() != segments.size():
+		_halls = segments.map(func(seg: Dictionary) -> Dictionary: return CavernBuilder.full_segment(seg))
+	var end := 0.0
+	for i in _halls.size():
+		end -= float(_halls[i].length)
+		if z > end or i == _halls.size() - 1:
+			return _halls[i]
+	return {}
 
 
 ## The hint for a position, "" if none.
