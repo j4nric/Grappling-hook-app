@@ -28,6 +28,15 @@ const FLICKER := preload("res://scripts/flicker.gd")
 const UPDRAFT := preload("res://scripts/updraft.gd")
 const BRITTLE := preload("res://scripts/brittle.gd")
 const SPEED_RING := preload("res://scripts/speed_ring.gd")
+const AMBIENT := preload("res://scripts/ambient_sound.gd")
+const SOUNDS := {
+	"lava": preload("res://assets/sounds/amb_lava.wav"),
+	"updraft": preload("res://assets/sounds/amb_updraft.wav"),
+	"crystal": preload("res://assets/sounds/amb_crystal.wav"),
+	"drip": preload("res://assets/sounds/drip.wav"),
+}
+## Water drips per hall, falling from the ceiling.
+const DRIPS_PER_HALL := 2
 const NO_HOOK_GROUP := "no_hook"
 ## Beyond these distances (m) the fog has nearly swallowed things: they are
 ## not drawn at all (props are small, a hall is long so it reaches further).
@@ -98,7 +107,7 @@ var _hall := 0
 func build(level: Node3D, segments: Array, seed_value: int) -> float:
 	_level = level
 	_rng.seed = seed_value
-	for group in ["Geometry", "Props", "Lights", "Movers", "KillZones", "Checkpoints", "Dynamic"]:
+	for group in ["Geometry", "Props", "Lights", "Movers", "KillZones", "Checkpoints", "Dynamic", "Sounds"]:
 		_add(Node3D.new(), group)
 
 	var start := Marker3D.new()
@@ -198,6 +207,7 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 		_gate(seg, z0 - length / 2.0)
 	for b in seg.blocks:
 		_box(b[6], Vector3(b[0], b[1], z0 - b[2]), Vector3(b[3], b[4], b[5]), Vector3.ZERO)
+	_drips(seg, z0, z1)
 	for m in seg.movers:
 		_mover(Vector3(m[0], m[1], z0 - m[2]), Vector3(m[3], m[4], m[5]), m[6], m[7], m[8])
 
@@ -358,6 +368,7 @@ func _updraft(base: Vector3, ceiling: float) -> void:
 	light.light_energy = 1.2
 	light.omni_range = 16.0
 	light.position = Vector3(base.x, ceiling * 0.4, base.z)
+	_ambient("updraft", light.position, 45.0, -2.0)
 	_add(light, "Lights/Updraft")
 
 
@@ -478,6 +489,7 @@ func _lava(seg: Dictionary, z0: float, z1: float) -> void:
 		light.set("amount", 0.15)
 		light.set("speed", 3.0)
 		_add(light, "Lights/LavaLight%d_%d" % [_hall, i])
+		_ambient("lava", light.position, 70.0, 0.0)
 
 
 func _checkpoint(seg: Dictionary, z: float) -> void:
@@ -538,11 +550,38 @@ func _ledge(pos: Vector3, size: Vector3) -> void:
 			Vector3(_rng.randf_range(-0.2, 0.2), _rng.randf_range(0, TAU), _rng.randf_range(-0.2, 0.2)))
 
 
+## A sound at pos, audible up to max_distance. interval > 0 repeats a
+## one-shot every interval .. 3 * interval seconds instead of looping.
+func _ambient(sound: String, pos: Vector3, max_distance: float, volume_db: float, interval := 0.0) -> void:
+	var player := AudioStreamPlayer3D.new()
+	player.set_script(AMBIENT)
+	player.stream = SOUNDS[sound]
+	player.position = pos
+	player.max_distance = max_distance
+	player.unit_size = max_distance / 6.0
+	player.volume_db = volume_db
+	player.set("interval_min", interval)
+	player.set("interval_max", interval * 3.0)
+	_add(player, "Sounds/" + sound.capitalize())
+
+
+## Drips from the ceiling. Their own random numbers: the cave layout stays
+## the same as before they existed.
+func _drips(seg: Dictionary, z0: float, z1: float) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = _rng.seed + _hall * 7919
+	var w: float = seg.width
+	for i in DRIPS_PER_HALL:
+		var pos := Vector3(rng.randf_range(-w / 3.0, w / 3.0), float(seg.ceiling) - 2.0, rng.randf_range(z1 + 4.0, z0 - 4.0))
+		_ambient("drip", pos, 30.0, -4.0, 2.0)
+
+
 func _crystal_on_wall(seg: Dictionary, z: float) -> void:
 	var side := -1.0 if _rng.randf() < 0.5 else 1.0
 	var y := _rng.randf_range(2.0, float(seg.ceiling) - 4.0)
 	var x: float = side * (float(seg.width) / 2.0 - 1.5)
 	_crystal(Vector3(x, y, z), Vector3(-side, 0.3, 0).normalized(), _rng.randf_range(1.5, 3.0))
+	_ambient("crystal", Vector3(x, y, z), 18.0, -8.0)
 
 
 ## Glowing crystal cluster, size `scale` (big ones are landmarks).

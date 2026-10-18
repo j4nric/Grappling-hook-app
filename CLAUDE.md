@@ -91,7 +91,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur |
 | `scripts/music.gd` | Musik: drei synchrone Spuren (`AudioStreamSynchronized`), Puls und Arpeggio nach Tempo und Flow; Spuren von `tools/gen_music.py` (QOA-komprimiert, nahtlos) |
 | `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo |
-| `assets/sounds/*.wav` | Synthetisierte Sounds, erzeugt von `tools/gen_sounds.py` (numpy) |
+| `assets/sounds/*.wav` | Synthetisierte Sounds mit eingebackenem Höhlen-Hall, erzeugt von `tools/gen_sounds.py` (numpy); `amb_*` sind Schleifen |
+| `scripts/ambient_sound.gd` | `AmbientSound`: 3D-Geräusch im Level (Lava, Aufwind, Kristall als Schleife, Tropfen in Abständen), spielt nur in Hörweite; platziert von `CavernBuilder` |
 | `scripts/debug_overlay.gd` | Debug-Anzeige (FPS, Tempo, Haken, letzter Wurf) und Auto-Qualität |
 | `tools/gen_splash.py` | Erzeugt `assets/splash.png` (Ladebildschirm) |
 | `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab, `time_at_z()` für das Geist-Delta im HUD |
