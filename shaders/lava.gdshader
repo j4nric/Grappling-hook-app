@@ -9,10 +9,16 @@ uniform float scale = 0.08;
 uniform vec2 drift_a = vec2(0.02, 0.035);
 uniform vec2 drift_b = vec2(-0.03, 0.015);
 uniform float glow = 2.5;
+// Slow swell of the surface (m) and the pulse of the glow.
+uniform float wave = 0.35;
+uniform float pulse = 0.25;
 
 varying vec3 world_pos;
 
 void vertex() {
+	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	// A heavy, slow swell (only where the mesh has vertices: the lava plane).
+	VERTEX.y += wave * (sin(world_pos.x * 0.21 + TIME * 0.9) + sin(world_pos.z * 0.17 - TIME * 0.7)) * 0.5;
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
 
@@ -29,6 +35,7 @@ void fragment() {
 	// Snap to coarse steps: fits the pixel look.
 	col = floor(col * 8.0) / 8.0;
 	ALBEDO = col * 0.4;
-	EMISSION = col * glow * smoothstep(0.1, 0.5, heat);
+	float throb = 1.0 + pulse * sin(TIME * 1.7 + world_pos.z * 0.05);
+	EMISSION = col * glow * throb * smoothstep(0.1, 0.5, heat);
 	ROUGHNESS = 0.8;
 }

@@ -1,7 +1,9 @@
 extends Node3D
 ## Visual juice driven by player signals: sparks where the hook bites, a short
 ## hit-stop, dust on hard landings and wall scrapes, a burst at the zip launch,
-## a trail and wind streaks at high speed, and floating dust motes.
+## a trail and wind streaks at high speed, and floating motes whose kind
+## follows the hall (dust, embers over lava, snow in ice halls, fireflies in
+## the dark, pale pollen under an open sky).
 
 @export var player: CharacterBody3D
 ## Speed (m/s) above which the speed trail shows.
@@ -24,6 +26,15 @@ extends Node3D
 ## Floating dust motes around the player: scale and stillness of the cave.
 @export var dust_amount := 60
 
+## Motes per kind of air: [color, gravity (m/s², + rises), top speed (m/s), size].
+const AIR := {
+	"dust": [Color(1.0, 0.85, 0.6, 0.5), -0.02, 0.3, 1.0],
+	"embers": [Color(1.0, 0.45, 0.12, 0.95), 0.6, 1.2, 1.3],
+	"snow": [Color(0.9, 0.95, 1.0, 0.8), -0.5, 0.4, 1.5],
+	"fireflies": [Color(0.75, 1.0, 0.35, 1.0), 0.0, 0.9, 1.9],
+	"pollen": [Color(0.7, 0.85, 1.0, 0.6), 0.12, 0.4, 1.1],
+}
+
 @export_group("Wind")
 ## Speed (m/s) at which wind streaks start, and where they are densest.
 @export var streak_speed := 34.0
@@ -36,6 +47,9 @@ var _trail: CPUParticles3D
 var _streaks: CPUParticles3D
 var _streak_material: StandardMaterial3D
 var _motes: CPUParticles3D
+## Kind of motes in the air now (AIR) and ticks until the next look.
+var air := "dust"
+var _air_check := 0
 var _gold: CPUParticles3D
 var _spores: CPUParticles3D
 
@@ -75,6 +89,12 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	_air_check -= 1
+	if _air_check <= 0:
+		_air_check = 30
+		var level: Level = get_parent().get("level") if get_parent() else null
+		if level:
+			set_air(air_for(level.hall_at(player.global_position.z)))
 	var speed := player.velocity.length()
 	_motes.global_position = player.global_position + Vector3(0, 2, -6)
 	_trail.global_position = player.global_position
@@ -88,6 +108,33 @@ func _physics_process(_delta: float) -> void:
 		_streaks.direction = -dir
 		var strength := clampf((speed - streak_speed) / (streak_full_speed - streak_speed), 0.15, 1.0)
 		_streak_material.albedo_color.a = 0.4 * strength
+
+
+## The kind of air in a hall (CavernBuilder segment).
+static func air_for(hall: Dictionary) -> String:
+	if hall.is_empty():
+		return "dust"
+	if hall.floor == "lava":
+		return "embers"
+	if hall.dark:
+		return "fireflies"
+	if float(hall.ice) >= 0.5 or hall.ice_stalactites:
+		return "snow"
+	if hall.open:
+		return "pollen"
+	return "dust"
+
+
+func set_air(kind: String) -> void:
+	if kind == air or not AIR.has(kind):
+		return
+	air = kind
+	var look: Array = AIR[kind]
+	_motes.color = look[0]
+	_motes.gravity = Vector3(0, look[1], 0)
+	_motes.initial_velocity_max = look[2]
+	_motes.scale_amount_min = 0.5 * float(look[3])
+	_motes.scale_amount_max = 1.2 * float(look[3])
 
 
 ## Soft glowing dots instead of boxes.
@@ -111,6 +158,7 @@ func _make_motes() -> CPUParticles3D:
 	p.local_coords = false
 	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
 	p.emission_box_extents = Vector3(10, 7, 14)
+	p.color = AIR["dust"][0]
 	p.direction = Vector3(0.3, 0.2, 0.1)
 	p.spread = 180.0
 	p.initial_velocity_min = 0.05
@@ -131,7 +179,6 @@ func _make_motes() -> CPUParticles3D:
 	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 	mat.vertex_color_use_as_albedo = true
-	mat.albedo_color = Color(1.0, 0.85, 0.6, 0.5)
 	mat.albedo_texture = preload("res://assets/textures/dust.png")
 	# Right in front of the camera a mote would be a big blob: fade it out.
 	mat.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_ALPHA
