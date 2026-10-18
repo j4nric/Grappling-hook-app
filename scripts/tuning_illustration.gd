@@ -1071,6 +1071,25 @@ func _draw_cave_side() -> void:
 			i += 1
 		for stone in stones:
 			draw_circle(_to(stone), maxf(_cave("floater_size", 3.5) * 0.45 * _scale, 3.0), Color(0.3, 0.6, 0.8))
+	# Bounce mushrooms on the floor (or on a column) with the arc they throw.
+	var mushrooms := int(_cave("bouncers", 0.0))
+	if mushrooms > 0:
+		var ground := _cave("floor", 0.0) == 1.0
+		var base := 0.0 if ground else -3.0
+		for i in mushrooms:
+			var mx := length * (i + 0.5) / float(mushrooms)
+			if not ground:
+				draw_rect(Rect2(_to(Vector2(mx - 1.5, base)), Vector2(3.0 * _scale, size.y)), ROCK.darkened(0.2))
+			_line(Vector2(mx, base), Vector2(mx, base + 3.0), Color(0.75, 0.68, 0.55), 4.0)
+			var cap_center := _to(Vector2(mx, base + 3.0))
+			draw_colored_polygon(PackedVector2Array([cap_center + Vector2(-4.0 * _scale, 0), cap_center + Vector2(-2.5 * _scale, -1.6 * _scale),
+					cap_center + Vector2(2.5 * _scale, -1.6 * _scale), cap_center + Vector2(4.0 * _scale, 0)]), Color(0.35, 0.95, 0.75))
+		var hop := fmod(_time * 0.7, 1.0)
+		var first := length * 0.5 / float(mushrooms)
+		var p := Vector2(first + hop * 16.0, base + 4.5 + 26.0 * hop * (1.0 - hop) * 1.6)
+		_player(p)
+		_caption("%d bounce mushroom%s: land on the cap" % [mushrooms, "" if mushrooms == 1 else "s"])
+		return
 	# The player swings from stone to stone (or along the ceiling).
 	if stones.size() >= 2:
 		var hop := fmod(_time * 0.8, float(stones.size() - 1))

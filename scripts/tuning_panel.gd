@@ -117,6 +117,7 @@ const PARAMS := [
 	["CaveEditor", "ice", 0.0, 1.0, 0.05, "Cave"],
 	["CaveEditor", "rings", 0.0, 8.0, 1.0, "Cave"],
 	["CaveEditor", "updrafts", 0.0, 5.0, 1.0, "Cave"],
+	["CaveEditor", "bouncers", 0.0, 6.0, 1.0, "Cave"],
 	["CaveEditor", "dark", 0.0, 1.0, 1.0, "Cave"],
 	["CaveEditor", "checkpoint", 0.0, 1.0, 1.0, "Cave"],
 	["CaveEditor", "halls", 1.0, 12.0, 1.0, "Cave"],

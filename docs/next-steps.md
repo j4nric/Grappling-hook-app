@@ -36,7 +36,10 @@ Größe: S = klein, M = mittel, L = groß.
       Tempo-Schub (`perfect_chain_boost`), goldene Funken, ein „PERFECT“ im HUD
       und einen hellen Ton. Belohnt Timing statt Zufall. Regler im TUNE-Panel
       mit Skizze; Medaillen danach neu messen.
-- [ ] **Sprungpilze (M):** neues Element – Riesenpilze auf Böden und Inseln, die
+- [x] **Sprungpilze (M):** (umgesetzt: `Bouncer`, Schlüssel `bouncers`, Regler im
+      Tab Cave mit Skizze, „Boing“-Ton, Sporen-Partikel, Salto; neue Baukasten-
+      Schlüssel ändern die Level-Version nicht mehr, solange sie auf Standard
+      stehen – keine Rekorde gehen verloren) neues Element – Riesenpilze auf Böden und Inseln, die
       beim Aufkommen hoch und nach vorn schleudern (`bounce`). Neuer
       Baukasten-Schlüssel `bouncers`, Editor-Regler mit Skizze.
 

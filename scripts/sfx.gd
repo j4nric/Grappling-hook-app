@@ -6,7 +6,7 @@ extends Node
 ## player is in: big halls ring longer than narrow passages (the wind stays dry).
 
 const SOUNDS := ["throw", "hook", "miss", "zip", "land", "scrape", "lava", "checkpoint", "go", "finish", "crack", "ring",
-		"perfect"]
+		"perfect", "bounce"]
 
 @export var player: CharacterBody3D
 @export var game: Node
@@ -72,6 +72,7 @@ func _ready() -> void:
 	player.crushed.connect(play.bind("land"))
 	player.hook_missed.connect(play.bind("miss"))
 	player.perfect_chain.connect(play.bind("perfect"))
+	player.bounced.connect(play.bind("bounce"))
 	player.rope_released.connect(func(reason: String) -> void:
 		if reason == "zip":
 			play("zip")

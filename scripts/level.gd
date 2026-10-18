@@ -66,7 +66,12 @@ func _ready() -> void:
 ## one version of a level).
 func version() -> String:
 	# The full halls (with their templates): a changed template is a new version.
-	var halls := segments.map(func(seg: Dictionary) -> Dictionary: return CavernBuilder.full_segment(seg))
+	var halls := segments.map(func(seg: Dictionary) -> Dictionary:
+		var full := CavernBuilder.full_segment(seg)
+		for key: String in CavernBuilder.LATE_KEYS:
+			if full[key] == CavernBuilder.SEGMENT_DEFAULTS[key]:
+				full.erase(key)
+		return full)
 	return "%08x" % (hash(level_name + var_to_str(halls) + str(layout_seed)) & 0xffffffff)
 
 

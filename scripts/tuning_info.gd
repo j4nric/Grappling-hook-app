@@ -167,6 +167,8 @@ const PARAMS := {
 		"Share of the ceiling that is ice: the hook does not hold there (stalactites in the ice still do)."],
 	"CaveEditor/rings": ["Speed rings", "", "cave_top",
 		"Glowing rings in the air: fly through for a boost."],
+	"CaveEditor/bouncers": ["Bounce mushrooms", "", "cave_side",
+		"Giant mushrooms along the hall: land on the cap and it throws you up and on. On the floor of ground halls, on a rock column in halls without floor."],
 	"CaveEditor/updrafts": ["Updrafts", "", "cave_top",
 		"Columns of rising air from the depth that carry you up."],
 	"CaveEditor/dark": ["Dark hall", "switch", "cave_section",

@@ -187,6 +187,14 @@ def main():
     shimmer = tone(3951, d2, ((1, 1),)) * env(len(t(d2)), 0.01, curve=5.0) * 0.25
     save("perfect", np.concatenate([first, second + shimmer]), 0.55, room=0.3)
 
+    # Bounce: soft rubbery boing (rising pitch with a wobble) and a puff.
+    d = 0.45
+    tt = t(d)
+    pitch = np.linspace(150, 420, len(tt)) * (1 + 0.06 * np.sin(2 * np.pi * 18 * tt))
+    boing = tone(pitch, d, ((1, 1), (2, 0.25))) * env(len(tt), 0.004, curve=3.0)
+    puff = lowpass(noise(d), 900) * env(len(tt), 0.002, curve=14)
+    save("bounce", boing + 0.4 * puff, 0.6, room=0.35)
+
     # --- Ambience, played at places in the cave (AudioStreamPlayer3D). Own
     # generator, so the sounds above stay as they are.
     amb = np.random.default_rng(55)

@@ -37,6 +37,7 @@ var _streaks: CPUParticles3D
 var _streak_material: StandardMaterial3D
 var _motes: CPUParticles3D
 var _gold: CPUParticles3D
+var _spores: CPUParticles3D
 
 
 func _ready() -> void:
@@ -44,6 +45,7 @@ func _ready() -> void:
 	_dust = _make_burst(Color(0.6, 0.55, 0.5), 14, 3.0, 0.5)
 	_burst = _make_burst(Color(0.9, 0.95, 1.0), 12, 5.0, 0.3)
 	_gold = _make_burst(Color(1.0, 0.78, 0.2), 32, 9.0, 0.55)
+	_spores = _make_burst(Color(0.45, 1.0, 0.8), 26, 6.0, 0.8)
 	_trail = _make_particles(Color(0.8, 0.9, 1.0, 0.6), 24, 0.35)
 	_trail.emitting = false
 	_trail.initial_velocity_max = 0.5
@@ -60,6 +62,8 @@ func _ready() -> void:
 		_emit(_gold, player.global_position, -player.velocity.normalized())
 		if haptics >= 0.5:
 			Input.vibrate_handheld(40))
+	player.bounced.connect(func() -> void:
+		_emit(_spores, player.global_position + Vector3.DOWN * 0.8, Vector3.UP))
 	player.deflected.connect(func(_speed: float) -> void:
 		_emit(_dust, player.global_position, -player.velocity.normalized()))
 	player.landed.connect(func(speed: float) -> void:

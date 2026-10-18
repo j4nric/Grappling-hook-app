@@ -25,6 +25,8 @@ signal deflected(impact_speed: float)
 signal crushed
 ## A chain throw bit at the right moment and gave a speed boost.
 signal perfect_chain
+## Thrown up by a bounce mushroom.
+signal bounced
 
 ## IDLE: nothing out. FLYING: only a thrown hook in the air. ATTACHED: a rope
 ## pulls (a second hook may be in the air, see is_hook_flying()).
@@ -746,6 +748,15 @@ func replay_step(pos: Vector3, vel: Vector3, rope_anchor: Vector3, jump := false
 	if jump:
 		reset_physics_interpolation()
 		figure.snap(pos)
+
+
+## A bounce mushroom throws the player: the new velocity, a somersault.
+func bounce(launch: Vector3) -> void:
+	if fallen or replaying:
+		return
+	velocity = launch.limit_length(max_speed)
+	figure.start_flip()
+	bounced.emit()
 
 
 ## Lava or a fall: the body stops where it is, the rope goes, and the
