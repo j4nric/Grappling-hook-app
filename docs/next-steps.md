@@ -1,12 +1,98 @@
-# Nächste Schritte – Runde 3
+# Nächste Schritte – Runde 5
 
-Stand: 2026-10-18. Runde 1 und 2 sind erledigt (PRs #1–#24), Runde 3 ebenfalls
-(PRs #26–#33, Zusammenfassung in `roadmap.md`, M8). Diese Runde nimmt sich bewusst die aufwendigen Brocken vor:
-Figur und Seil als Physik, neue Hallen-Mechaniken, Kamera-Regie, Raumklang,
-Replays, installierbare Web-App – plus Bugs und Leistung.
-Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
+Stand: 2026-10-18. Runden 1–4 sind erledigt (PRs #1–#36, Zusammenfassung in
+`roadmap.md`, Archiv unten). Die Physik ist jetzt am Handy getunt und Standard
+(PR #36). Ziel dieser Runde: **das Grund-Design der Level in der Wide Cave
+finden** – Level passend zur neuen Physik – und das Tunen von Level und Physik
+so bequem machen wie das Tunen der Physik schon ist.
+Größe: S = klein, M = mittel, L = groß.
 
-## 1. Bugs und Aufräumen
+## 1. Level-Design (Kern der Runde)
+
+- [ ] **Höhlen-Editor im TUNE-Panel (L):** neuer Tab „Cave“ mit Reglern für die
+      Wide Cave – Hallenbreite, Deckenhöhe, Hallenlänge, Stalaktiten, Inseln,
+      Säulen, Licht, Seed. Die Höhle baut sich beim Loslassen neu (Aufbau dauert
+      2–5 ms), „Copy“ schickt das Layout als Text. So wird Level-Design wie
+      Physik-Tuning direkt am Handy gemacht.
+- [ ] **Licht für breite Hallen (M):** Die Wide Cave ist dunkel, weil die Lichter
+      an den Wänden sitzen und die Wände 40 m weg sind. Licht entlang der
+      Flugbahn (Deckenkristalle, Lichtkegel in der Mitte) und ein Leitlicht zum
+      Ausgang.
+- [ ] **Level an die neue Reichweite anpassen (M):** Haken fliegen jetzt fast
+      gerade (`hook_gravity` 3) bis 68 m; viele Hallen sind dafür zu kurz und
+      zu niedrig. Abstände zwischen Ankerzonen, Hallenlängen und Deckenhöhen
+      neu ausloten – erst in der Wide Cave, dann übertragen.
+- [ ] **Hallen-Vorlagen als Design-Vokabular (M):** wenige benannte Hallentypen
+      mit klarer Aufgabe (Sprint: lang und hoch; Slalom: Säulen versetzt;
+      Kathedrale: sehr hoch, Ringe; Engstelle: schmal und niedrig, schräg
+      angeschlossen). Level und Generator setzen sich daraus zusammen.
+- [ ] **Orientierung (S):** Landmarken und ein sichtbarer Ausgang je Halle, damit
+      man in breiten Hallen die Richtung nicht verliert.
+- [ ] **Tempo-Ringe auf der Ideallinie (S):** zwischen zwei Ankerzonen statt
+      zufällig in der Hallenmitte.
+
+## 2. Spielgefühl
+
+- [ ] **Seilende (S):** Mit `min_rope_length` 9,25 m > `zip_release_distance`
+      5,5 m endet der Zug hängend, man kann um den Anker kreisen
+      (Kegelpendel; der Bot blieb so hängen). Vorschlag: Am kürzesten Seil löst
+      sich das Seil wie beim Zip mit vollem Tempo. *Entscheidung offen.*
+- [ ] **Tuning-Presets (M):** mehrere Wertesätze speichern und mit einem Tipp
+      wechseln (A/B-Vergleich), Werte als Code einfügen statt nur kopieren.
+- [ ] **Tutorial an die neue Physik anpassen (S):** Hinweise und Abstände
+      stammen aus der alten, langsameren Physik (Bot jetzt 7,5 s).
+
+## 3. Speedrun und Motivation
+
+- [ ] **Medaillen aus echten Läufen (M):** Der Bot spielt anders als ein Mensch
+      (keine Zeitlupe, keine Zielhilfe). Deine Bestzeiten als „Dev-Zeit“ und
+      Referenz-Geist mitliefern; Medaillen daraus ableiten.
+- [ ] **Replay teilen (M):** Lauf als kurzer Text-Code, als Geist eines Freundes
+      laden (ohne Server).
+- [ ] **Statistik-Verlauf (S):** Bestzeit pro Level über die Zeit als kleine Kurve.
+
+## 4. Präsentation
+
+- [ ] **Sound-Mix überarbeiten (M):** Du spielst mit Ton aus – zu laut, zu
+      viel, oder bestimmte Sounds? *Rückmeldung nötig.*
+- [ ] **Sturz als Ragdoll (M):** Die Figur fällt bei Lava/Absturz schlaff,
+      statt hart zu verschwinden.
+- [ ] **Hall je Halle (S):** große Hallen mehr Nachhall als enge Gänge.
+
+## 5. Technik und Qualität
+
+- [ ] **Test-Profil statt Standardwerte (M):** Mechanik-Tests liefen mit den
+      Standardwerten und brauchten nach jeder Übernahme von Handy-Werten
+      Anpassungen (PR #36: 15 Tests). Ein festes Test-Tuning für Mechanik-Tests,
+      Standardwerte nur noch in Level- und Bot-Tests.
+- [ ] **Bot an die neue Physik (M):** Der Bot nutzt weder Zeitlupe noch
+      Zielhilfe, und Startverzögerungen ändern in prozeduralen Höhlen nichts
+      (gleiche Zeit bei jedem Start) – Varianten über die Wurfrichtung statt
+      über den Start.
+- [ ] **Leistung in breiten Hallen (S):** mehr Fläche und Lichter im Bild;
+      Browser-Messung wie in Runde 3 wiederholen.
+
+## Offene Entscheidungen
+
+1. Soll das Seil am kürzesten Punkt automatisch lösen (Zip)?
+2. Sound: was stört – Lautstärke, bestimmte Sounds, Musik?
+3. Wird die Wide Cave die Vorlage für alle Level (alle breiter und höher)?
+4. Medaillen künftig aus deinen Läufen statt aus dem Bot?
+
+## Auf dem Gerät (nur mit dem iPhone möglich)
+
+- [ ] **Bildrate auf dem iPhone messen** (TUNE → Misc → Debug-Anzeige), vor allem
+      in der Wide Cave.
+- [ ] **Wide Cave spielen** und Breite, Höhe, Licht, Ankerabstände bewerten.
+
+## Später
+
+- [ ] iOS-App, TestFlight, Game Center (braucht Mac + Apple-Developer-Account).
+- [ ] Bestenliste für die Daily Cave (braucht einen Server).
+
+## Archiv: Runde 3 und 4
+
+### 1. Bugs und Aufräumen
 
 - [x] **Daily Cave hängt an der lokalen Zeitzone:** Der Seed kommt aus dem
       Systemdatum; um Mitternacht UTC sehen Spieler in verschiedenen Zonen
@@ -24,7 +110,7 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
       wählt, darf nicht als Spiel-Tipp/Wurf weiterlaufen (geprüft: der Druck
       fällt in die Pause des Menüs und wird verworfen; Test in `test_records`).
 
-## 2. Leistung
+### 2. Leistung
 
 - [x] **Licht-LOD:** bis zu 42 Lichter pro Level (Random Cave #48213), der
       Compatibility-Renderer nimmt pro Objekt höchstens 8 → Lichter flackern an
@@ -36,7 +122,7 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 - [x] **Messbar machen:** Leistungs-Test (Lichter aktiv, Draw-Objekte im Bild,
       Aufbauzeit) und ein Browser-Benchmark im Bot-Build als Vergleichswert.
 
-## 3. Figur und Seil (Schwunggefühl sichtbar machen)
+### 3. Figur und Seil (Schwunggefühl sichtbar machen)
 
 - [x] **Gelenkfigur statt Kapsel:** Rumpf, Kopf, Arme, Beine, Rucksack; Posen
       nach Zustand: Arm greift zum Anker, Beine schwingen nach, Salto beim
@@ -45,7 +131,7 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 - [x] **Seil als Verlet-Kette:** hängt beim Flug des Hakens durch, strafft sich
       beim Einhaken, schlängelt nach dem Lösen zurück.
 
-## 4. Neue Hallen-Mechaniken
+### 4. Neue Hallen-Mechaniken
 
 - [x] **Aufwind-Schächte:** Luftsäulen aus der Tiefe tragen den Spieler nach
       oben (sichtbare Partikel, Windgeräusch).
@@ -61,7 +147,7 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 - [x] **Neu entdeckt:** Rötliche Brüchig-Steine sahen im Dunkeln wie Lava aus →
       eigenes helles Sandstein-Material.
 
-## 5. Kamera-Regie
+### 5. Kamera-Regie
 
 - [x] **Unter der Decke:** Nach Zips hängt man knapp unter der Decke; die Kamera
       senkt sich dann und blickt leicht nach oben, damit die Halle sichtbar bleibt.
@@ -69,7 +155,7 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
       um den Spieler.
 - [x] **Respawn-Blende:** kurzes Abblenden statt hartem Sprung beim Tod.
 
-## 6. Raumklang
+### 6. Raumklang
 
 - [x] **Höhlen-Hall:** Hall für die Effekte (umgesetzt als eingebackener Hall
       in `tools/gen_sounds.py`: frühe Reflexionen + 1,4 s Nachhall).
@@ -82,7 +168,7 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 - [x] **Neu entdeckt:** Dutzende dauernd laufende 3D-Schleifen kosten im Browser
       je einen Audio-Knoten → Geräusche spielen nur in Hörweite des Spielers.
 
-## 7. Replays und Statistik
+### 7. Replays und Statistik
 
 - [x] **Replay der Bestzeit:** im Ziel „Replay“ – Kamera folgt dem
       aufgezeichneten Lauf (Position, Seil, Anker). Der Geist zeichnet dafür
@@ -94,7 +180,7 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
       Statistik wird jetzt bei Ziel, Neustart, Levelwechsel und beim Wechsel in
       den Hintergrund geschrieben (nicht jeden Frame: IndexedDB im Browser).
 
-## 8. Web-App
+### 8. Web-App
 
 - [x] **Installierbar (PWA):** Manifest, Icon, Offline-Cache, Vollbild ohne
       Safari-Leisten, wenn vom Home-Bildschirm gestartet. In Safari auf dem
@@ -113,12 +199,12 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 Hinweis: Auf dem iPhone hat die installierte App einen eigenen Speicher –
 Bestzeiten aus Safari sind dort nicht zu sehen (iOS trennt das, nicht änderbar).
 
-## Auf dem Gerät (nur mit dem iPhone möglich)
+### Auf dem Gerät (nur mit dem iPhone möglich)
 
 - [ ] **Bildrate auf dem iPhone messen** (TUNE → Misc → Debug-Anzeige).
 - [ ] **Neue Standardwerte erspielen** und per **Copy** schicken.
 
-## Runde 4 – Feedback vom Handy (2026-10-18)
+### Runde 4 – Feedback vom Handy (2026-10-18)
 
 - [x] **Zu viele Hindernisse:** Stalaktiten halbiert und auf höchstens 8 m
       gekürzt (vorher 13 m), Felsvorsprünge halbiert, eine Säule weniger pro
@@ -139,7 +225,7 @@ Bestzeiten aus Safari sind dort nicht zu sehen (iOS trennt das, nicht änderbar)
       mit den aktuellen Werten zeichnet (Antippen eines Reglers oder Namens
       zeigt sie oben im Panel; der technische Name steht darunter, für Copy).
 
-## Ideen für Runde 5 (aus Runde 3 gelernt)
+### Ideen aus Runde 3 (in Runde 5 übernommen)
 
 - [ ] **Hall je Halle:** große Hallen mehr Nachhall als enge Gänge (zwei
       Varianten je Sound backen, nach Hallengröße wählen).
@@ -150,8 +236,3 @@ Bestzeiten aus Safari sind dort nicht zu sehen (iOS trennt das, nicht änderbar)
 - [ ] **Statistik-Verlauf:** Bestzeit pro Level über die Zeit (kleine Kurve).
 - [ ] **Tempo-Ringe im Generator ausrichten:** Ringe auf der Ideallinie zwischen
       zwei Ankern statt zufällig in der Hallenmitte.
-
-## Später
-
-- [ ] iOS-App, TestFlight, Game Center (braucht Mac + Apple-Developer-Account).
-- [ ] Bestenliste für die Daily Cave (braucht einen Server).

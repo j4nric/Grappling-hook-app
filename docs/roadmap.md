@@ -73,6 +73,16 @@ Musik nach Tempo, Tutorial.
 - [x] Replay der Bestzeit, Statistik
 - [x] Installierbare Web-App, offline spielbar
 
+## M9 – Fluss und Tuning (Runde 4)
+- [x] Glatte Decke und Wände, weniger Hindernisse, Arbeitslevel „Wide Cave“
+- [x] TUNE-Regler mit Klarname, Erklärung und animierter Skizze
+- [x] Am Handy getunte Werte als Standard, höhere Regler-Grenzen
+
+## M10 – Grund-Design der Level (Runde 5, geplant)
+- [ ] Höhlen-Editor im TUNE-Panel, Licht für breite Hallen
+- [ ] Level an die neue Reichweite anpassen, Hallen-Vorlagen
+- [ ] Siehe `next-steps.md`
+
 ## Tuning-Log
 
 | Datum | Wert | vorher → nachher | Grund |
