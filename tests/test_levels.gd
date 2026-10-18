@@ -26,6 +26,7 @@ func run() -> void:
 		# the run. The best of a few starts judges the level, not one throw.
 		var best := INF
 		var best_deaths := 0
+		var best_run := {}
 		var times: Array[String] = []
 		for delay in START_DELAYS:
 			if best <= float(medals[2]) and not Bot.full_runs():
@@ -35,7 +36,13 @@ func run() -> void:
 			if result.time < best:
 				best = result.time
 				best_deaths = result.deaths
+				best_run = result.recording
 		print("    level %d %-12s bot best %.2f s, %d deaths (medals %.1f/%.1f/%.1f) runs %s" % [i + 1, level_name, best, best_deaths, medals[0], medals[1], medals[2], " ".join(times)])
+		if OS.get_environment("RECORD_GHOSTS") == "1" and best < INF:
+			# The best run becomes the level's gold ghost.
+			var scene: Level = Levels.instantiate(Levels.LIST[i])
+			GoldGhosts.save(Levels.LIST[i], scene, best, best_run)
+			scene.free()
 		check(best < INF, "bot finishes level %d" % (i + 1))
 		check(best <= float(medals[2]), "bot gets at least bronze in level %d" % (i + 1))
 

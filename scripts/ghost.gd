@@ -9,8 +9,12 @@ const SAMPLE_TIME := 0.05
 ## Anchor of a sample without a rope.
 const NO_ANCHOR := Vector3.INF
 
-## Records the live run (the rival ghost only plays).
+## Records the live run (the rival and gold ghosts only play).
 @export var record := true
+## Playback speed: the gold ghost runs a bot run at the pace of the gold time.
+@export var pace := 1.0
+## Shown with the "Gold ghost" switch instead of the "Ghost" one.
+@export var gold := false
 
 var _recording := PackedVector3Array()
 var _anchors := PackedVector3Array()
@@ -72,10 +76,10 @@ func update_run(time: float, player_position: Vector3, anchor := NO_ANCHOR) -> v
 		_recording.append(player_position)
 		_anchors.append(anchor)
 		_record_clock += SAMPLE_TIME
-	if _replay.size() < 2 or not Settings.ghost_enabled:
+	if _replay.size() < 2 or not (Settings.gold_ghost_enabled if gold else Settings.ghost_enabled):
 		visible = false
 		return
-	var f := time / SAMPLE_TIME
+	var f := time * pace / SAMPLE_TIME
 	var i := int(f)
 	if i >= _replay.size() - 1:
 		global_position = _replay[-1]
