@@ -326,7 +326,7 @@ func _draw_timeline() -> void:
 	for i in 5:
 		var x := left + width * i / 4.0
 		draw_line(Vector2(x, y - 6), Vector2(x, y + 6), FAINT, 2.0)
-		_text(Vector2(x - 12, y + 30), "%.2gs" % (span * i / 4.0), FAINT)
+		_text(Vector2(x - 12, y + 30), "%ss" % str(snappedf(span * i / 4.0, 0.01)), FAINT)
 	var bar := width * clampf(value / span, 0.0, 1.0)
 	draw_rect(Rect2(left, y - 18, bar, 14), ROPE)
 	draw_line(Vector2(left, y - 40), Vector2(left, y + 6), HOOK, 3.0)

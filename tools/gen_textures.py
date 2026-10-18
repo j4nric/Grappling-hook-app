@@ -192,6 +192,65 @@ def crystal():
     save("crystal_emission", ramp(tone, [(0.0, (0.02, 0.1, 0.2)), (0.7, (0.2, 0.6, 0.9)), (1.0, (0.8, 1.0, 1.0))]))
 
 
+def moss():
+    """Rock overgrown with patchy moss: green-teal cushions in the hollows."""
+    rng = np.random.default_rng(71)
+    base = fbm(SIZE, 4, 6, rng)
+    cushions = fbm(SIZE, 6, 4, rng)
+    cover = np.clip((cushions - 0.45) * 5, 0, 1)
+    fuzz = fbm(SIZE, 32, 2, rng)
+    rock_col = ramp(base, [(0.0, (0.1, 0.09, 0.08)), (0.5, (0.36, 0.33, 0.3)), (1.0, (0.6, 0.56, 0.5))])
+    moss_col = ramp(fuzz, [(0.0, (0.08, 0.2, 0.1)), (0.6, (0.22, 0.42, 0.2)), (1.0, (0.45, 0.62, 0.3))])
+    albedo = rock_col * (1 - cover[..., None]) + moss_col * cover[..., None]
+    save("moss_albedo", albedo)
+    save("moss_normal", normal_map(base * 0.6 + cover * 0.3 + fuzz * 0.1, 3.0))
+
+
+def veins():
+    """Floating stone: dark rock with glowing cracks (they hold the hook)."""
+    rng = np.random.default_rng(73)
+    base = fbm(SIZE, 4, 5, rng)
+    f1, f2, cell = voronoi(SIZE, 18, rng)
+    line = np.clip(1 - (f2 - f1) / 1.3, 0, 1) ** 2
+    mask = np.clip((fbm(SIZE, 3, 3, rng) - 0.35) * 4, 0, 1)
+    vein = line * mask
+    albedo = ramp(base, [(0.0, (0.07, 0.07, 0.09)), (0.6, (0.24, 0.24, 0.28)), (1.0, (0.42, 0.42, 0.47))])
+    albedo = albedo * (1 - vein[..., None] * 0.9) + np.array([0.35, 0.85, 1.0]) * vein[..., None] * 0.9
+    save("vein_albedo", albedo)
+    save("vein_emission", ramp(vein, [(0.0, (0, 0, 0)), (0.5, (0.05, 0.35, 0.55)), (1.0, (0.5, 0.95, 1.0))]))
+    save("vein_normal", normal_map(base - vein * 0.4, 3.0))
+
+
+def bark():
+    """Roots: long fibres with knots."""
+    rng = np.random.default_rng(79)
+    yy, xx = np.mgrid[0:SIZE, 0:SIZE]
+    warp = fbm(SIZE, 4, 3, rng)
+    fibre = 0.5 + 0.5 * np.sin((xx / SIZE * 14 + warp * 2.5) * 2 * np.pi)
+    knots = fbm(SIZE, 8, 3, rng)
+    tone = fibre * 0.6 + knots * 0.4
+    save("bark_albedo", ramp(tone, [(0.0, (0.08, 0.05, 0.04)), (0.6, (0.26, 0.17, 0.11)), (1.0, (0.42, 0.3, 0.2))]))
+    save("bark_normal", normal_map(tone, 3.5))
+
+
+def glow_spots():
+    """Mushroom caps: soft glowing spots."""
+    rng = np.random.default_rng(83)
+    f1, f2, cell = voronoi(SIZE, 22, rng)
+    spot = np.clip(1 - f1 / 7.0, 0, 1)
+    base = fbm(SIZE, 4, 3, rng)
+    save("cap_albedo", ramp(base * 0.5 + spot * 0.5, [(0.0, (0.1, 0.25, 0.3)), (1.0, (0.6, 1.0, 0.85))]))
+    save("cap_emission", ramp(spot, [(0.0, (0.0, 0.08, 0.08)), (1.0, (0.4, 1.0, 0.8))]))
+
+
+def amber():
+    """Exit markers: warm amber crystal glow."""
+    rng = np.random.default_rng(89)
+    f1, f2, cell = voronoi(SIZE, 10, rng)
+    tone = rng.random(10)[cell] * 0.7 + (1 - np.clip((f2 - f1) / 2.0, 0, 1)) * 0.3
+    save("amber_emission", ramp(tone, [(0.0, (0.25, 0.08, 0.0)), (0.7, (0.95, 0.5, 0.12)), (1.0, (1.0, 0.9, 0.55))]))
+
+
 def lava_noise():
     rng = np.random.default_rng(53)
     save("lava_noise", fbm(SIZE, 4, 5, rng, gain=0.6))
@@ -243,9 +302,22 @@ MATERIALS = {
     "metal": dict(albedo="metal_albedo", normal="metal_normal", tint=(1.0, 0.9, 0.8), scale=0.25,
                   metallic=0.6, roughness=0.5),
     "ice": dict(albedo="ice_albedo", normal="ice_normal", emission="ice_emission", tint=(1, 1, 1),
-                scale=0.2, roughness=0.25, emission_energy=0.3),
+                scale=0.2, roughness=0.25, emission_energy=0.8),
     "crystal": dict(albedo="crystal_albedo", emission="crystal_emission", tint=(0.6, 0.9, 1.0), scale=0.5,
-                    roughness=0.2, emission_energy=0.9),
+                    roughness=0.2, emission_energy=1.6),
+    # Mossy rock for floors, ledges and the tops of islands.
+    "moss": dict(albedo="moss_albedo", normal="moss_normal", tint=(0.9, 0.95, 0.9), scale=0.2),
+    # Wet, slick rock: the walls of open halls, the hook does not hold.
+    "slick": dict(albedo="rock_albedo", normal="rock_normal", tint=(0.32, 0.36, 0.45), scale=0.15,
+                  roughness=0.18, metallic=0.15),
+    # Floating stones: glowing veins say "hook me".
+    "floater": dict(albedo="vein_albedo", normal="vein_normal", emission="vein_emission", tint=(1, 1, 1),
+                    scale=0.35, emission_energy=4.0),
+    "root": dict(albedo="bark_albedo", normal="bark_normal", tint=(1, 1, 1), scale=0.6),
+    "cap": dict(albedo="cap_albedo", emission="cap_emission", tint=(1, 1, 1), scale=0.8, roughness=0.5,
+                emission_energy=1.8),
+    "amber": dict(albedo="crystal_albedo", emission="amber_emission", tint=(1.0, 0.75, 0.45), scale=0.5,
+                  roughness=0.2, emission_energy=1.8),
 }
 
 
@@ -261,7 +333,9 @@ def write_material(name, m):
     props.append(f"metallic = {m.get('metallic', 0.0)}")
     props.append(f"roughness = {m.get('roughness', 0.9)}")
     if "emission" in m:
-        props += ["emission_enabled = true", "emission = Color(1, 1, 1, 1)",
+        # Godot adds the emission color to the texture (operator "add"):
+        # black, so the texture alone decides what glows.
+        props += ["emission_enabled = true", "emission = Color(0, 0, 0, 1)",
                   f"emission_energy_multiplier = {m.get('emission_energy', 1.0)}",
                   f"emission_texture = {tex('emission')}"]
     if "normal" in m:
@@ -294,6 +368,11 @@ def main():
     metal()
     ice()
     crystal()
+    moss()
+    veins()
+    bark()
+    glow_spots()
+    amber()
     lava_noise()
     dust()
     light_shaft()

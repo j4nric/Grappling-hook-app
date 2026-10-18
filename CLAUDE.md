@@ -54,7 +54,14 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   damit man an keiner Kante hängen bleibt (`tests/test_flow.gd`). Wenig
   Hindernisse = besserer Flow: Stalaktiten sind kurz (`STALACTITE_MAX`), die
   ganze Decke hält den Haken. Arbeitslevel für das Grund-Design ist
-  „Wide Cave“ (`level_07`, erster Eintrag in `Levels.LIST`).
+  „Wide Cave“ (`level_07`, erster Eintrag in `Levels.LIST`). Offene Hallen
+  (`open`) haben statt Decke ein fernes Gewölbe ohne Halt; man hangelt sich an
+  schwebenden Steinen (`floater_spacing`) entlang, `slick_walls` macht die Wände
+  glatt. Optik: Kollision als Quader (`_collider`/`_solid`), gezeichnet werden
+  `RockMesh`-Modelle (`_model`); Deko (Wurzeln, Pilze, Deckenkristalle,
+  Bernstein-Marke am Hallenausgang) würfelt mit eigenem Zufall (`_deco_rng`).
+- Emission in Materialien: Godot **addiert** Emissionsfarbe und -textur –
+  die Farbe bleibt schwarz, die Textur bestimmt das Leuchten (`tools/gen_textures.py`).
 - Tuning-Werte sind `@export`-Variablen und werden im Inspector verändert, nicht
   im Code verstreut. Neue Stellschrauben ebenfalls als `@export` anlegen.
 - Gameplay-Input läuft **ausschließlich** über das Autoload `InputRouter`
@@ -106,6 +113,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/stats.gd` | `Stats`: Läufe, Ziele, Meter, Haken, längster Flow, Spielzeit – gesamt und pro Level in `user://stats.cfg`; Anzeige im Level-Menü („Stats“) |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Aufwind, brüchige Stalaktiten, Tempo-Ringe, dunkle Hallen, Checkpoints, Ziel aus `segments` |
+| `scripts/rock_mesh.gd` | `RockMesh`: prozedurale Felsmodelle (Brocken, Stalaktit-Kegel, Säule, Wurzel; je 4 Varianten, flach schattiert, Einheitsgröße) für die MultiMeshes des Baukastens |
+| `scripts/floater.gd` | `Floater`: schwebender Stein in offenen Hallen (AnimatableBody3D, wippt; der Haken fährt mit) |
 | `scripts/updraft.gd` | `Updraft`: Luftsäule, hebt Körper bis `max_rise` |
 | `scripts/brittle.gd` | `Brittle`: Stalaktit hält den Haken `hold_time`, bricht dann (Seil löst sich mit `broke`), `restore()` beim Neustart |
 | `scripts/speed_ring.gd` | `SpeedRing`: Ring, Durchfliegen gibt mindestens `boost_speed` nach vorn |

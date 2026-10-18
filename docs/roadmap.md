@@ -133,3 +133,4 @@ Musik nach Tempo, Tutorial.
 | 2026-10-18 | Regler-Grenzen | höher, wo Werte am Anschlag waren (u. a. Wurfstärke 0,06, schwächster Wurf 80, Seil-Zittern 4) | Wunsch: mehr Spielraum nach oben |
 | 2026-10-18 | Medaillen, `RUN_SPEED` 16 → 25 | neu kalibriert | Bot-Zeiten mit den neuen Werten |
 | 2026-10-18 | `rope_end_release` | neu: 1 (an) | Seilende: am kürzesten Seil löst es wie ein Zip, statt hängen zu lassen (Kegelpendel); Medaillen neu kalibriert |
+| 2026-10-18 | Emission | Farbe weiß → schwarz; Eis 0,3 → 0,8, Kristall 0,9 → 1,6 | Godot addiert Farbe und Textur: alles Leuchtende war fast weiß |

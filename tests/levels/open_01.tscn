@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level.gd" id="1_level"]
+
+[node name="Level" type="Node3D"]
+script = ExtResource("1_level")
+level_name = "Open Test"
+layout_seed = 4242
+segments = [{"length": 40.0, "width": 40.0, "ceiling": 26.0, "floor": "ground"}, {"length": 98.0, "width": 60.0, "ceiling": 26.0, "open": true, "floater_spacing": 14.0, "slick_walls": true, "stalactites": 0.0, "outcrops": 0.0}, {"length": 40.0, "width": 40.0, "ceiling": 26.0, "floor": "ground"}]
