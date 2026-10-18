@@ -1,7 +1,8 @@
 extends CanvasLayer
 ## Level selection. Shown at the start and from the finish screen; pauses the
 ## game while open. Emits level_chosen with the index into Levels.LIST.
-## The "Stats" button switches to the statistics (text from the game).
+## The "Stats" button switches to the statistics (sections from the game:
+## a title, a line of numbers and the curve of finish times).
 
 signal level_chosen(index: int)
 signal stats_requested
@@ -12,7 +13,7 @@ var _list: VBoxContainer
 var _scroll: ScrollContainer
 var _panel: PanelContainer
 var _stats_scroll: ScrollContainer
-var _stats_label: Label
+var _stats_list: VBoxContainer
 var _stats_button: Button
 
 
@@ -63,11 +64,10 @@ func _ready() -> void:
 	_stats_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_stats_scroll.visible = false
 	root.add_child(_stats_scroll)
-	_stats_label = Label.new()
-	_stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_stats_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_stats_label.add_theme_font_size_override("font_size", 28)
-	_stats_scroll.add_child(_stats_label)
+	_stats_list = VBoxContainer.new()
+	_stats_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_stats_list.add_theme_constant_override("separation", 8)
+	_stats_scroll.add_child(_stats_list)
 	_stats_button = Button.new()
 	_stats_button.custom_minimum_size = Vector2(0, 80)
 	_stats_button.add_theme_font_size_override("font_size", 30)
@@ -114,11 +114,45 @@ func close() -> void:
 	get_tree().paused = false
 
 
-## Shows the statistics instead of the levels.
-func show_stats(text: String) -> void:
-	_stats_label.text = text
+## Shows the statistics instead of the levels: sections {"title", "text",
+## "times" (finish times, oldest first; a curve from two on)}.
+func show_stats(sections: Array) -> void:
+	for child in _stats_list.get_children():
+		child.queue_free()
+	for section: Dictionary in sections:
+		var label := Label.new()
+		label.text = ("%s\n%s" % [section.title, section.text]).strip_edges()
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.add_theme_font_size_override("font_size", 28)
+		_stats_list.add_child(label)
+		var times: Array = section.get("times", [])
+		if times.size() >= 2:
+			var curve := Sparkline.new()
+			curve.times = times
+			_stats_list.add_child(curve)
+		var gap := Control.new()
+		gap.custom_minimum_size = Vector2(0, 16)
+		_stats_list.add_child(gap)
 	_stats_scroll.scroll_vertical = 0
 	_show_list(false)
+
+
+## The statistics as text (all labels), for tests.
+func stats_text() -> String:
+	var lines: PackedStringArray = []
+	for child in _stats_list.get_children():
+		if child is Label and not child.is_queued_for_deletion():
+			lines.append(child.text)
+	return "\n\n".join(lines)
+
+
+## Curves shown in the statistics.
+func stats_curves() -> Array[Sparkline]:
+	var curves: Array[Sparkline] = []
+	for child in _stats_list.get_children():
+		if child is Sparkline and not child.is_queued_for_deletion():
+			curves.append(child)
+	return curves
 
 
 func is_showing_stats() -> bool:

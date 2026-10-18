@@ -97,6 +97,26 @@ static func load_ghost(record_id: String) -> Dictionary:
 	return {}
 
 
+## A friend's run on this level version (RunCode): {"time", "run"}.
+static func save_rival(record_id: String, time: float, run: Dictionary) -> void:
+	var file := FileAccess.open(_rival_path(record_id), FileAccess.WRITE)
+	if file:
+		file.store_var({"time": time, "run": run})
+
+
+## The friend's run, or an empty Dictionary.
+static func load_rival(record_id: String) -> Dictionary:
+	var file := FileAccess.open(_rival_path(record_id), FileAccess.READ)
+	if file == null:
+		return {}
+	var data = file.get_var()
+	return data if data is Dictionary and data.has("run") else {}
+
+
+static func _rival_path(record_id: String) -> String:
+	return GHOST_DIR + "rival_%s.dat" % record_id.replace("@", "_")
+
+
 static func _ghost_path(record_id: String) -> String:
 	return GHOST_DIR + "ghost_%s.dat" % record_id.replace("@", "_")
 
@@ -128,8 +148,9 @@ static func _erase(cfg: ConfigFile, record_id: String) -> void:
 	for section: String in SECTIONS:
 		if cfg.has_section_key(section, record_id):
 			cfg.erase_section_key(section, record_id)
-	if FileAccess.file_exists(_ghost_path(record_id)):
-		DirAccess.remove_absolute(_ghost_path(record_id))
+	for path in [_ghost_path(record_id), _rival_path(record_id)]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(path)
 
 
 static func _value(section: String, record_id: String, default: Variant) -> Variant:

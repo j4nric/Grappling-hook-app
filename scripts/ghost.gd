@@ -9,6 +9,9 @@ const SAMPLE_TIME := 0.05
 ## Anchor of a sample without a rope.
 const NO_ANCHOR := Vector3.INF
 
+## Records the live run (the rival ghost only plays).
+@export var record := true
+
 var _recording := PackedVector3Array()
 var _anchors := PackedVector3Array()
 var _replay := PackedVector3Array()
@@ -65,7 +68,7 @@ func recording() -> Dictionary:
 ## Called every frame while the run timer runs, with the run time (s) and
 ## the rope anchor (NO_ANCHOR without a rope).
 func update_run(time: float, player_position: Vector3, anchor := NO_ANCHOR) -> void:
-	while _record_clock <= time:
+	while record and _record_clock <= time:
 		_recording.append(player_position)
 		_anchors.append(anchor)
 		_record_clock += SAMPLE_TIME

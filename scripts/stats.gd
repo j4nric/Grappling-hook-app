@@ -7,6 +7,10 @@ const PATH := "user://stats.cfg"
 const TOTAL := "total"
 ## Summed fields; "best_flow" keeps the maximum instead.
 const SUMS := ["runs", "finishes", "meters", "hooks", "play_time"]
+## Finish times per level for the curve in the stats screen: the newest
+## HISTORY_SIZE of one level version (a changed level starts a new curve).
+const HISTORY_PATH := "user://history.cfg"
+const HISTORY_SIZE := 50
 
 
 ## Stats group of a level path: the level key, or the kind of cave.
@@ -65,3 +69,28 @@ static func duration(seconds: float) -> String:
 	if minutes >= 1:
 		return "%d min" % minutes
 	return "%d s" % floori(seconds)
+
+
+## Adds a finish time of a level version (Records.id()).
+static func add_finish(record_id: String, time: float) -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(HISTORY_PATH)
+	var level_key := record_id.get_slice("@", 0)
+	var finishes: Array = []
+	if cfg.get_value("version", level_key, "") == record_id:
+		finishes = cfg.get_value("finishes", level_key, [])
+	finishes.append([Time.get_unix_time_from_system(), time])
+	if finishes.size() > HISTORY_SIZE:
+		finishes = finishes.slice(finishes.size() - HISTORY_SIZE)
+	cfg.set_value("version", level_key, record_id)
+	cfg.set_value("finishes", level_key, finishes)
+	cfg.save(HISTORY_PATH)
+
+
+## Finish times of a level version, oldest first.
+static func history(record_id: String) -> Array:
+	var cfg := ConfigFile.new()
+	var level_key := record_id.get_slice("@", 0)
+	if cfg.load(HISTORY_PATH) != OK or cfg.get_value("version", level_key, "") != record_id:
+		return []
+	return (cfg.get_value("finishes", level_key, []) as Array).map(func(entry: Array) -> float: return entry[1])

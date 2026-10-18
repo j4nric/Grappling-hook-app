@@ -106,7 +106,10 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/cave_generator.gd` | `CaveGenerator`: prozedurale Höhle aus einem Seed (faire Hallenfolge, Medaillen aus Zeitschätzung); „Daily Cave“ (Seed = Datum) und „Random Cave“ |
 | `scripts/levels.gd` | `Levels`: feste Level (`LIST`) plus prozedurale Pfade `cave://daily/<seed>`, `cave://random/<seed>`; `Levels.instantiate(path)` |
 | `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel) |
-| `scripts/pause_menu.gd` | Pause-Knopf und -Menü (Medaillenziele, Weiter/Neustart/Level, Geist/Ton), öffnet bei Fokusverlust |
+| `scripts/pause_menu.gd` | Pause-Knopf und -Menü (Medaillenziele, Weiter/Neustart/Level, Geist/Ton, „Share run“/„Load run“), öffnet bei Fokusverlust |
+| `scripts/run_code.gd` | `RunCode`: Lauf als Text-Code `GC1:<Level>@<Version>:<ms>:<Daten>` (5-cm-Raster, Deflate, Base64; ~1–2 KB); ein geladener Code wird zum orangen Rivalen-Geist (`Rival` in `main.tscn`, `Records.save_rival()`) |
+| `scripts/clipboard.gd` | `Clipboard`: Kopieren/Einfügen; im Browser auf `button_down` scharf gestellt und im `touchend` ausgeführt (iOS), Einfügen per Browser-Dialog, Ergebnis per `take_paste()` |
+| `scripts/sparkline.gd` | `Sparkline`: Kurve der Zielzeiten eines Levels (Statistik), Gold = Bestzeit bis dahin |
 | `scripts/records.gd` | `Records`: Bestzeit, Zwischenzeiten, TUNE*-Markierung und Ghost pro Level-Version (`Records.id()` = Schlüssel + Layout-Hash) in `user://` |
 | `scripts/settings.gd` | `Settings`: Geist und Ton an/aus (Pause-Menü), in `user://settings.cfg` |
 | `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur |
@@ -118,7 +121,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `tools/gen_splash.py` | Erzeugt `assets/splash.png` (Ladebildschirm) |
 | `scripts/ghost.gd` | `Ghost`: zeichnet den Lauf auf (Position + Seil-Anker alle 0,05 s), spielt den besten Lauf als Geist ab, `time_at_z()` für das Geist-Delta im HUD |
 | `scripts/replay.gd` | `Replay`: spielt den besten Lauf im Ziel ab („Replay“): setzt den Spieler (`player.replaying`, `replay_step()`), Kamera, Figur und Seil folgen; Tippen beendet |
-| `scripts/stats.gd` | `Stats`: Läufe, Ziele, Meter, Haken, längster Flow, Spielzeit – gesamt und pro Level in `user://stats.cfg`; Anzeige im Level-Menü („Stats“) |
+| `scripts/stats.gd` | `Stats`: Läufe, Ziele, Meter, Haken, längster Flow, Spielzeit – gesamt und pro Level in `user://stats.cfg`; Zielzeiten-Verlauf (50 je Level-Version) in `user://history.cfg`; Anzeige im Level-Menü („Stats“) |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Aufwind, brüchige Stalaktiten, Tempo-Ringe, dunkle Hallen, Checkpoints, Ziel aus `segments` |
 | `scripts/rock_mesh.gd` | `RockMesh`: prozedurale Felsmodelle (Brocken, Stalaktit-Kegel, Säule, Wurzel; je 4 Varianten, flach schattiert, Einheitsgröße) für die MultiMeshes des Baukastens |
@@ -142,7 +145,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/light_lod.gd` | `LightLod`: nur die nächsten `max_lights` Lichter an (Compatibility-Renderer: max. 8 pro Objekt), weich ein-/ausblenden |
 | `scripts/time_scale.gd` | `TimeScale`: Zeitlupe beim Zielen und Hit-Stop teilen sich `Engine.time_scale` |
 | `scripts/speed_lines.gd` | Speed-Lines (Shader `shaders/speed_lines.gdshader`) ab hohem Tempo |
-| `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler in Tabs, pausiert das Spiel, speichert in `user://tuning_v3.cfg`, „Copy“ kopiert getunte Werte als Text; oben Erklärung und Skizze des gewählten Reglers |
+| `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler in Tabs, pausiert das Spiel, speichert in `user://tuning_v3.cfg`, „Copy“ kopiert getunte Werte als Text, „Paste“ liest sie (auch Listen wie „Player gravity 30, …“) wieder ein; Wertesätze A/B/C (`user://tuning_presets.cfg`) mit einem Tipp wechseln; oben Erklärung und Skizze des gewählten Reglers |
 | `scripts/cave_editor.gd` | `CaveEditor`: Höhlen-Editor (TUNE-Tab „Cave“): Hallen des geladenen Levels ändern, Neubau nach 0,35 s, Spieler am Anfang der gewählten Halle; Edits pro Level in `user://cave_edits.cfg` (eigene Rekorde „edit_…“), „Copy layout“ im Level-Dateiformat, „Reset cave“ |
 | `scripts/tuning_info.gd` | `TuningInfo`: Klarname, Einheit, Skizzen-Art und Erklärung je Regler |
 | `scripts/tuning_illustration.gd` | `TuningIllustration`: animierte Skizze je Regler (vereinfachtes Modell mit den aktuellen Werten) |

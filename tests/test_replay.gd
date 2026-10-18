@@ -85,7 +85,7 @@ func run() -> void:
 	main.open_menu()
 	main.menu._toggle_stats()
 	check(main.menu.is_showing_stats(), "the menu shows the stats")
-	var text: String = main.menu._stats_label.text
+	var text: String = main.menu.stats_text()
 	check(text.begins_with("TOTAL") and text.contains(main.level.level_name.to_upper()), "total and level stats are listed")
 	main.menu._toggle_stats()
 	check(not main.menu.is_showing_stats(), "back to the levels")

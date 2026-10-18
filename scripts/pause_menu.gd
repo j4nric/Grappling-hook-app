@@ -1,11 +1,17 @@
 extends CanvasLayer
 ## Pause: a small button in the HUD and an overlay with the level's medal
-## targets, Continue / Restart / Levels and the ghost and sound switches.
+## targets, Continue / Restart / Levels, the ghost and sound switches, and
+## Share run / Load run (the best run as a code for a friend, a friend's run
+## as the orange rival ghost).
 ## Opens on its own when the app loses focus (tab switch, home screen), so
 ## the run timer never counts time the player was away.
 
 signal restart_pressed
 signal levels_pressed
+## Share run: the game copies the code (armed on button_down, see Clipboard).
+signal share_requested
+## Load run: the text the player pasted.
+signal run_code_entered(text: String)
 
 const FONT_SIZE := 34
 
@@ -14,6 +20,8 @@ var _panel: PanelContainer
 var _info: Label
 var _ghost_toggle: Button
 var _sound_toggle: Button
+var _status: Label
+var _awaiting_paste := false
 ## Pause state found when opening (the level menu may already pause).
 var _was_paused := false
 
@@ -66,7 +74,41 @@ func _ready() -> void:
 	for toggle in [_ghost_toggle, _sound_toggle]:
 		toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		switches.add_child(toggle)
+	var sharing := HBoxContainer.new()
+	sharing.add_theme_constant_override("separation", 16)
+	box.add_child(sharing)
+	var share := _make_button("Share run", func() -> void: pass)
+	share.button_down.connect(func() -> void: share_requested.emit())
+	var load_run := _make_button("Load run", func() -> void: pass)
+	load_run.button_down.connect(func() -> void:
+		Clipboard.request_paste("Paste a run code from a friend:")
+		_awaiting_paste = true)
+	for button in [share, load_run]:
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		sharing.add_child(button)
+	_status = Label.new()
+	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status.add_theme_font_size_override("font_size", 24)
+	_status.add_theme_color_override("font_color", Color(1.0, 0.65, 0.35))
+	box.add_child(_status)
 	_update_toggles()
+
+
+func _process(_delta: float) -> void:
+	if not _awaiting_paste:
+		return
+	var text: Variant = Clipboard.take_paste()
+	if text == null:
+		return
+	_awaiting_paste = false
+	if text != "":
+		run_code_entered.emit(text)
+
+
+## A short message under the buttons (run copied, rival loaded, ...).
+func show_status(text: String) -> void:
+	_status.text = text
 
 
 ## Level name, best time and medal targets, shown above the buttons.
@@ -82,6 +124,7 @@ func open() -> void:
 	if _panel.visible:
 		return
 	_was_paused = get_tree().paused
+	_status.text = ""
 	_panel.visible = true
 	_button.visible = false
 	get_tree().paused = true
