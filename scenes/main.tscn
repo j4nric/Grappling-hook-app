@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://scripts/music.gd" id="14_music"]
 [ext_resource type="Script" path="res://scripts/light_lod.gd" id="15_lod"]
 [ext_resource type="Script" path="res://scripts/replay.gd" id="16_replay"]
+[ext_resource type="Script" path="res://scripts/cave_editor.gd" id="17_cave"]
 [ext_resource type="Texture2D" path="res://assets/textures/vignette.png" id="13_vignette"]
 
 [sub_resource type="Environment" id="env"]
@@ -77,6 +78,10 @@ camera = NodePath("../CameraRig")
 [node name="Replay" type="Node" parent="." node_paths=PackedStringArray("player")]
 script = ExtResource("16_replay")
 player = NodePath("../Player")
+
+[node name="CaveEditor" type="Node" parent="." node_paths=PackedStringArray("game")]
+script = ExtResource("17_cave")
+game = NodePath("..")
 
 [node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("target", "view_camera")]
 script = ExtResource("4_camera")

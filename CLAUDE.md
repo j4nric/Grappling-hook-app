@@ -135,6 +135,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/time_scale.gd` | `TimeScale`: Zeitlupe beim Zielen und Hit-Stop teilen sich `Engine.time_scale` |
 | `scripts/speed_lines.gd` | Speed-Lines (Shader `shaders/speed_lines.gdshader`) ab hohem Tempo |
 | `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler in Tabs, pausiert das Spiel, speichert in `user://tuning_v3.cfg`, „Copy“ kopiert getunte Werte als Text; oben Erklärung und Skizze des gewählten Reglers |
+| `scripts/cave_editor.gd` | `CaveEditor`: Höhlen-Editor (TUNE-Tab „Cave“): Hallen des geladenen Levels ändern, Neubau nach 0,35 s, Spieler am Anfang der gewählten Halle; Edits pro Level in `user://cave_edits.cfg` (eigene Rekorde „edit_…“), „Copy layout“ im Level-Dateiformat, „Reset cave“ |
 | `scripts/tuning_info.gd` | `TuningInfo`: Klarname, Einheit, Skizzen-Art und Erklärung je Regler |
 | `scripts/tuning_illustration.gd` | `TuningIllustration`: animierte Skizze je Regler (vereinfachtes Modell mit den aktuellen Werten) |
 | `tests/` | Headless-Tests (`run_tests.gd` führt alle `test_*.gd` aus), laufen in CI vor jedem Merge/Deploy |

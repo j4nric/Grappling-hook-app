@@ -19,7 +19,7 @@ const KINDS := ["throw", "reach", "reach_min", "reach_assist", "yaw", "timeline"
 		"pull", "zip", "zip_boost", "zip_min", "flyby", "rope_pluck", "rope_slack", "fall", "speed_cap",
 		"ground", "landing", "deflect", "wallkick", "camera_follow", "camera_offset", "camera_anchor",
 		"camera_wall", "camera_ceiling", "fov", "fov_kick", "roll", "shake", "pixels", "volume", "toggle",
-		"fps", "streaks"]
+		"fps", "streaks", "cave_section", "cave_top", "cave_side"]
 
 ## Key of the slider shown ("Player/hook_gravity").
 var key := ""
@@ -179,6 +179,9 @@ func _draw() -> void:
 		"toggle": _draw_toggle()
 		"fps": _draw_fps()
 		"streaks": _draw_streaks()
+		"cave_section": _draw_cave_section()
+		"cave_top": _draw_cave_top()
+		"cave_side": _draw_cave_side()
 
 
 ## Hook flight with the current throw values; it bites the ceiling or falls.
@@ -850,3 +853,191 @@ func _draw_streaks() -> void:
 	var mark := bar.position.x + bar.size.x * value / 60.0
 	draw_line(Vector2(mark, bar.position.y - 10), Vector2(mark, bar.end.y + 4), MISS, 3.0)
 	_text(Vector2(20, 26), "speed %.0f m/s %s" % [speed, "-> lines" if on else ""])
+
+
+# --- Cave editor sketches -------------------------------------------------------
+
+func _cave(key_name: String, default: float) -> float:
+	return _v("CaveEditor/" + key_name, default)
+
+
+## Height of the floating stones in the selected hall.
+func _floater_band() -> float:
+	var height := _cave("floater_height", -1.0)
+	return height if height >= 0.0 else _cave("ceiling", 26.0) - 4.0
+
+
+func _dimension(a: Vector2, b: Vector2, text: String) -> void:
+	_arrow(a.lerp(b, 0.5), b, ROPE)
+	_arrow(a.lerp(b, 0.5), a, ROPE)
+	_text(_to(a.lerp(b, 0.5)) + Vector2(6, -6), text, ROPE)
+
+
+## Cross-section of the selected hall: walls, ceiling (or the open vault with
+## its floating stones), floor, the player on a rope.
+func _draw_cave_section() -> void:
+	var w := _cave("width", 40.0)
+	var c := _cave("ceiling", 26.0)
+	var open := _cave("open", 0.0) >= 0.5
+	var slick := _cave("slick_walls", 0.0) >= 0.5
+	var floor_kind := int(_cave("floor", 0.0))
+	var top := c + (14.0 if open else 5.0)
+	_view(Vector2(-w / 2.0 - 7.0, -28.0), w + 14.0, top + 30.0)
+	var wall := Color(0.32, 0.38, 0.5) if slick else ROCK
+	for side: float in [-1.0, 1.0]:
+		var x0 := side * w / 2.0
+		var x1 := side * (w / 2.0 + 6.0)
+		draw_rect(Rect2(_to(Vector2(minf(x0, x1), top)), _to(Vector2(maxf(x0, x1), -28.0)) - _to(Vector2(minf(x0, x1), top))), wall.darkened(0.3))
+		draw_line(_to(Vector2(x0, -28.0)), _to(Vector2(x0, top)), wall.lightened(0.2) if slick else wall, 3.0)
+	# Outcrops on the walls.
+	for i in roundi(_cave("outcrops", 0.15) * 6.0):
+		var side := -1.0 if i % 2 == 0 else 1.0
+		var y := lerpf(4.0, c - 5.0, fmod(i * 0.37 + 0.2, 1.0))
+		_line(Vector2(side * w / 2.0, y), Vector2(side * (w / 2.0 - 3.0), y + 1.0), ROCK.lightened(0.2), 6.0)
+	var band := _floater_band()
+	var anchor: Vector2
+	if open:
+		_dashed(Vector2(-w / 2.0, top - 1.0), Vector2(w / 2.0, top - 1.0), FAINT)
+		_text(_to(Vector2(-w / 2.0 + 2.0, top - 1.0)) + Vector2(0, 18), "far vault: no hook", FAINT)
+		for i in 3:
+			var stone := Vector2(lerpf(-w * 0.22, w * 0.22, i / 2.0), band + (1.0 if i == 1 else -1.0))
+			draw_circle(_to(stone), maxf(_cave("floater_size", 3.5) * _scale * 0.4, 4.0), Color(0.3, 0.6, 0.8))
+		anchor = Vector2(w * 0.22, band - 1.0)
+	else:
+		draw_rect(Rect2(_to(Vector2(-w / 2.0, c + 4.0)), _to(Vector2(w / 2.0, c)) - _to(Vector2(-w / 2.0, c + 4.0))), ROCK.darkened(0.2))
+		# The icy share of the ceiling.
+		var ice := _cave("ice", 0.0)
+		if ice > 0.0:
+			draw_rect(Rect2(_to(Vector2(-w / 2.0, c + 1.5)), _to(Vector2(-w / 2.0 + w * ice, c)) - _to(Vector2(-w / 2.0, c + 1.5))), ICE)
+		draw_line(_to(Vector2(-w / 2.0, c)), _to(Vector2(w / 2.0, c)), ROCK.lightened(0.2), 3.0)
+		anchor = Vector2(w * 0.25, c)
+	match floor_kind:
+		1:
+			draw_rect(Rect2(_to(Vector2(-w / 2.0, 0.0)), _to(Vector2(w / 2.0, -28.0)) - _to(Vector2(-w / 2.0, 0.0))), Color(0.2, 0.32, 0.18))
+		2:
+			var glow := 0.75 + 0.25 * sin(_time * 3.0)
+			draw_rect(Rect2(_to(Vector2(-w / 2.0, -22.0)), _to(Vector2(w / 2.0, -28.0)) - _to(Vector2(-w / 2.0, -22.0))), Color(1.0, 0.4, 0.1) * glow)
+		_:
+			_text(_to(Vector2(-w / 2.0 + 2.0, -24.0)), "abyss", FAINT)
+	var p := Vector2(sin(_time * 1.3) * w * 0.2, c * 0.4)
+	_line(p, anchor, ROPE)
+	_hook(anchor)
+	_player(p)
+	if _cave("dark", 0.0) >= 0.5:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.5))
+		var lamp := _to(p)
+		draw_colored_polygon(PackedVector2Array([lamp, lamp + Vector2(-50, -120), lamp + Vector2(50, -120)]), Color(1, 0.9, 0.6, 0.2))
+	match key:
+		"CaveEditor/width":
+			_dimension(Vector2(-w / 2.0, c * 0.75), Vector2(w / 2.0, c * 0.75), "%.0f m" % w)
+		"CaveEditor/ceiling":
+			_dimension(Vector2(-w * 0.35, 0.0), Vector2(-w * 0.35, c), "%.0f m" % c)
+		"CaveEditor/floater_height":
+			_dimension(Vector2(-w * 0.35, 0.0), Vector2(-w * 0.35, band), "%.0f m" % band)
+	_caption("hall %d: %.0f m wide, ceiling %.0f m%s" % [int(_v("cave_hall", 0)) + 1, w, c, ", open" if open else ""])
+
+
+## Top view of the whole cave (forward to the right), the selected hall
+## highlighted with what is in it; a dot runs through.
+func _draw_cave_top() -> void:
+	var halls: Array = values.get("cave_segments", [])
+	if halls.is_empty():
+		_caption("no cave loaded")
+		return
+	var selected := int(values.get("cave_hall", 0))
+	var total := 0.0
+	var widest := 20.0
+	for seg in halls:
+		var full: Dictionary = CavernBuilder.SEGMENT_DEFAULTS.merged(seg, true)
+		total += float(full.length)
+		widest = maxf(widest, float(full.width))
+	_view(Vector2(-4.0, -widest / 2.0 - 4.0), total + 8.0, widest + 8.0)
+	var z := 0.0
+	for i in halls.size():
+		var full: Dictionary = CavernBuilder.SEGMENT_DEFAULTS.merged(halls[i], true)
+		var length := float(full.length)
+		var w := float(full.width)
+		var rect := Rect2(_to(Vector2(z, w / 2.0)), _to(Vector2(z + length, -w / 2.0)) - _to(Vector2(z, w / 2.0)))
+		var fill := Color(0.18, 0.18, 0.22)
+		if full.open:
+			fill = Color(0.1, 0.16, 0.24)
+		draw_rect(rect, fill)
+		draw_rect(rect, ROPE if i == selected else FAINT, false, 3.0 if i == selected else 1.0)
+		if i == selected:
+			_hall_contents(full, z, length, w)
+		z += length
+	# A dot runs through the cave.
+	var at := fmod(_time * 30.0, total)
+	draw_circle(_to(Vector2(at, sin(at * 0.05) * 4.0)), 5.0, PLAYER)
+	var full_selected: Dictionary = CavernBuilder.SEGMENT_DEFAULTS.merged(halls[selected], true)
+	_caption("%d halls, %.0f m; hall %d: %.0f m long (top view)" % [halls.size(), total, selected + 1, float(full_selected.length)])
+
+
+func _hall_contents(full: Dictionary, z: float, length: float, w: float) -> void:
+	var items := {"pillars": ROCK.lightened(0.3), "islands": Color(0.3, 0.45, 0.25), "rings": Color(1.0, 0.8, 0.3),
+			"updrafts": Color(0.55, 0.8, 1.0), "shafts": Color(1, 0.95, 0.8, 0.6)}
+	for item: String in items:
+		var count := int(full[item])
+		for i in count:
+			var pos := Vector2(z + length * (i + 0.5) / count, w * (0.3 if i % 2 == 0 else -0.3) * (0.4 + 0.6 * fmod(i * 0.61, 1.0)))
+			var radius: float = {"pillars": 3.0, "islands": 6.0, "rings": 5.0, "updrafts": 4.0, "shafts": 4.0}[item] * _scale
+			if item == "rings":
+				draw_arc(_to(pos), maxf(radius, 4.0), 0, TAU, 16, items[item], 2.0)
+			elif item == "updrafts":
+				draw_arc(_to(pos), maxf(radius, 4.0), _time * 3.0, _time * 3.0 + 4.5, 12, items[item], 2.0)
+			else:
+				draw_circle(_to(pos), maxf(radius, 3.0), items[item])
+	for i in int(full.crystals):
+		var side := -1.0 if i % 2 == 0 else 1.0
+		var pos := _to(Vector2(z + length * (i + 0.5) / int(full.crystals), side * (w / 2.0 - 1.0)))
+		draw_colored_polygon(PackedVector2Array([pos + Vector2(0, -5), pos + Vector2(4, 0), pos + Vector2(0, 5), pos + Vector2(-4, 0)]), ICE)
+	if full.checkpoint:
+		_line(Vector2(z + 6.0, -w / 2.0), Vector2(z + 6.0, w / 2.0), Color(1.0, 0.85, 0.2), 3.0)
+
+
+## Side view of the selected hall: stalactites under the ceiling, or the lane
+## of floating stones the player swings along.
+func _draw_cave_side() -> void:
+	var length := _cave("length", 60.0)
+	var c := _cave("ceiling", 26.0)
+	var open := _cave("open", 0.0) >= 0.5
+	_view(Vector2(-4.0, -4.0), length + 8.0, c + 12.0)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(_cave("seed", 1.0))
+	if not open:
+		draw_rect(Rect2(_to(Vector2(-4.0, c + 8.0)), _to(Vector2(length + 4.0, c)) - _to(Vector2(-4.0, c + 8.0))), ROCK.darkened(0.2))
+		for i in roundi(_cave("stalactites", 0.3) * length / 10.0):
+			var x := rng.randf_range(2.0, length - 2.0)
+			var hang := rng.randf_range(3.0, 8.0)
+			var half := rng.randf_range(0.8, 1.5)
+			draw_colored_polygon(PackedVector2Array([_to(Vector2(x - half, c)), _to(Vector2(x + half, c)), _to(Vector2(x, c - hang))]), ROCK.lightened(0.15))
+	var spacing := _cave("floater_spacing", 0.0)
+	var stones: Array[Vector2] = []
+	if spacing > 0.0:
+		var band := _floater_band()
+		var x := spacing * 0.6
+		var i := 0
+		while x < length - 2.0:
+			stones.append(Vector2(x, band + (1.0 if i % 2 == 0 else -1.0)))
+			x += spacing
+			i += 1
+		for stone in stones:
+			draw_circle(_to(stone), maxf(_cave("floater_size", 3.5) * 0.45 * _scale, 3.0), Color(0.3, 0.6, 0.8))
+	# The player swings from stone to stone (or along the ceiling).
+	if stones.size() >= 2:
+		var hop := fmod(_time * 0.8, float(stones.size() - 1))
+		var k := int(hop)
+		var t := hop - k
+		var a := stones[k]
+		var b := stones[k + 1]
+		var p := a.lerp(b, t) + Vector2(0, -6.0 * sin(t * PI) - 3.0)
+		_line(p, b if t > 0.5 else a, ROPE)
+		_player(p)
+		_caption("a stone every %.0f m, %.1f m big: %d to hit" % [spacing, _cave("floater_size", 3.5), stones.size()])
+	else:
+		var x := fmod(_time * 12.0, length)
+		var p := Vector2(x, c * 0.45 + sin(_time * 2.0) * 2.0)
+		_line(p, Vector2(x + 10.0, c), ROPE)
+		_player(p)
+		_caption("%d stalactites in %.0f m (seed %d)" % [roundi(_cave("stalactites", 0.3) * length / 10.0), length, int(_cave("seed", 1.0))])
+
