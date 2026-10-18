@@ -93,4 +93,5 @@ Musik nach Tempo, Tutorial.
 | 2026-10-18 | Kamera `offset` / `look_ahead` | (0; 2,5; 7) → (0; 3,5; 10) / (0; 2,5; −8) → (0; 3; −12) | Spieler kleiner im Bild, Maßstab spürbar |
 | 2026-10-18 | `min_throw_reach` / `min_throw_pitch` | neu: 14 m / 5° | Wurfwinkel-Hilfe unter der Decke und bei Eis |
 | 2026-10-18 | Medaillen | neu kalibriert | Kavernen, beste von 3 Bot-Starts, Gold ≈ 0,85×, Silber ≈ 1,2×, Bronze ≈ 2× (Bot-Streuung) |
+| 2026-10-18 | `LightLod.max_lights` / `max_distance` | neu: 10 / 90 m | bis zu 42 Lichter pro Level; Software-Rendering 1,7× schneller |
 | 2026-10-18 | `wall_bounce` / `wall_kick_up` | neu: 0,2 / 4 m/s | Wall-Kick nur bei streifenden Treffern; 0,35 und frontaler Abprall warfen den Bot zurück |

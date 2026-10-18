@@ -6,6 +6,8 @@ extends Light3D
 ## Flicker speed.
 @export var speed := 9.0
 
+## Set by LightLod: 0..1 while the light fades in or out with distance.
+var fade := 1.0
 var _base := 1.0
 var _time := 0.0
 var _seed := 0.0
@@ -18,8 +20,10 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if not visible:
+		return
 	_time += delta * speed
 	var t := _time + _seed
 	# Two incommensurate waves: irregular, but smooth.
 	var wave := sin(t) * 0.6 + sin(t * 2.37 + 1.3) * 0.4
-	light_energy = _base * (1.0 + amount * wave)
+	light_energy = _base * fade * (1.0 + amount * wave)
