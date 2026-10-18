@@ -11,6 +11,8 @@ var _record_clock := 0.0
 
 func _ready() -> void:
 	top_level = true
+	# Placed by hand every rendered frame.
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	visible = false
 
 

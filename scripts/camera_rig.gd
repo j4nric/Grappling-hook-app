@@ -51,6 +51,10 @@ var _trauma := 0.0
 
 func _ready() -> void:
 	camera.keep_aspect = Camera3D.KEEP_WIDTH if keep_width else Camera3D.KEEP_HEIGHT
+	# The rig follows the interpolated player every rendered frame itself.
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	if view_camera:
+		view_camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	camera.fov = base_fov
 	if target:
 		global_position = target.global_position + offset
@@ -69,14 +73,17 @@ func _on_landed(impact_speed: float) -> void:
 	add_trauma(maxf(0.0, impact_speed - 8.0) * landing_shake_per_speed)
 
 
-func _physics_process(delta: float) -> void:
+## Runs per rendered frame on the interpolated player position: smooth at any
+## refresh rate (the physics tick is fixed at 60 Hz).
+func _process(delta: float) -> void:
 	if target == null:
 		return
 
-	var desired := target.global_position + offset
+	var target_position := target.get_global_transform_interpolated().origin
+	var desired := target_position + offset
 	global_position = global_position.lerp(desired, 1.0 - exp(-follow_speed * delta))
 
-	var look := target.global_position + look_ahead
+	var look := target_position + look_ahead
 	if _is_pulled():
 		look = look.lerp(target.anchor, anchor_look_weight)
 	_look_target = _look_target.lerp(look, 1.0 - exp(-look_lerp_speed * delta))

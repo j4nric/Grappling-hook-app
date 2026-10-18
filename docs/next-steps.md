@@ -39,7 +39,7 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 - [x] **Hintergrund/Tab-Wechsel:** (Pause bei Fokusverlust, Timer-Schritt max. 0,1 s) Kommt die App zurück, kann ein riesiger
       Frame-Schritt den Timer springen lassen. Bei Fokusverlust pausieren,
       Delta begrenzen.
-- [ ] **Ruckeln bei 120 Hz und schwankender Bildrate:** Physik läuft mit 60 Hz,
+- [x] **Ruckeln bei 120 Hz und schwankender Bildrate:** Physik läuft mit 60 Hz,
       Kamera und Seil werden in `_physics_process` bewegt, Physik-Interpolation
       ist aus → sichtbares Ruckeln auf ProMotion-iPhones und bei Einbrüchen.
       Physik-Interpolation einschalten, Kamera im Render-Frame glätten.

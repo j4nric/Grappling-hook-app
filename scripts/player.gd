@@ -20,6 +20,8 @@ enum HookState { IDLE, FLYING, ATTACHED }
 const FLOOR_NORMAL_Y := 0.7
 ## Surfaces in this group never hold the hook (e.g. ice).
 const NO_HOOK_GROUP := "no_hook"
+## The hook and rope start here, relative to the body (the hand).
+const HOOK_OFFSET := Vector3(0.0, 0.6, 0.0)
 
 # --- Tuning (exposed in the inspector, change freely while playing) -----------
 @export_group("Physics")
@@ -92,6 +94,8 @@ var rope_length := 0.0
 var _hook_velocity := Vector3.ZERO
 var _attached_time := 0.0
 var _was_on_floor := false
+## Hook position one physics tick ago, for smooth drawing while it flies.
+var _hook_prev := Vector3.ZERO
 ## Moving body the hook sticks to, and the anchor in its local space.
 var _anchor_body: Node3D = null
 var _anchor_local := Vector3.ZERO
@@ -117,6 +121,9 @@ func _ready() -> void:
 	hook.visible = false
 	aim_marker.top_level = true
 	aim_marker.visible = false
+	# These are placed by hand every rendered frame.
+	for node: Node3D in [rope, hook, aim_line, aim_marker]:
+		node.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 
 
 func _physics_process(delta: float) -> void:
@@ -151,11 +158,22 @@ func _physics_process(delta: float) -> void:
 		elif release_when_blocked and _is_rope_blocked():
 			release("blocked")
 
-	if hook_state != HookState.IDLE:
-		rope.update_line(_hook_origin(), anchor)
+
+
+## Visuals run per rendered frame (not per physics tick) with the
+## interpolated body position, so rope and hook stay smooth at 120 Hz and
+## when the frame rate drops.
+func _process(delta: float) -> void:
+	var origin := get_global_transform_interpolated().origin + HOOK_OFFSET
+	if hook_state == HookState.FLYING:
+		var hook_pos := _hook_prev.lerp(anchor, Engine.get_physics_interpolation_fraction())
+		rope.update_line(origin, hook_pos)
+		hook.global_position = hook_pos
+	elif hook_state == HookState.ATTACHED:
+		rope.update_line(origin, anchor)
 		hook.global_position = anchor
 	elif _retract_left > 0.0:
-		_update_retract(delta)
+		_update_retract(delta, origin)
 
 
 ## Rope pull, applied as velocity so the momentum survives letting go.
@@ -235,6 +253,7 @@ func attach(point: Vector3, normal: Vector3, body: Object = null) -> void:
 
 
 func _fly_hook(delta: float) -> void:
+	_hook_prev = anchor
 	_hook_velocity.y -= hook_gravity * delta
 	var next := anchor + _hook_velocity * delta
 	var query := PhysicsRayQueryParameters3D.create(anchor, next)
@@ -325,7 +344,7 @@ func _is_valid_swipe(swipe: Vector2) -> bool:
 
 
 func _hook_origin() -> Vector3:
-	return global_position + Vector3(0.0, 0.6, 0.0)
+	return global_position + HOOK_OFFSET
 
 
 func _on_aim_changed(swipe: Vector2) -> void:
@@ -361,6 +380,7 @@ func throw_hook(swipe: Vector2, flick_velocity: Vector2) -> void:
 	last_throw_speed = speed
 	release("throw")
 	anchor = _hook_origin()
+	_hook_prev = anchor
 	_hook_velocity = _throw_direction(swipe) * speed + velocity
 	hook_state = HookState.FLYING
 	rope.visible = true
@@ -393,11 +413,11 @@ func _set_idle(retract: bool) -> void:
 	hook.visible = retract
 
 
-func _update_retract(delta: float) -> void:
+func _update_retract(delta: float, origin: Vector3) -> void:
 	_retract_left = maxf(0.0, _retract_left - delta)
 	var t := 1.0 - _retract_left / maxf(hook_retract_time, 0.001)
-	var pos := _retract_from.lerp(_hook_origin(), t)
-	rope.update_line(_hook_origin(), pos)
+	var pos := _retract_from.lerp(origin, t)
+	rope.update_line(origin, pos)
 	hook.global_position = pos
 	if _retract_left <= 0.0:
 		rope.visible = false
@@ -411,3 +431,5 @@ func reset_to(position_3d: Vector3) -> void:
 	Engine.time_scale = 1.0
 	global_position = position_3d
 	velocity = Vector3.ZERO
+	# A teleport, not a movement: no interpolation from the old position.
+	reset_physics_interpolation()
