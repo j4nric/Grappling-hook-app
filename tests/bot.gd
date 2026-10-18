@@ -17,10 +17,8 @@ const CHAIN_DISTANCE := 7.0
 ## After each respawn the bot leans toward another direction (degrees of
 ## yaw), so it does not repeat the same fatal line forever.
 const BIASES := [0.0, 25.0, -25.0, 45.0, -45.0]
-## Gates closer ahead than this (m) pull the choice toward their slit, this
-## much per meter off to the side.
-const SLIT_LOOKAHEAD := 50.0
-const SLIT_PULL := 0.6
+## Lanes (Level.lanes) closer ahead than this (m) pull the choice toward them.
+const LANE_LOOKAHEAD := 50.0
 
 ## Runs are reproducible: the same level and variant always give the same
 ## time, whatever ran before (see reset() and prepare()).
@@ -75,8 +73,10 @@ static func step(p: CharacterBody3D) -> bool:
 	var fallback := Vector3.ZERO
 	# A chain throw must reach clearly past the current anchor.
 	var needed: float = MIN_PROGRESS + (p.global_position.z - p.anchor.z + 4.0 if chaining else 0.0)
-	# An ice gate ahead: like a player who sees the slit, steer toward it.
-	var slit_x: Variant = _slit_ahead(p)
+	# A lane ahead (the slit of an ice gate, the way round a barrier, the
+	# middle of a winding hall): like a player who sees it, steer toward it.
+	var level: Level = p.get_parent().get("level")
+	var lane: Array = level.lane_ahead(p.global_position.z, LANE_LOOKAHEAD) if level else []
 	for speed: float in HOOK_SPEEDS:
 		# The medium flick only when the strong one finds nothing ahead.
 		if best_score > -INF:
@@ -96,8 +96,8 @@ static func step(p: CharacterBody3D) -> bool:
 			# Low anchors drag toward the depth: avoid them.
 			var drop := maxf(0.0, p.global_position.y - end.y)
 			var score := progress - absf(yaw_deg - bias) * 0.05 - drop * 0.5
-			if slit_x != null:
-				score -= absf(end.x - float(slit_x)) * SLIT_PULL
+			if not lane.is_empty():
+				score -= absf(end.x - float(lane[0])) * float(lane[1])
 			if score > fallback_score:
 				fallback_score = score
 				fallback = Vector3(swipe.x, swipe.y, speed)
@@ -123,19 +123,3 @@ static func _rope_clear(p: CharacterBody3D, anchor: Vector3) -> bool:
 	query.exclude = [p.get_rid()]
 	var hit := p.get_world_3d().direct_space_state.intersect_ray(query)
 	return hit.is_empty() or hit.position.distance_to(anchor) <= 0.3
-
-
-## x of the slit of the next ice gate ahead (within SLIT_LOOKAHEAD), or null.
-## Gates sit in the middle of their hall (CavernBuilder._gate()).
-static func _slit_ahead(p: CharacterBody3D) -> Variant:
-	var level: Level = p.get_parent().get("level")
-	if level == null:
-		return null
-	var z0 := 0.0
-	for raw: Dictionary in level.segments:
-		var hall := CavernBuilder.full_segment(raw)
-		var gate_z: float = z0 - float(hall.length) / 2.0
-		z0 -= float(hall.length)
-		if (hall.gate as Array).size() == 2 and gate_z < p.global_position.z and p.global_position.z - gate_z < SLIT_LOOKAHEAD:
-			return float(hall.gate[0])
-	return null

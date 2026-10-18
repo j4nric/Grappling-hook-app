@@ -40,9 +40,10 @@ Vorschau: Jeder offene Pull Request ist zusätzlich unter
 `https://j4nric.github.io/Grappling-hook-app/preview/pr-<Nummer>/` spielbar
 (Übersicht: `/preview/`). So lassen sich Experimente testen, ohne `main` zu ändern.
 
-Inhalt: Tutorial und 8 Höhlen-Level (weite, hohe Hallen über einem Abgrund: Lava,
+Inhalt: Tutorial und 9 Höhlen-Level (weite, hohe Hallen über einem Abgrund: Lava,
 Eis-Decken, fahrende Blöcke, Eis-Tore, Aufwinde, brüchige Stalaktiten,
-Tempo-Ringe, dunkle Hallen, offene Decken mit schwebenden Steinen in „Skyway“, Sprungpilze;
+Tempo-Ringe, dunkle Hallen, offene Decken mit schwebenden Steinen in „Skyway“, Sprungpilze,
+gewundene Hallen mit Abkürzung in „Winding Rift“;
 Arbeitslevel „Wide Cave“), dazu **Daily Cave** (jeden Tag eine neue, für alle
 gleiche Höhle) und **Random Cave** (bei jeder Wahl neu). Medaillen, Bestzeiten,
 Zwischenzeiten an Checkpoints, Geist der Bestzeit mit Abstand im HUD, **Replay**

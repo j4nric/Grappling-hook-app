@@ -55,6 +55,12 @@ const HALL_VISIBLE_RANGE := 230.0
 const LEDGE_Y := 0.0
 ## Walls and pillars reach down to here; below is only fog.
 const DEPTH_Y := -60.0
+## How hard the test bot steers to a lane (per meter off it): the slit of a
+## gate, the way round a barrier, the middle of a shifted hall.
+const GATE_PULL := 0.6
+const HALL_PULL := 0.2
+## Thickness of a shortcut barrier (m): the tube through it is this long.
+const BARRIER_THICK := 10.0
 ## Top of the rock column under a bounce mushroom in a hall without floor.
 const BOUNCER_COLUMN_TOP := -4.0
 ## Lava lakes lie this deep.
@@ -128,10 +134,17 @@ const SEGMENT_DEFAULTS := {
 	## Giant bounce mushrooms (Bouncer) along the hall: on the floor of a
 	## ground hall, on a rock column from the depth elsewhere.
 	"bouncers": 0,
+	## Sideways offset of the hall's middle (m, +x is right): halls with
+	## different shifts make the cave wind.
+	"shift": 0.0,
+	## Shortcut: a rock barrier across the middle of the hall with a wide way
+	## round at one side and a tube of this size (m) straight through the
+	## middle - shorter, but tight. 0 = no barrier.
+	"shortcut": 0.0,
 }
 ## Keys added after round 5: Level.version() leaves them out while they are
 ## at their default, so a new key does not reset every record.
-const LATE_KEYS := ["bouncers"]
+const LATE_KEYS := ["bouncers", "shift", "shortcut"]
 
 ## Hall templates, built on the Wide Cave (wide, high, few obstacles): a hall
 ## names one with "template", its own keys win. Each has a clear job.
@@ -169,6 +182,9 @@ var _models := {}
 var _body: StaticBody3D
 var _ice_body: StaticBody3D
 var _hall := 0
+## Sideways offset (m) of the hall being built: every piece moves by it.
+var _shift := 0.0
+var _prev_shift := 0.0
 
 
 ## Builds the whole cave into level. Returns the z of the finish line.
@@ -178,12 +194,12 @@ func build(level: Node3D, segments: Array, seed_value: int) -> float:
 	for group in ["Geometry", "Props", "Lights", "Movers", "KillZones", "Checkpoints", "Dynamic", "Sounds"]:
 		_add(Node3D.new(), group)
 
+	var z := 0.0
+	var first: Dictionary = _segment(segments[0] if not segments.is_empty() else {})
+	_shift = float(first.shift)
 	var start := Marker3D.new()
 	start.position = Vector3(0, LEDGE_Y + 1.0, 0)
 	_add(start, "Start")
-
-	var z := 0.0
-	var first: Dictionary = _segment(segments[0] if not segments.is_empty() else {})
 	_begin_hall()
 	# Back of the cave behind the start, and the start ledge.
 	_box("rock_dark", Vector3(0, (DEPTH_Y + first.ceiling) / 2.0, 14.0),
@@ -198,16 +214,22 @@ func build(level: Node3D, segments: Array, seed_value: int) -> float:
 	for raw in segments:
 		var seg := _segment(raw)
 		_begin_hall()
+		# The way between two halls is built in cave coordinates.
+		_shift = 0.0
 		_transition(prev, seg, z)
+		_shift = float(seg.shift)
+		_prev_shift = float(prev.shift)
 		_build_hall(seg, z)
 		_end_hall()
 		z -= float(seg.length)
 		prev = seg
 
 	var last: Dictionary = _segment(segments[-1] if not segments.is_empty() else {})
+	_shift = float(last.shift)
 	_begin_hall()
 	_finish(last, z)
 	_end_hall()
+	_shift = 0.0
 	return z
 
 
@@ -282,6 +304,12 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 		_shaft(Vector3(_rng.randf_range(-w / 3.0, w / 3.0), c, z0 - length * (i + 0.5) / float(seg.shafts)))
 	if not (seg.gate as Array).is_empty():
 		_gate(seg, z0 - length / 2.0)
+		_lane(z0 - length / 2.0, float(seg.gate[0]), GATE_PULL)
+	if float(seg.shortcut) > 0.0:
+		_barrier(seg, z0 - length * 0.55)
+	if absf(float(seg.shift)) > 0.5 or absf(_prev_shift) > 0.5:
+		# A winding cave: the way leads to the middle of each hall.
+		_lane(z0 - length * 0.3, 0.0, HALL_PULL)
 	for b in seg.blocks:
 		_box(b[6], Vector3(b[0], b[1], z0 - b[2]), Vector3(b[3], b[4], b[5]), Vector3.ZERO)
 	_drips(seg, z0, z1)
@@ -296,7 +324,17 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 
 ## Where the next hall is lower or narrower, a slanted slab leads into it:
 ## a flat step would stop the player dead, a slope redirects the flight.
+## Halls may sit sideways from each other (shift): each side wall on its own
+## either narrows in (slanted slab) or steps out (a frame closes the gap).
+## Built in cave coordinates (_shift is 0 here).
 func _transition(prev: Dictionary, next: Dictionary, z: float) -> void:
+	var s1 := float(prev.shift)
+	var s2 := float(next.shift)
+	var w1 := float(prev.width)
+	var w2 := float(next.width)
+	# Outer edges of both openings together.
+	var left := minf(s1 - w1 / 2.0, s2 - w2 / 2.0)
+	var right := maxf(s1 + w1 / 2.0, s2 + w2 / 2.0)
 	# Out of an open hall the slope starts just above the floating stones,
 	# not at the far vault (that would roof over the whole hall).
 	var from := float(prev.ceiling) + (4.0 if prev.open else 0.0)
@@ -306,38 +344,47 @@ func _transition(prev: Dictionary, next: Dictionary, z: float) -> void:
 		# up to the vault (no hook), so nothing is open above the closed hall.
 		var low := minf(_top(prev), _top(next))
 		var high := maxf(_top(prev), _top(next)) + 12.0
-		var wide := maxf(float(prev.width), float(next.width)) + 20.0
-		_solid("ice", Vector3(0, (low + high) / 2.0 + 3.0, z), Vector3(wide, high - low - 6.0, 4.0))
-		_shape("rock_dark", Vector3(0, (low + high) / 2.0 + 3.0, z), Vector3(wide, high - low - 6.0, 6.0), Vector3.ZERO)
-	# Into a wider or higher hall: close the frame around the smaller hall's
-	# opening, or the space behind its walls and above its lid stays open.
-	var wider := (float(next.width) - float(prev.width)) / 2.0
+		var wide := right - left + 20.0
+		var mid := (left + right) / 2.0
+		_solid("ice", Vector3(mid, (low + high) / 2.0 + 3.0, z), Vector3(wide, high - low - 6.0, 4.0))
+		_shape("rock_dark", Vector3(mid, (low + high) / 2.0 + 3.0, z), Vector3(wide, high - low - 6.0, 6.0), Vector3.ZERO)
+	# Into a wider (or sideways) or higher hall: close the frame around the
+	# smaller opening, or the space behind its walls and above its lid stays open.
+	var top := _top(next) + 12.0
+	# (Same order of pieces as before halls could shift: unshifted caves keep
+	# their collision exactly.)
+	for side: float in [-1.0, 1.0]:
+		var edge1 := s1 + side * w1 / 2.0
+		var edge2 := s2 + side * w2 / 2.0
+		if side * (edge1 - edge2) < -0.5:
+			var outer := edge2 + side * 8.0
+			_box("rock_dark", Vector3((edge1 + outer) / 2.0, (DEPTH_Y + top) / 2.0, z + 2.0),
+					Vector3(absf(outer - edge1), top - DEPTH_Y, 4.0), Vector3.ZERO)
 	var rise := _top(next) - _top(prev)
-	if wider > 0.5 or rise > 0.5:
-		var outer := float(next.width) / 2.0 + 8.0
-		var inner := minf(float(prev.width), float(next.width)) / 2.0
-		var top := _top(next) + 12.0
-		if wider > 0.5:
-			for side: float in [-1.0, 1.0]:
-				_box("rock_dark", Vector3(side * (inner + outer) / 2.0, (DEPTH_Y + top) / 2.0, z + 2.0),
-						Vector3(outer - inner, top - DEPTH_Y, 4.0), Vector3.ZERO)
-		if rise > 0.5:
-			var low := minf(_top(prev), _top(next)) + 6.0
-			_box("rock_dark", Vector3(0, (low + top) / 2.0, z + 2.0), Vector3(inner * 2.0 + 2.0, top - low, 4.0), Vector3.ZERO)
+	if rise > 0.5:
+		# Above the lid, across where both openings overlap (the side frames
+		# cover the rest).
+		var low := minf(_top(prev), _top(next)) + 6.0
+		var from_x := maxf(s1 - w1 / 2.0, s2 - w2 / 2.0) - 1.0
+		var to_x := minf(s1 + w1 / 2.0, s2 + w2 / 2.0) + 1.0
+		_box("rock_dark", Vector3((from_x + to_x) / 2.0, (low + top) / 2.0, z + 2.0), Vector3(to_x - from_x, top - low, 4.0), Vector3.ZERO)
 	# Out of an open hall no slope: the stones fly below the next ceiling,
 	# and a slab's top would be a ledge in the open air (nothing covers it).
 	if drop > 0.5 and not prev.open:
 		var run := maxf(drop * 2.5, 8.0)
-		var face := Vector3(0, from - drop / 2.0, z + run / 2.0)
+		var face := Vector3(s1, from - drop / 2.0, z + run / 2.0)
 		var along := Vector3(0, drop, run)
-		_slab("rock_dark", face, Vector3(0, -run, drop).normalized(), along, float(prev.width) + 10.0, 8.0)
-	var narrow := (float(prev.width) - float(next.width)) / 2.0
-	if narrow > 0.5:
-		var run := maxf(narrow * 2.5, 8.0)
-		for side in [-1.0, 1.0]:
-			var face := Vector3(side * (float(next.width) / 2.0 + narrow / 2.0), (DEPTH_Y + _top(prev)) / 2.0, z + run / 2.0)
-			var along := Vector3(side * narrow, 0, run)
-			var normal := Vector3(-side * run, 0, narrow).normalized()
+		_slab("rock_dark", face, Vector3(0, -run, drop).normalized(), along, w1 + 10.0, 8.0)
+	for side: float in [-1.0, 1.0]:
+		var edge1 := s1 + side * w1 / 2.0
+		var edge2 := s2 + side * w2 / 2.0
+		# > 0: the next wall stands further in on this side.
+		var inward := side * (edge1 - edge2)
+		if inward > 0.5:
+			var run := maxf(inward * 2.5, 8.0)
+			var face := Vector3((edge1 + edge2) / 2.0, (DEPTH_Y + _top(prev)) / 2.0, z + run / 2.0)
+			var along := Vector3(edge1 - edge2, 0, run)
+			var normal := Vector3(-side * run, 0, inward).normalized()
 			_slab("rock", face, normal, along, _top(prev) - DEPTH_Y + 10.0, 8.0)
 
 
@@ -966,6 +1013,56 @@ func _banner(pos: Vector3, color: Color, size: Vector3, parent: Node = null) -> 
 		_add(mesh, "Props/Banner")
 
 
+## A lane the test bot steers to (Level.add_lane()), in hall coordinates.
+func _lane(z: float, x: float, pull: float) -> void:
+	if _level.has_method("add_lane"):
+		_level.add_lane(z, x + _shift, pull)
+
+
+## Shortcut: a rock barrier across the hall. The wide way round is at one
+## side (a third of the width, full height); straight through the middle runs
+## a tube of seg.shortcut meters - shorter, but miss it and you hit rock.
+## Crystals ring the tube so it stands out. Own random numbers.
+func _barrier(seg: Dictionary, z: float) -> void:
+	var rng := _deco_rng(41)
+	var w: float = seg.width
+	var size: float = seg.shortcut
+	var side := -1.0 if rng.randf() < 0.5 else 1.0
+	var gap := w / 3.0
+	var gap_x := side * (w / 2.0 - gap / 2.0)
+	var tube := Vector2(-side * w * 0.08, float(seg.ceiling) * 0.5)
+	var x0 := -w / 2.0 - 6.0
+	var x1 := w / 2.0 + 6.0
+	var y0 := DEPTH_Y
+	var y1 := _top(seg) + 6.0
+	# Cut the wall into strips between the openings' edges.
+	var cuts := [x0, x1, gap_x - gap / 2.0, gap_x + gap / 2.0, tube.x - size / 2.0, tube.x + size / 2.0]
+	cuts.sort()
+	for i in cuts.size() - 1:
+		var a: float = maxf(cuts[i], x0)
+		var b: float = minf(cuts[i + 1], x1)
+		if b - a < 0.05:
+			continue
+		var mid := (a + b) / 2.0
+		if absf(mid - gap_x) < gap / 2.0:
+			continue
+		var spans := [[y0, y1]]
+		if absf(mid - tube.x) < size / 2.0:
+			spans = [[y0, tube.y - size / 2.0], [tube.y + size / 2.0, y1]]
+		for span: Array in spans:
+			_box("rock_dark", Vector3(mid, (span[0] + span[1]) / 2.0, z), Vector3(b - a, span[1] - span[0], BARRIER_THICK), Vector3.ZERO)
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
+		var at := Vector3(tube.x + corner.x * (size / 2.0 + 0.6), tube.y + corner.y * (size / 2.0 + 0.6), z + BARRIER_THICK / 2.0)
+		_crystal(at, Vector3(0, 0, 1), 1.2, rng)
+	var light := OmniLight3D.new()
+	light.light_color = Color(0.5, 0.85, 1.0)
+	light.light_energy = 2.0
+	light.omni_range = 14.0
+	light.position = Vector3(tube.x, tube.y, z + BARRIER_THICK / 2.0 + 2.0)
+	_add(light, "Lights/Shortcut")
+	_lane(z, gap_x, GATE_PULL)
+
+
 ## Bounce mushrooms spread along the hall, near the middle. Own random
 ## numbers: halls without them stay as they were.
 func _bouncers(seg: Dictionary, z0: float, z1: float) -> void:
@@ -1076,12 +1173,13 @@ func _collider(material: String, pos: Vector3, size: Vector3, rotation: Vector3)
 	var box := BoxShape3D.new()
 	box.size = size
 	shape.shape = box
-	shape.transform = Transform3D(Basis.from_euler(rotation), pos)
+	shape.transform = Transform3D(Basis.from_euler(rotation), pos + Vector3(_shift, 0, 0))
 	(_ice_body if material in ["ice", "slick"] else _body).add_child(shape)
 
 
 ## Only drawn: a RockMesh model; the variant follows from the position.
 func _model(kind: String, material: String, xform: Transform3D) -> void:
+	xform.origin.x += _shift
 	var key := "%s|%d|%s" % [kind, RockMesh.variant_at(xform.origin) % RockMesh.VARIANTS, material]
 	if not _models.has(key):
 		_models[key] = []
@@ -1092,7 +1190,7 @@ func _model(kind: String, material: String, xform: Transform3D) -> void:
 func _shape(material: String, pos: Vector3, size: Vector3, rotation: Vector3) -> void:
 	if not _meshes.has(material):
 		_meshes[material] = []
-	_meshes[material].append(Transform3D(Basis.from_euler(rotation).scaled_local(size), pos))
+	_meshes[material].append(Transform3D(Basis.from_euler(rotation).scaled_local(size), pos + Vector3(_shift, 0, 0)))
 
 
 ## Only collision, axis-aligned, not drawn ("ice" does not hold the hook).
@@ -1101,11 +1199,12 @@ func _solid(material: String, pos: Vector3, size: Vector3) -> void:
 	var box := BoxShape3D.new()
 	box.size = size
 	shape.shape = box
-	shape.position = pos
+	shape.position = pos + Vector3(_shift, 0, 0)
 	(_ice_body if material == "ice" else _body).add_child(shape)
 
 
 func _box_basis(material: String, pos: Vector3, size: Vector3, basis: Basis) -> void:
+	pos.x += _shift
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = size
@@ -1177,4 +1276,6 @@ func _add(node: Node, path: String) -> void:
 		parent = _level.get_node(path.substr(0, slash))
 		node_name = path.substr(slash + 1)
 	node.name = node_name
+	if node is Node3D:
+		(node as Node3D).position.x += _shift
 	parent.add_child(node, true)

@@ -13,6 +13,7 @@ const LIST: Array[String] = [
 	"res://scenes/levels/level_05.tscn",
 	"res://scenes/levels/level_06.tscn",
 	"res://scenes/levels/level_08.tscn",
+	"res://scenes/levels/level_09.tscn",
 ]
 const CAVE_PREFIX := "cave://"
 

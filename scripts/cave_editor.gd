@@ -14,7 +14,7 @@ const SAVE_PATH := "user://cave_edits.cfg"
 ## Hall values the panel edits (keys of CavernBuilder.SEGMENT_DEFAULTS).
 const KEYS := ["length", "width", "ceiling", "floor", "stalactites", "pillars", "islands", "outcrops",
 		"crystals", "shafts", "open", "floater_spacing", "floater_height", "floater_size", "slick_walls",
-		"checkpoint", "ice", "rings", "updrafts", "bouncers", "dark"]
+		"checkpoint", "ice", "rings", "updrafts", "bouncers", "dark", "shift", "shortcut"]
 const FLOORS := ["abyss", "ground", "lava"]
 const BOOLS := ["open", "slick_walls", "checkpoint", "dark"]
 const INTS := ["pillars", "islands", "crystals", "shafts", "rings", "updrafts", "bouncers"]

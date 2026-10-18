@@ -45,14 +45,22 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 3. Level: Abwechslung
 
-- [ ] **Kurvige Höhlen (L):** Hallen mit seitlichem Versatz (`shift`): die Höhle
+- [x] **Kurvige Höhlen (L):** (umgesetzt: Schlüssel `shift`; jedes Bauteil der
+      Halle wandert mit, die Übergänge prüfen jede Seite einzeln – Schräge,
+      wo die Wand nach innen springt, Rahmen, wo sie nach außen springt;
+      bestehende Höhlen bleiben Stück für Stück gleich, geprüft per Abdruck aller
+      Kollisionskörper; `Level.lanes` führt den Bot zur Hallenmitte) Hallen mit seitlichem Versatz (`shift`): die Höhle
       windet sich statt schnurgerade zu laufen. Übergänge schließen alles
       außerhalb der gemeinsamen Öffnung; der Bot zielt zur nächsten
       Hallenmitte; Editor-Regler und Skizze (Draufsicht).
-- [ ] **Abkürzungen (M):** aus dem Design-Dokument („Abzweigungen“) – eine enge
+- [x] **Abkürzungen (M):** (umgesetzt: Schlüssel `shortcut` = Röhrengröße; Felsriegel
+      mit breitem Umweg an einer Seite und 10 m langer Röhre in der Mitte,
+      Kristalle markieren die Röhre) aus dem Design-Dokument („Abzweigungen“) – eine enge
       Felsröhre durch eine Trennwand neben dem normalen Weg: kürzer, aber
       riskant (`shortcut`).
-- [ ] **Neues Level „Winding Rift“ (M):** windende Schlucht mit Sprungpilzen,
+- [x] **Neues Level „Winding Rift“ (M):** (umgesetzt: 6 versetzte Hallen, Abkürzung,
+      Sprungpilze über Lava, offene Decke; Generator: neue Arten „bounce“ und
+      „shortcut“, jede Halle seitlich versetzt) windende Schlucht mit Sprungpilzen,
       Abkürzung und offener Decke; Generator nutzt Versatz und Pilze auch.
 
 ## 4. Darstellung: lebendige Höhle
