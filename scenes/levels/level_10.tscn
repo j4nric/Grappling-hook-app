@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level.gd" id="1_level"]
+
+[node name="Level" type="Node3D"]
+script = ExtResource("1_level")
+level_name = "Mushroom Grotto"
+gold_time = 18.8
+silver_time = 26.5
+bronze_time = 44.2
+layout_seed = 1010
+segments = [{"template": "start", "length": 60.0, "bouncers": 2}, {"template": "lava_lake", "length": 80.0, "shift": 14.0, "bouncers": 3, "islands": 0}, {"template": "slalom", "length": 70.0, "shift": -10.0, "bouncers": 2, "pillars": 2, "checkpoint": true}, {"template": "lava_lake", "length": 70.0, "shift": 8.0, "bouncers": 2, "islands": 1, "dark": true}, {"template": "start", "length": 60.0, "shift": -6.0, "bouncers": 1, "checkpoint": true}, {"template": "start"}]

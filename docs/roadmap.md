@@ -151,3 +151,4 @@ Musik nach Tempo, Tutorial.
 | 2026-10-18 | Medaillen | Tutorial 8,2/11,6/19,4, First Swing 5,8/8,2/13,7, Ice Ceiling 8,6/12,1/20,2, Movers 7,0/9,9/16,6, Wide Cave 13,0/18,3/30,5, Gates 19,5/27,5/45,8, Skyway 11,4/16,0/26,7 | neu gemessen: Bot reproduzierbar, sieht Tor-Schlitze, bekommt den Perfekt-Schub |
 | 2026-10-18 | Medaillen Winding Rift | neu: 25,9 / 36,6 / 61,0 | neues Level (beste Bot-Zeit 30,5 s) |
 | 2026-10-18 | Medaillen Winding Rift | 25,9/36,6/61,0 → 23,2/32,8/54,6 | Bot in frischer Szene fand einen schnelleren Lauf (27,3 s) |
+| 2026-10-18 | Medaillen Mushroom Grotto, Shortcut Run | neu: 18,8/26,5/44,2 und 26,1/36,8/61,3 | neue Level (Bot 22,1 s und 30,7 s) |

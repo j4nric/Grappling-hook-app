@@ -14,6 +14,8 @@ const LIST: Array[String] = [
 	"res://scenes/levels/level_06.tscn",
 	"res://scenes/levels/level_08.tscn",
 	"res://scenes/levels/level_09.tscn",
+	"res://scenes/levels/level_10.tscn",
+	"res://scenes/levels/level_11.tscn",
 ]
 const CAVE_PREFIX := "cave://"
 

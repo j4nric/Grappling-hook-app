@@ -51,7 +51,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   Physik-Takt hängt vom Zeitrest früherer Zeitlupen ab), und `bot_run()` in
   `tests/test_case.gd` spielt jeden Lauf in einer frisch geladenen
   Hauptszene (die Physik-Engine behält sonst Zustand) – gleicher Start,
-  gleiche Zeit, egal was vorher lief. Der Bot sieht Eis-Tore und steuert auf den Schlitz zu.
+  gleiche Zeit im selben Ablauf; nach anderen Läufen kann die Engine
+  Kontakte noch leicht anders ordnen (Körper-IDs), darum Medaillen aus der
+  besten beobachteten Zeit und großzügige Bronze. Der Bot sieht Eis-Tore und steuert auf den Schlitz zu.
 - **Prozedurale Höhlen** (`CaveGenerator`) nutzen denselben Baukasten; Rekorde gelten
   pro Art und Seed (`Records.key()`). `tests/test_procedural.gd` lässt den Bot mehrere
   Seeds spielen und gibt Bot-Zeit und Schätzung aus (Kalibrierung von `RUN_SPEED`).
@@ -70,7 +72,10 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   die Grundfunktionen (`_box`, `_collider`, `_model`, `_shape`, `_solid`,
   `_add`), die `_shift` addieren – neue Bauteile nur über sie anlegen. Die
   Übergänge (`_transition`) rechnen in Höhlen-Koordinaten. `shortcut` baut
-  einen Felsriegel mit Umweg und Röhre. `Level.lanes` (Torschlitz, Umweg,
+  einen Felsriegel mit Umweg und Röhre; die Halle danach darf nicht viel
+  schmaler sein oder weit versetzt (die Schräge in eine viel schmalere Halle
+  reicht bis zu 100 m zurück und versperrt den Umweg – der Generator hält das
+  ein, `SHORTCUT_NARROWING`). `Level.lanes` (Torschlitz, Umweg,
   Hallenmitte) führen den Test-Bot. Decke und Wände sind nur optisch
   rau (`_shape`), ihre Kollision ist flach (`_solid`, `CEILING_ROUGHNESS`),
   damit man an keiner Kante hängen bleibt (`tests/test_flow.gd`). Wenig
