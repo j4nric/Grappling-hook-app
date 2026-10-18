@@ -11,6 +11,8 @@ extends Node3D
 signal finished
 signal checkpoint_reached(respawn: Vector3)
 signal killed
+## A speed ring was passed (for sound and effects).
+signal ring_passed
 
 @export var level_name := "Level"
 ## Medal times (s).
@@ -28,6 +30,8 @@ signal killed
 @export var hints: Array = []
 
 var _built := false
+## Dark halls as [z_from, z_to] (forward is -Z), from the builder.
+var dark_ranges: Array = []
 
 
 ## Builds the cave (once). Call before reading Start; _ready calls it too.
@@ -41,6 +45,9 @@ func build() -> void:
 
 func _ready() -> void:
 	build()
+	for ring in find_children("*", "Area3D", true, false):
+		if ring.has_signal("passed"):
+			ring.passed.connect(func(_r: Node) -> void: ring_passed.emit())
 	$Finish.body_entered.connect(_on_finish)
 	for area in _children_of("Checkpoints"):
 		var respawn: Vector3 = area.get_node("Respawn").global_position
@@ -66,6 +73,24 @@ func hint_at(z: float) -> String:
 		if z <= float(hint[0]):
 			text = hint[1]
 	return text
+
+
+func add_dark_range(z_from: float, z_to: float) -> void:
+	dark_ranges.append([z_from, z_to])
+
+
+func is_dark_at(z: float) -> bool:
+	for r in dark_ranges:
+		if z <= float(r[0]) and z >= float(r[1]):
+			return true
+	return false
+
+
+## Restart: broken stalactites grow back.
+func reset_dynamic() -> void:
+	for node in find_children("*", "AnimatableBody3D", true, false):
+		if node.has_method("restore"):
+			node.restore()
 
 
 func start_position() -> Vector3:

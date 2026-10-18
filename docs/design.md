@@ -75,6 +75,7 @@ Checkpoints und Ziel.
 3. **Ice Ceiling** – Eis-Decken, nur Stalaktiten, Säulen und Vorsprünge halten
 4. **Movers** – fahrende Metallblöcke als Anker, ein Stampfer über Boden
 5. **Gates** – Eiswände mit senkrechtem Schlitz: seitlich durchsteuern
+6. **Updraft** – Aufwind-Säulen, brüchige Stalaktiten, Tempo-Ringe, eine dunkle Halle mit Kopflampe
 
 Lava/Abgrund setzt auf den letzten Checkpoint zurück, der Timer läuft weiter.
 

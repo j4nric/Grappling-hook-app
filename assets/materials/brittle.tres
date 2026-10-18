@@ -1,0 +1,16 @@
+[gd_resource type="StandardMaterial3D" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/rock_albedo.png" id="1"]
+[ext_resource type="Texture2D" path="res://assets/textures/rock_normal.png" id="2"]
+
+[resource]
+albedo_color = Color(1.25, 1.15, 0.95, 1)
+albedo_texture = ExtResource("1")
+metallic = 0.0
+roughness = 0.9
+normal_enabled = true
+normal_texture = ExtResource("2")
+uv1_scale = Vector3(0.4, 0.4, 0.4)
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 2

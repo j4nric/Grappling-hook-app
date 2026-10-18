@@ -16,7 +16,7 @@ signal hook_attached(point: Vector3, normal: Vector3)
 ## The hook found nothing to stick to.
 signal hook_missed
 ## reason: "zip", "contact", "blocked", "tap", "chain" (a new hook took
-## over), "reset"
+## over), "broke" (a brittle anchor broke off), "reset"
 signal rope_released(reason: String)
 signal landed(impact_speed: float)
 ## Hit a wall or the ceiling with speed and was redirected along it.
@@ -423,6 +423,12 @@ func attach(point: Vector3, normal: Vector3, body: Object = null) -> void:
 	_anchor_body = body as AnimatableBody3D
 	if _anchor_body:
 		_anchor_local = _anchor_body.global_transform.affine_inverse() * point
+	# A brittle stalactite holds for a moment, then breaks: the rope goes.
+	if body is Brittle:
+		var brittle := body as Brittle
+		brittle.hooked()
+		if not brittle.broken.is_connected(_on_anchor_broken):
+			brittle.broken.connect(_on_anchor_broken.bind(brittle))
 	anchor = point
 	rope_length = global_position.distance_to(anchor)
 	var approach := velocity.dot(global_position.direction_to(anchor))
@@ -433,6 +439,11 @@ func attach(point: Vector3, normal: Vector3, body: Object = null) -> void:
 	velocity += global_position.direction_to(anchor) * pull_impulse
 	_rope_visual.pluck(rope_pluck, rope_pluck_decay)
 	hook_attached.emit(point, normal)
+
+
+func _on_anchor_broken(body: Brittle) -> void:
+	if _attached and _anchor_body == body:
+		release("broke")
 
 
 func _fly_hook(delta: float) -> void:
