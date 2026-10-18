@@ -176,6 +176,12 @@ var _flight_visual: RopeVisual
 ## Last throw, shown in the tuning panel to calibrate the throw strength.
 var last_throw_flick := 0.0
 var last_throw_speed := 0.0
+## Replay of a recorded run: no physics and no input, Replay places the
+## player (replay_step()); figure, rope and camera follow as usual.
+var replaying := false:
+	set(value):
+		replaying = value
+		reset_to(global_position)
 
 @onready var rope := $Rope
 @onready var hook: Node3D = $Hook
@@ -208,6 +214,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if replaying:
+		return
 	velocity.y -= gravity * delta
 	_since_throw += delta
 	_buffer_left -= delta
@@ -568,6 +576,8 @@ func _hook_origin() -> Vector3:
 
 
 func _on_aim_changed(swipe: Vector2) -> void:
+	if replaying:
+		return
 	TimeScale.set_aim(aim_time_scale)
 	if not _is_valid_swipe(swipe):
 		_hide_aim()
@@ -596,6 +606,8 @@ func _hide_aim() -> void:
 ## Throws the hook. The attached rope keeps pulling until the new hook bites.
 ## While a hook flies, the swipe is buffered instead.
 func throw_hook(swipe: Vector2, flick_velocity: Vector2) -> void:
+	if replaying:
+		return
 	_hide_aim()
 	TimeScale.set_aim(1.0)
 	if not _is_valid_swipe(swipe):
@@ -640,6 +652,8 @@ func _miss() -> void:
 ## Lets go of the attached rope (a tap without a rope calls back a hook in
 ## the air). Signals only if something was out.
 func release(reason := "tap") -> void:
+	if replaying:
+		return
 	if not _attached:
 		if _flying and reason == "tap":
 			_flying = false
@@ -654,6 +668,26 @@ func release(reason := "tap") -> void:
 	_rope_visual.retract(anchor, hook_retract_time)
 	_update_state()
 	rope_released.emit(reason)
+
+
+## One step of a replay (call in _physics_process): the player is at pos
+## with this velocity, on a rope to rope_anchor (Ghost.NO_ANCHOR: none).
+## jump: a teleport (respawn in the recording), not interpolated.
+func replay_step(pos: Vector3, vel: Vector3, rope_anchor: Vector3, jump := false) -> void:
+	global_position = pos
+	velocity = vel
+	var hooked := rope_anchor.is_finite()
+	if hooked and not _attached:
+		_rope_visual.pluck(0.3, 9.0)
+	elif not hooked and _attached:
+		_rope_visual.retract(anchor, hook_retract_time)
+	if hooked:
+		anchor = rope_anchor
+	_attached = hooked
+	_update_state()
+	if jump:
+		reset_physics_interpolation()
+		figure.snap(pos)
 
 
 func reset_to(position_3d: Vector3) -> void:

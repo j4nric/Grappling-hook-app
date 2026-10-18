@@ -84,10 +84,15 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 
 ## 7. Replays und Statistik
 
-- [ ] **Replay der Bestzeit:** im Ziel „Watch best run“ – Kamera folgt dem
-      aufgezeichneten Lauf (Position, Seil, Anker).
-- [ ] **Statistik:** Läufe, Meter, Haken, längster Flow, Spielzeit – gesamt und
-      pro Level, im Menü.
+- [x] **Replay der Bestzeit:** im Ziel „Replay“ – Kamera folgt dem
+      aufgezeichneten Lauf (Position, Seil, Anker). Der Geist zeichnet dafür
+      auch den Anker auf; alte Geister (nur Positionen) spielen ohne Seil.
+- [x] **Statistik:** Läufe, Meter, Haken, längster Flow, Spielzeit – gesamt und
+      pro Level, im Menü („Stats“). Daily und Random Caves zählen je als eine
+      Gruppe.
+- [x] **Neu entdeckt:** Ein Neustart aus dem Lauf heraus zählte nirgends –
+      Statistik wird jetzt bei Ziel, Neustart, Levelwechsel und beim Wechsel in
+      den Hintergrund geschrieben (nicht jeden Frame: IndexedDB im Browser).
 
 ## 8. Web-App
 

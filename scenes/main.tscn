@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://scripts/speed_lines.gd" id="12_lines"]
 [ext_resource type="Script" path="res://scripts/music.gd" id="14_music"]
 [ext_resource type="Script" path="res://scripts/light_lod.gd" id="15_lod"]
+[ext_resource type="Script" path="res://scripts/replay.gd" id="16_replay"]
 [ext_resource type="Texture2D" path="res://assets/textures/vignette.png" id="13_vignette"]
 
 [sub_resource type="Environment" id="env"]
@@ -72,6 +73,10 @@ game = NodePath("..")
 [node name="LightLod" type="Node" parent="." node_paths=PackedStringArray("camera")]
 script = ExtResource("15_lod")
 camera = NodePath("../CameraRig")
+
+[node name="Replay" type="Node" parent="." node_paths=PackedStringArray("player")]
+script = ExtResource("16_replay")
+player = NodePath("../Player")
 
 [node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("target", "view_camera")]
 script = ExtResource("4_camera")
@@ -218,6 +223,26 @@ theme_override_font_sizes/font_size = 88
 text = "GO!"
 horizontal_alignment = 1
 
+[node name="ReplayLabel" type="Label" parent="HUD/Safe"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -190.0
+offset_right = 300.0
+offset_bottom = -90.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.82, 0.2, 1)
+theme_override_font_sizes/font_size = 40
+text = "BEST RUN REPLAY
+tap to stop"
+horizontal_alignment = 1
+
 [node name="FlowLabel" type="Label" parent="HUD/Safe"]
 visible = false
 layout_mode = 1
@@ -328,13 +353,19 @@ alignment = 1
 theme_override_constants/separation = 24
 
 [node name="Next" type="Button" parent="HUD/Safe/FinishPanel/Lines/Buttons"]
-custom_minimum_size = Vector2(200, 80)
+custom_minimum_size = Vector2(180, 80)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "Next"
 
+[node name="Replay" type="Button" parent="HUD/Safe/FinishPanel/Lines/Buttons"]
+custom_minimum_size = Vector2(180, 80)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Replay"
+
 [node name="Levels" type="Button" parent="HUD/Safe/FinishPanel/Lines/Buttons"]
-custom_minimum_size = Vector2(200, 80)
+custom_minimum_size = Vector2(180, 80)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "Levels"

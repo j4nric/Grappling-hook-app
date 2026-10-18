@@ -22,7 +22,7 @@ func run() -> void:
 	var time: float = main._elapsed
 	check(is_equal_approx(Records.best_time(record_id), time), "best time is saved (%.2f s)" % time)
 	check(main.get_node("HUD/Safe/FinishPanel/Lines/Medal").text == "GOLD", "fast run earns gold")
-	check(Records.load_ghost(record_id).size() > 10, "ghost of the best run is saved")
+	check(Records.load_ghost(record_id).positions.size() > 10, "ghost of the best run is saved")
 
 	# A new session loads the record and replays the ghost.
 	main.free()

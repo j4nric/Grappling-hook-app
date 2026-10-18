@@ -95,7 +95,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/ambient_sound.gd` | `AmbientSound`: 3D-Geräusch im Level (Lava, Aufwind, Kristall als Schleife, Tropfen in Abständen), spielt nur in Hörweite; platziert von `CavernBuilder` |
 | `scripts/debug_overlay.gd` | Debug-Anzeige (FPS, Tempo, Haken, letzter Wurf) und Auto-Qualität |
 | `tools/gen_splash.py` | Erzeugt `assets/splash.png` (Ladebildschirm) |
-| `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab, `time_at_z()` für das Geist-Delta im HUD |
+| `scripts/ghost.gd` | `Ghost`: zeichnet den Lauf auf (Position + Seil-Anker alle 0,05 s), spielt den besten Lauf als Geist ab, `time_at_z()` für das Geist-Delta im HUD |
+| `scripts/replay.gd` | `Replay`: spielt den besten Lauf im Ziel ab („Replay“): setzt den Spieler (`player.replaying`, `replay_step()`), Kamera, Figur und Seil folgen; Tippen beendet |
+| `scripts/stats.gd` | `Stats`: Läufe, Ziele, Meter, Haken, längster Flow, Spielzeit – gesamt und pro Level in `user://stats.cfg`; Anzeige im Level-Menü („Stats“) |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Aufwind, brüchige Stalaktiten, Tempo-Ringe, dunkle Hallen, Checkpoints, Ziel aus `segments` |
 | `scripts/updraft.gd` | `Updraft`: Luftsäule, hebt Körper bis `max_rise` |

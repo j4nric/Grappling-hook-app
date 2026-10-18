@@ -31,6 +31,8 @@ signal level_loaded(level: Level)
 @onready var fade: ColorRect = $World/Fade
 @onready var environment: Environment = $WorldEnvironment.environment
 @onready var ghost := $Ghost
+@onready var replay: Replay = $Replay
+@onready var replay_label: Label = $HUD/Safe/ReplayLabel
 
 ## Finish shot: slow motion this strong for this long (real seconds).
 const FINISH_SLOWMO := 0.3
@@ -76,6 +78,11 @@ var flow := 0
 var best_flow := 0
 ## The flow counter shows from this many hooks in a row.
 const FLOW_MIN_SHOWN := 2
+## Play not yet written to Stats (see _flush_stats()).
+var _stats_piece := {}
+var _last_position := Vector3.ZERO
+## Longer steps per frame are teleports (respawn), not flown meters.
+const MAX_STATS_STEP := 5.0
 
 
 func _ready() -> void:
@@ -97,6 +104,8 @@ func _ready() -> void:
 	InputRouter.release_requested.connect(_on_tap)
 	# From the menu, the random cave is a new one every time.
 	menu.level_chosen.connect(func(index: int) -> void: load_level(index, true))
+	menu.stats_requested.connect(func() -> void: menu.show_stats(stats_text()))
+	replay.finished.connect(_on_replay_finished)
 	pause_menu.restart_pressed.connect(restart)
 	pause_menu.levels_pressed.connect(open_menu)
 	version_label.text = "build %s" % ProjectSettings.get_setting("application/config/version", "dev")
@@ -105,10 +114,11 @@ func _ready() -> void:
 	panel_style.set_corner_radius_all(16)
 	panel_style.set_content_margin_all(24.0)
 	finish_panel.add_theme_stylebox_override("panel", panel_style)
-	for button_name in ["Next", "Levels"]:
+	for button_name in ["Next", "Replay", "Levels"]:
 		finish_panel.get_node("Lines/Buttons/" + button_name).add_to_group(InputRouter.BLOCKING_GUI_GROUP)
 	finish_panel.get_node("Lines/Buttons/Next").pressed.connect(_on_next)
 	finish_panel.get_node("Lines/Buttons/Levels").pressed.connect(open_menu)
+	finish_panel.get_node("Lines/Buttons/Replay").pressed.connect(start_replay)
 	get_viewport().size_changed.connect(_apply_safe_area)
 	_apply_safe_area()
 	load_level(maxi(start_level, 0))
@@ -123,6 +133,8 @@ func load_level(index: int, new_cave := false) -> void:
 		return
 	if new_cave and Levels.is_random_cave(level_list[index]):
 		level_list[index] = Levels.random_cave_path()
+	replay.stop()
+	_flush_stats()
 	if level:
 		remove_child(level)
 		level.queue_free()
@@ -147,6 +159,8 @@ func load_level(index: int, new_cave := false) -> void:
 
 
 func open_menu() -> void:
+	replay.stop()
+	_flush_stats()
 	pause_menu.set_button_visible(false)
 	var entries := []
 	for path in level_list:
@@ -170,13 +184,15 @@ func _process(delta: float) -> void:
 		# Real time while aiming (slow motion must not shorten the run), game
 		# time during a hit-stop (juice must not cost time).
 		_elapsed += minf(TimeScale.timer_delta(delta), max_timer_step)
-		ghost.update_run(_elapsed, player.global_position)
+		ghost.update_run(_elapsed, player.global_position,
+				player.anchor if player.hook_state == player.HookState.ATTACHED else Ghost.NO_ANCHOR)
 		_update_ghost_delta()
+		_count_stats(minf(TimeScale.timer_delta(delta), max_timer_step))
 	TimeScale.update(delta)
 	if player.global_position.y < level.kill_y:
 		_on_killed()
 	_update_darkness(delta)
-	time_label.text = "%.2f" % _elapsed
+	time_label.text = "%.2f" % (replay.time if replay.is_playing() else _elapsed)
 	if not level.hints.is_empty() and not _finished and hint_label.text != level.hint_at(player.global_position.z):
 		_update_hud()
 	var size := get_viewport().get_visible_rect().size
@@ -188,6 +204,8 @@ func _process(delta: float) -> void:
 
 ## Back to the start of the level, timer reset.
 func restart() -> void:
+	replay.stop()
+	_flush_stats()
 	_respawn = level.start_position()
 	player.reset_to(_respawn)
 	camera_rig.stop_orbit()
@@ -210,6 +228,8 @@ func restart() -> void:
 
 ## Lava or a fall: back to the last checkpoint, the timer keeps running.
 func _on_killed() -> void:
+	if replay.is_playing():
+		return
 	player.reset_to(_respawn)
 	_set_flow(0)
 	_blink(RESPAWN_FADE)
@@ -224,17 +244,23 @@ func _blink(seconds: float) -> void:
 
 ## Only a throw starts the run; after the finish it plays again.
 func _on_throw(_swipe: Vector2, _flick: Vector2) -> void:
-	if _finished:
+	if replay.is_playing():
+		replay.stop()
+	elif _finished:
 		restart()
 	elif not _running:
 		_running = true
 		_flash_go()
+		_stats_piece.runs = 1
+		_last_position = player.global_position
 		run_started.emit()
 
 
 ## A tap lets go of the rope (player.gd); after the finish it plays again.
 func _on_tap() -> void:
-	if _finished:
+	if replay.is_playing():
+		replay.stop()
+	elif _finished:
 		restart()
 
 
@@ -251,6 +277,8 @@ func _flash_go() -> void:
 func _on_hook_attached(_point: Vector3, _normal: Vector3) -> void:
 	# A hook from the floor starts a new chain.
 	_set_flow(1 if player.is_on_floor() else flow + 1)
+	if _running:
+		_stats_piece.hooks = int(_stats_piece.get("hooks", 0)) + 1
 	if not _hint_dismissed:
 		_hint_dismissed = true
 		_update_hud()
@@ -267,6 +295,8 @@ func _on_finished() -> void:
 	var new_best := Records.submit(_record_id, _elapsed, _splits, tuned)
 	if new_best:
 		Records.save_ghost(_record_id, ghost.recording())
+	_stats_piece.finishes = 1
+	_flush_stats()
 	_best = minf(_best, _elapsed)
 	ghost_label.visible = false
 	var medal := Records.medal(level, _elapsed)
@@ -289,12 +319,15 @@ func _on_finished() -> void:
 	var random := Levels.is_random_cave(level_list[level_index])
 	next.text = "New cave" if random else "Next"
 	next.visible = random or level_index + 1 < level_list.size()
+	finish_panel.get_node("Lines/Buttons/Replay").visible = Replay.can_play(Records.load_ghost(_record_id))
 	_update_hud()
 
 
 ## Checkpoint: new respawn point; the first time in a run also a split
 ## time against the best run.
 func _on_checkpoint(point: Vector3) -> void:
+	if replay.is_playing():
+		return
 	_respawn = point
 	if not _running or point in _reached:
 		return
@@ -314,6 +347,79 @@ func _show_split(delta: float) -> void:
 	var tween := split_label.create_tween()
 	tween.tween_interval(SPLIT_SHOW_TIME)
 	tween.tween_property(split_label, "modulate:a", 0.0, 0.5)
+
+
+## Finish screen "Replay": the best run of this level plays back.
+func start_replay() -> void:
+	var run := Records.load_ghost(_record_id)
+	if not _finished or not Replay.can_play(run):
+		return
+	camera_rig.stop_orbit()
+	TimeScale.set_cinema(1.0)
+	ghost.visible = false
+	_blink(RESPAWN_FADE)
+	replay.start(run)
+	replay_label.visible = true
+	_update_hud()
+
+
+func _on_replay_finished() -> void:
+	replay_label.visible = false
+	if _finished:
+		camera_rig.start_orbit()
+	_update_hud()
+
+
+## Statistics of the run so far: meters flown and play time (written at the
+## end of the run, see _flush_stats()).
+func _count_stats(timer_step: float) -> void:
+	var step: float = player.global_position.distance_to(_last_position)
+	_last_position = player.global_position
+	if step < MAX_STATS_STEP:
+		_stats_piece.meters = float(_stats_piece.get("meters", 0.0)) + step
+	_stats_piece.play_time = float(_stats_piece.get("play_time", 0.0)) + timer_step
+
+
+## Writes the counted play to Stats (end of a run, level change, app in the
+## background) and starts counting from zero.
+func _flush_stats() -> void:
+	if _stats_piece.is_empty() or level == null:
+		return
+	if best_flow > 0:
+		_stats_piece.best_flow = best_flow
+	Stats.add(Stats.group(level_list[level_index]), _stats_piece)
+	_stats_piece = {}
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_flush_stats()
+
+
+## The statistics screen of the level menu: total, then each level.
+func stats_text() -> String:
+	_flush_stats()
+	var lines := ["TOTAL", Stats.describe(Stats.of(Stats.TOTAL)), ""]
+	var seen := {}
+	for path in level_list:
+		var level_group := Stats.group(path)
+		if seen.has(level_group):
+			continue
+		seen[level_group] = true
+		var values := Stats.of(level_group)
+		if values.runs == 0:
+			continue
+		var title: String = {"daily": "Daily Caves", "random": "Random Caves"}.get(level_group, "")
+		if title == "":
+			var scene: Level = Levels.instantiate(path)
+			title = scene.level_name
+			scene.free()
+		lines.append(title.to_upper())
+		lines.append(Stats.describe(values))
+		lines.append("")
+	if lines.size() == 3:
+		lines.append("Play a level to start counting.")
+	return "\n".join(lines).strip_edges()
 
 
 ## Seconds ahead (-) or behind (+) the ghost at the same point of the level.
@@ -405,7 +511,7 @@ func _apply_safe_area() -> void:
 
 
 func _update_hud() -> void:
-	finish_panel.visible = _finished
+	finish_panel.visible = _finished and not replay.is_playing()
 	var best_text := "%.2f s%s" % [_best, _tuned_mark(_record_id)] if _best < INF else "-"
 	pause_menu.set_info("%s\nBest %s\nGold %.2f   Silver %.2f   Bronze %.2f" % [
 			level.level_name, best_text, level.gold_time, level.silver_time, level.bronze_time])
