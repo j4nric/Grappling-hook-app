@@ -20,6 +20,12 @@ const MATERIALS := {
 	"ice": preload("res://assets/materials/ice.tres"),
 	"metal": preload("res://assets/materials/metal.tres"),
 	"lava": preload("res://assets/materials/lava.tres"),
+	"moss": preload("res://assets/materials/moss.tres"),
+	"slick": preload("res://assets/materials/slick.tres"),
+	"floater": preload("res://assets/materials/floater.tres"),
+	"root": preload("res://assets/materials/root.tres"),
+	"cap": preload("res://assets/materials/cap.tres"),
+	"amber": preload("res://assets/materials/amber.tres"),
 }
 const CRYSTAL := preload("res://scenes/props/crystal.tscn")
 const SHAFT := preload("res://scenes/props/light_shaft.tscn")
@@ -28,6 +34,7 @@ const FLICKER := preload("res://scripts/flicker.gd")
 const UPDRAFT := preload("res://scripts/updraft.gd")
 const BRITTLE := preload("res://scripts/brittle.gd")
 const SPEED_RING := preload("res://scripts/speed_ring.gd")
+const FLOATER := preload("res://scripts/floater.gd")
 const AMBIENT := preload("res://scripts/ambient_sound.gd")
 const SOUNDS := {
 	"lava": preload("res://assets/sounds/amb_lava.wav"),
@@ -55,6 +62,10 @@ const CEILING_ROUGHNESS := 0.4
 const WALL_ROUGHNESS := 0.4
 ## Longest stalactite (m): longer ones cut through the swing.
 const STALACTITE_MAX := 8.0
+## Open halls: the far vault (no hook) this high above the ceiling height.
+const OPEN_HEIGHT := 40.0
+## Halls at least this wide get a line of ceiling crystals down the middle.
+const WIDE_HALL := 50.0
 
 const SEGMENT_DEFAULTS := {
 	"length": 60.0,
@@ -99,12 +110,24 @@ const SEGMENT_DEFAULTS := {
 	"rings": 0,
 	## Dark hall: no light shafts, the ambient light dims, the head lamp goes on.
 	"dark": false,
+	## Open ceiling: no rock to hook above, only a far vault (no hook). The
+	## way on is along floating stones.
+	"open": false,
+	## Floating stones every this many meters (0 = none), in a zigzag lane at
+	## floater_height (m above the ledges; -1 = 4 m below the ceiling height).
+	"floater_spacing": 0.0,
+	"floater_height": -1.0,
+	"floater_size": 3.5,
+	## Walls of wet, slick rock: the hook does not hold on them.
+	"slick_walls": false,
 }
 
 var _level: Node3D
 var _rng := RandomNumberGenerator.new()
 ## Per hall: material name -> Array of [Transform3D (scaled unit box)].
 var _meshes := {}
+## Per hall: "kind|variant|material" -> Array of Transform3D (RockMesh models).
+var _models := {}
 var _body: StaticBody3D
 var _ice_body: StaticBody3D
 var _hall := 0
@@ -166,7 +189,7 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 	match seg.floor:
 		"ground":
 			# Solid down into the depth: nothing to fly under.
-			_box("rock_floor", Vector3(0, (LEDGE_Y + DEPTH_Y) / 2.0, (z0 + z1) / 2.0),
+			_box("moss", Vector3(0, (LEDGE_Y + DEPTH_Y) / 2.0, (z0 + z1) / 2.0),
 					Vector3(seg.width + 6.0, LEDGE_Y - DEPTH_Y, length + 0.5), Vector3.ZERO)
 		"lava":
 			_lava(seg, z0, z1)
@@ -216,6 +239,9 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 	for b in seg.blocks:
 		_box(b[6], Vector3(b[0], b[1], z0 - b[2]), Vector3(b[3], b[4], b[5]), Vector3.ZERO)
 	_drips(seg, z0, z1)
+	_decorate(seg, z0, z1)
+	if float(seg.floater_spacing) > 0.0:
+		_floaters(seg, z0, z1)
 	for m in seg.movers:
 		_mover(Vector3(m[0], m[1], z0 - m[2]), Vector3(m[3], m[4], m[5]), m[6], m[7], m[8])
 
@@ -223,20 +249,36 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 ## Where the next hall is lower or narrower, a slanted slab leads into it:
 ## a flat step would stop the player dead, a slope redirects the flight.
 func _transition(prev: Dictionary, next: Dictionary, z: float) -> void:
-	var drop := float(prev.ceiling) - float(next.ceiling)
+	# Out of an open hall the slope starts just above the floating stones,
+	# not at the far vault (that would roof over the whole hall).
+	var from := float(prev.ceiling) + (4.0 if prev.open else 0.0)
+	var drop := from - float(next.ceiling)
+	if prev.open != next.open:
+		# Between an open hall and a closed one: a wall from the lower ceiling
+		# up to the vault (no hook), so nothing is open above the closed hall.
+		var low := minf(_top(prev), _top(next))
+		var high := maxf(_top(prev), _top(next)) + 12.0
+		var wide := maxf(float(prev.width), float(next.width)) + 20.0
+		_solid("ice", Vector3(0, (low + high) / 2.0 + 3.0, z), Vector3(wide, high - low - 6.0, 4.0))
+		_shape("rock_dark", Vector3(0, (low + high) / 2.0 + 3.0, z), Vector3(wide, high - low - 6.0, 6.0), Vector3.ZERO)
 	if drop > 0.5:
 		var run := maxf(drop * 2.5, 8.0)
-		var face := Vector3(0, float(prev.ceiling) - drop / 2.0, z + run / 2.0)
+		var face := Vector3(0, from - drop / 2.0, z + run / 2.0)
 		var along := Vector3(0, drop, run)
 		_slab("rock_dark", face, Vector3(0, -run, drop).normalized(), along, float(prev.width) + 10.0, 8.0)
 	var narrow := (float(prev.width) - float(next.width)) / 2.0
 	if narrow > 0.5:
 		var run := maxf(narrow * 2.5, 8.0)
 		for side in [-1.0, 1.0]:
-			var face := Vector3(side * (float(next.width) / 2.0 + narrow / 2.0), (DEPTH_Y + float(prev.ceiling)) / 2.0, z + run / 2.0)
+			var face := Vector3(side * (float(next.width) / 2.0 + narrow / 2.0), (DEPTH_Y + _top(prev)) / 2.0, z + run / 2.0)
 			var along := Vector3(side * narrow, 0, run)
 			var normal := Vector3(-side * run, 0, narrow).normalized()
-			_slab("rock", face, normal, along, float(prev.ceiling) - DEPTH_Y + 10.0, 8.0)
+			_slab("rock", face, normal, along, _top(prev) - DEPTH_Y + 10.0, 8.0)
+
+
+## Height of the rock above a hall: its ceiling, or the far vault if open.
+func _top(seg: Dictionary) -> float:
+	return float(seg.ceiling) + (OPEN_HEIGHT if seg.open else 0.0)
 
 
 ## Stops drawing node (and its meshes) beyond `distance` from the camera.
@@ -264,10 +306,10 @@ func _slab(material: String, face: Vector3, normal: Vector3, along: Vector3, acr
 ## so sliding along a wall never catches on an edge.
 func _walls(seg: Dictionary, z0: float, z1: float) -> void:
 	var w: float = seg.width
-	var c: float = seg.ceiling
-	var top := c + 12.0
+	var top := _top(seg) + 12.0
+	var slick: bool = seg.slick_walls
 	for side in [-1.0, 1.0]:
-		_solid("rock", Vector3(side * (w / 2.0 + 4.0), (DEPTH_Y + top) / 2.0, (z0 + z1) / 2.0),
+		_solid("ice" if slick else "rock", Vector3(side * (w / 2.0 + 4.0), (DEPTH_Y + top) / 2.0, (z0 + z1) / 2.0),
 				Vector3(8.0, top - DEPTH_Y, z0 - z1))
 	var z := z0
 	var n := 0
@@ -278,7 +320,8 @@ func _walls(seg: Dictionary, z0: float, z1: float) -> void:
 			# Never more than WALL_ROUGHNESS in front of the flat face.
 			var x: float = side * (w / 2.0 + thick / 2.0 + _rng.randf_range(-1.5, 1.5) / 1.5 * WALL_ROUGHNESS)
 			var tilt := Vector3(_rng.randf_range(-0.05, 0.05), _rng.randf_range(-0.15, 0.15), _rng.randf_range(-0.08, 0.08))
-			_shape("rock" if n % 2 == 0 else "rock_dark", Vector3(x, (DEPTH_Y + top) / 2.0, z - piece / 2.0),
+			var material := "slick" if slick else ("rock" if n % 2 == 0 else "rock_dark")
+			_shape(material, Vector3(x, (DEPTH_Y + top) / 2.0, z - piece / 2.0),
 					Vector3(thick, top - DEPTH_Y, piece + 3.0), tilt * 0.2)
 			n += 1
 		z -= piece
@@ -289,6 +332,9 @@ func _walls(seg: Dictionary, z0: float, z1: float) -> void:
 ## their underside at the ceiling height, so there is no edge to catch on.
 ## Ice blocks (no hook) stay ice in the collision, too.
 func _ceiling(seg: Dictionary, z0: float, z1: float) -> void:
+	if seg.open:
+		_vault(seg, z0, z1)
+		return
 	var w: float = seg.width
 	var c: float = seg.ceiling
 	var columns := maxi(2, ceili(w / 14.0))
@@ -316,9 +362,11 @@ func _stalactite(top: Vector3, length: float, ice: bool) -> void:
 	var thick := _rng.randf_range(1.6, 3.0)
 	var tilt := Vector3(_rng.randf_range(-0.08, 0.08), _rng.randf_range(0, TAU), _rng.randf_range(-0.08, 0.08))
 	var mat := "ice" if ice else "rock"
-	# Upper body and a narrower tip: tapers like a stalactite.
-	_box(mat, top + Vector3(0, -length * 0.35 + 1.0, 0), Vector3(thick, length * 0.7, thick), tilt)
-	_box(mat, top + Vector3(0, -length * 0.8 + 1.0, 0), Vector3(thick * 0.55, length * 0.4, thick * 0.55), tilt)
+	# Collision: upper body and a narrower tip. Drawn: a tapering cone.
+	_collider(mat, top + Vector3(0, -length * 0.35 + 1.0, 0), Vector3(thick, length * 0.7, thick), tilt)
+	_collider(mat, top + Vector3(0, -length * 0.8 + 1.0, 0), Vector3(thick * 0.55, length * 0.4, thick * 0.55), tilt)
+	_model("stalactite", mat, Transform3D(Basis.from_euler(tilt).scaled_local(Vector3(thick * 1.3, length + 1.0, thick * 1.3)),
+			top + Vector3(0, 1.0, 0)))
 
 
 ## A stalactite that breaks off a moment after the hook bites: its own
@@ -428,22 +476,36 @@ func _ring(center: Vector3) -> void:
 func _pillar(base: Vector3, ceiling: float) -> void:
 	var r := _rng.randf_range(1.8, 3.5)
 	var top := ceiling + 2.0 if _rng.randf() < 0.5 else _rng.randf_range(4.0, ceiling - 8.0)
-	_box("rock", Vector3(base.x, (DEPTH_Y + top) / 2.0, base.z), Vector3(r * 2.0, top - DEPTH_Y, r * 2.0),
-			Vector3(0, _rng.randf_range(0, TAU), _rng.randf_range(-0.04, 0.04)))
-	_box("rock_dark", Vector3(base.x, top - 0.5, base.z), Vector3(r * 2.6, 2.0, r * 2.6),
-			Vector3(_rng.randf_range(-0.2, 0.2), _rng.randf_range(0, TAU), _rng.randf_range(-0.2, 0.2)))
+	var body := Vector3(base.x, (DEPTH_Y + top) / 2.0, base.z)
+	var size := Vector3(r * 2.0, top - DEPTH_Y, r * 2.0)
+	var turn := Vector3(0, _rng.randf_range(0, TAU), _rng.randf_range(-0.04, 0.04))
+	_collider("rock", body, size, turn)
+	_model("pillar", "rock", Transform3D(Basis.from_euler(turn).scaled_local(size * Vector3(1.2, 1.0, 1.2)), body))
+	var cap := Vector3(base.x, top - 0.5, base.z)
+	var cap_size := Vector3(r * 2.6, 2.0, r * 2.6)
+	var cap_turn := Vector3(_rng.randf_range(-0.2, 0.2), _rng.randf_range(0, TAU), _rng.randf_range(-0.2, 0.2))
+	_collider("rock_dark", cap, cap_size, cap_turn)
+	_model("boulder", "moss", Transform3D(Basis.from_euler(cap_turn).scaled_local(cap_size * Vector3(1.15, 1.6, 1.15)), cap))
 
 
 ## Floating rock island: a flat-ish top and a jagged underside.
 func _island(center: Vector3) -> void:
 	var size := Vector3(_rng.randf_range(5.0, 9.0), _rng.randf_range(2.5, 4.0), _rng.randf_range(5.0, 9.0))
-	_box("rock", center, size, Vector3(_rng.randf_range(-0.1, 0.1), _rng.randf_range(0, TAU), _rng.randf_range(-0.1, 0.1)))
+	var turn := Vector3(_rng.randf_range(-0.1, 0.1), _rng.randf_range(0, TAU), _rng.randf_range(-0.1, 0.1))
+	_collider("rock", center, size, turn)
+	_model("boulder", "moss", Transform3D(Basis.from_euler(turn).scaled_local(size * Vector3(1.25, 1.3, 1.25)), center))
 	for i in 2:
 		var s := size * Vector3(_rng.randf_range(0.35, 0.6), _rng.randf_range(0.8, 1.4), _rng.randf_range(0.35, 0.6))
-		_box("rock_dark", center + Vector3(_rng.randf_range(-1.5, 1.5), -size.y * 0.6, _rng.randf_range(-1.5, 1.5)), s,
-				Vector3(_rng.randf_range(-0.3, 0.3), _rng.randf_range(0, TAU), _rng.randf_range(-0.3, 0.3)))
+		var pos := center + Vector3(_rng.randf_range(-1.5, 1.5), -size.y * 0.6, _rng.randf_range(-1.5, 1.5))
+		var t := Vector3(_rng.randf_range(-0.3, 0.3), _rng.randf_range(0, TAU), _rng.randf_range(-0.3, 0.3))
+		_collider("rock_dark", pos, s, t)
+		# Drawn longer: a jagged, hanging underside.
+		_model("stalactite", "rock_dark", Transform3D(Basis.from_euler(t).scaled_local(s * Vector3(1.3, 1.8, 1.3)),
+				pos + Vector3(0, s.y * 0.6, 0)))
 	if _rng.randf() < 0.5:
 		_crystal(center + Vector3(0, size.y / 2.0, 0), Vector3.UP)
+	else:
+		_mushrooms(center + Vector3(0, size.y / 2.0, 0), 3)
 
 
 func _outcrop(seg: Dictionary, z: float) -> void:
@@ -451,9 +513,11 @@ func _outcrop(seg: Dictionary, z: float) -> void:
 	var w: float = seg.width
 	var reach := _rng.randf_range(3.0, 7.0)
 	var y := _rng.randf_range(4.0, float(seg.ceiling) - 6.0)
-	_box("rock", Vector3(side * (w / 2.0 - reach / 2.0 + 1.0), y, z),
-			Vector3(reach + 2.0, _rng.randf_range(2.0, 4.0), _rng.randf_range(4.0, 8.0)),
-			Vector3(_rng.randf_range(-0.2, 0.2), _rng.randf_range(-0.3, 0.3), _rng.randf_range(-0.25, 0.25)))
+	var pos := Vector3(side * (w / 2.0 - reach / 2.0 + 1.0), y, z)
+	var size := Vector3(reach + 2.0, _rng.randf_range(2.0, 4.0), _rng.randf_range(4.0, 8.0))
+	var turn := Vector3(_rng.randf_range(-0.2, 0.2), _rng.randf_range(-0.3, 0.3), _rng.randf_range(-0.25, 0.25))
+	_collider("slick" if seg.slick_walls else "rock", pos, size, turn)
+	_model("boulder", "slick" if seg.slick_walls else "rock", Transform3D(Basis.from_euler(turn).scaled_local(size * 1.2), pos))
 
 
 ## Ice wall across the hall with a slit to fly through. Ice: hooking the
@@ -562,10 +626,185 @@ func _finish(seg: Dictionary, z: float) -> void:
 
 ## Flat rock ledge to stand on; top at pos.y.
 func _ledge(pos: Vector3, size: Vector3) -> void:
-	_box("rock_floor", pos - Vector3(0, size.y / 2.0, 0), size, Vector3.ZERO)
+	_box("moss", pos - Vector3(0, size.y / 2.0, 0), size, Vector3.ZERO)
 	# Rough underside hanging into the depth.
-	_box("rock_dark", pos - Vector3(0, size.y + 2.5, 0), size * Vector3(0.7, 1.5, 0.7),
-			Vector3(_rng.randf_range(-0.2, 0.2), _rng.randf_range(0, TAU), _rng.randf_range(-0.2, 0.2)))
+	var under := pos - Vector3(0, size.y + 2.5, 0)
+	var under_size := size * Vector3(0.7, 1.5, 0.7)
+	var turn := Vector3(_rng.randf_range(-0.2, 0.2), _rng.randf_range(0, TAU), _rng.randf_range(-0.2, 0.2))
+	_collider("rock_dark", under, under_size, turn)
+	_model("stalactite", "rock_dark", Transform3D(Basis.from_euler(turn).scaled_local(under_size * Vector3(1.4, 1.6, 1.4)),
+			under + Vector3(0, under_size.y * 0.5, 0)))
+	_mushrooms(pos + Vector3(size.x * 0.35, 0, size.z * 0.3), 4)
+
+
+## The far vault of an open hall: rock high above that the hook does not
+## hold (the way on is along the floating stones), with pale light falling in.
+func _vault(seg: Dictionary, z0: float, z1: float) -> void:
+	var w: float = seg.width
+	var top := _top(seg)
+	var rng := _deco_rng(17)
+	_solid("ice", Vector3(0, top + 6.0, (z0 + z1) / 2.0), Vector3(w + 16.0, 12.0, z0 - z1))
+	var z := z0
+	while z > z1 + 0.1:
+		var piece := minf(rng.randf_range(10.0, 16.0), z - z1)
+		for i in 4:
+			var x := -w / 2.0 + w * (i + 0.5) / 4.0
+			var thick := rng.randf_range(6.0, 12.0)
+			_shape("rock_dark", Vector3(x, top + thick / 2.0 - rng.randf_range(0.0, 3.0), z - piece / 2.0),
+					Vector3(w / 4.0 + 4.0, thick, piece + 4.0), Vector3(rng.randf_range(-0.1, 0.1), rng.randf_range(-0.3, 0.3), 0))
+		z -= piece
+	for i in maxi(1, roundi((z0 - z1) / 30.0)):
+		var at := Vector3(rng.randf_range(-w / 3.0, w / 3.0), top, z0 - (z0 - z1) * (i + 0.5) / maxi(1, roundi((z0 - z1) / 30.0)))
+		_shaft(at, 2.4)
+
+
+## Floating stones in a zigzag lane: hook one after the other and swing
+## along. Missing one means falling into the depth.
+func _floaters(seg: Dictionary, z0: float, z1: float) -> void:
+	var rng := _deco_rng(29)
+	var w: float = seg.width
+	var spacing: float = seg.floater_spacing
+	var band: float = seg.floater_height if float(seg.floater_height) >= 0.0 else float(seg.ceiling) - 4.0
+	var swing := minf(w * 0.22, 10.0)
+	var z := z0 - spacing * 0.6
+	var i := 0
+	while z > z1 + 2.0:
+		var size: float = float(seg.floater_size) * rng.randf_range(0.8, 1.25)
+		var pos := Vector3((1.0 if i % 2 == 0 else -1.0) * swing + rng.randf_range(-3.0, 3.0),
+				band + rng.randf_range(-2.5, 2.5), z + rng.randf_range(-2.0, 2.0))
+		var body := AnimatableBody3D.new()
+		body.set_script(FLOATER)
+		body.position = pos
+		var shape := CollisionShape3D.new()
+		var sphere := SphereShape3D.new()
+		sphere.radius = size * 0.45
+		shape.shape = sphere
+		body.add_child(shape)
+		var mesh := MeshInstance3D.new()
+		mesh.mesh = RockMesh.get_mesh("boulder", i)
+		mesh.material_override = MATERIALS.floater
+		mesh.scale = Vector3(size, size * 0.85, size)
+		mesh.rotation.y = rng.randf_range(0, TAU)
+		mesh.visibility_range_end = PROP_VISIBLE_RANGE
+		body.add_child(mesh)
+		# A small stalactite of rock below: they float, but look heavy.
+		var tail := MeshInstance3D.new()
+		tail.mesh = RockMesh.get_mesh("stalactite", i + 1)
+		tail.material_override = MATERIALS.rock_dark
+		tail.scale = Vector3(size * 0.55, size * 0.9, size * 0.55)
+		tail.position = Vector3(0, -size * 0.25, 0)
+		tail.visibility_range_end = PROP_VISIBLE_RANGE
+		body.add_child(tail)
+		# Each stone lights itself and its neighbourhood: the lane is easy to
+		# read in the dark open hall.
+		var light := OmniLight3D.new()
+		light.light_color = Color(0.45, 0.85, 1.0)
+		light.light_energy = 2.2
+		light.omni_range = 15.0
+		light.position = Vector3(0, size * 0.9, 0)
+		body.add_child(light)
+		_add(body, "Dynamic/Floater")
+		z -= spacing
+		i += 1
+
+
+## Decoration with its own random numbers (the cave layout stays the same):
+## roots hanging from the ceiling, a line of ceiling crystals down the middle
+## of wide halls, an amber beacon at the exit, mushrooms and stones on floors.
+func _decorate(seg: Dictionary, z0: float, z1: float) -> void:
+	var rng := _deco_rng(53)
+	var w: float = seg.width
+	var c: float = seg.ceiling
+	var length := z0 - z1
+	if not seg.open:
+		for i in int(length / 9.0):
+			var hang := rng.randf_range(2.5, 6.5)
+			var thick := rng.randf_range(0.25, 0.55)
+			var at := Vector3(rng.randf_range(-w / 2.0 + 2.0, w / 2.0 - 2.0), c + 0.6, rng.randf_range(z1 + 1.0, z0 - 1.0))
+			var turn := Vector3(rng.randf_range(-0.25, 0.25), rng.randf_range(0, TAU), rng.randf_range(-0.25, 0.25))
+			_model("root", "root", Transform3D(Basis.from_euler(turn).scaled_local(Vector3(thick, hang, thick)), at))
+		if w >= WIDE_HALL:
+			var z := z0 - 13.0
+			var side := 1.0
+			while z > z1 + 6.0:
+				_crystal(Vector3(side * w * 0.12, c + 0.6, z), Vector3.DOWN, 2.2, rng)
+				side = -side
+				z -= 26.0
+	# The way on: an amber beacon at the exit of the hall.
+	var beacon_y := c - 1.0 if not seg.open else (float(seg.floater_height) if float(seg.floater_height) >= 0.0 else c - 4.0) + 7.0
+	_beacon(Vector3(0, beacon_y, z1 + 3.0), seg.open)
+	if seg.floor == "ground":
+		for i in 3:
+			_mushrooms(Vector3(rng.randf_range(-w / 2.0 + 3.0, w / 2.0 - 3.0), LEDGE_Y, rng.randf_range(z1 + 3.0, z0 - 3.0)), 5)
+		for i in int(length / 12.0):
+			var size := rng.randf_range(0.8, 2.2)
+			var at := Vector3(rng.randf_range(-w / 2.0 + 2.0, w / 2.0 - 2.0), LEDGE_Y - size * 0.25, rng.randf_range(z1 + 2.0, z0 - 2.0))
+			_model("boulder", "rock", Transform3D(Basis(Vector3.UP, rng.randf_range(0, TAU)).scaled_local(Vector3(size, size * 0.7, size)), at))
+
+
+## Random numbers for decoration only: seeded from the cave and the hall, so
+## decorations never shift the layout (or each other).
+func _deco_rng(salt: int) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = _rng.seed + _hall * 7919 + salt * 104729
+	return rng
+
+
+## Warm amber crystals marking the exit of a hall (hanging from the ceiling,
+## or floating in an open hall).
+func _beacon(pos: Vector3, floating: bool) -> void:
+	var beacon: Node3D = CRYSTAL.instantiate()
+	beacon.transform = Transform3D(Basis(Vector3.RIGHT, PI if not floating else 0.0).scaled(Vector3.ONE * 1.8), pos)
+	for prism in beacon.find_children("Prism*", "MeshInstance3D", false, false):
+		(prism as MeshInstance3D).material_override = MATERIALS.amber
+	var glow: OmniLight3D = beacon.get_node("Glow")
+	glow.light_color = Color(1.0, 0.62, 0.25)
+	glow.light_energy = 2.4
+	glow.omni_range = 22.0
+	_limit_range(beacon, HALL_VISIBLE_RANGE)
+	_add(beacon, "Props/Beacon")
+
+
+## A cluster of glowing mushrooms standing on `pos` (decoration).
+func _mushrooms(pos: Vector3, count: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = RockMesh.variant_at(pos)
+	var cluster := Node3D.new()
+	cluster.position = pos
+	for i in count:
+		var height := rng.randf_range(0.3, 1.1)
+		var radius := rng.randf_range(0.25, 0.6)
+		var at := Vector3(rng.randf_range(-1.2, 1.2), 0, rng.randf_range(-1.2, 1.2))
+		var stem := MeshInstance3D.new()
+		var stem_mesh := CylinderMesh.new()
+		stem_mesh.top_radius = radius * 0.22
+		stem_mesh.bottom_radius = radius * 0.3
+		stem_mesh.height = height
+		stem_mesh.radial_segments = 6
+		stem_mesh.rings = 1
+		stem.mesh = stem_mesh
+		stem.material_override = MATERIALS.root
+		stem.position = at + Vector3(0, height / 2.0, 0)
+		cluster.add_child(stem)
+		var cap := MeshInstance3D.new()
+		var cap_mesh := SphereMesh.new()
+		cap_mesh.radius = radius
+		cap_mesh.height = radius
+		cap_mesh.is_hemisphere = true
+		cap_mesh.radial_segments = 8
+		cap_mesh.rings = 3
+		cap.mesh = cap_mesh
+		cap.material_override = MATERIALS.cap
+		cap.position = at + Vector3(0, height, 0)
+		cluster.add_child(cap)
+	var light := OmniLight3D.new()
+	light.light_color = Color(0.4, 1.0, 0.8)
+	light.light_energy = 0.9
+	light.omni_range = 7.0
+	light.position = Vector3(0, 1.2, 0)
+	cluster.add_child(light)
+	_limit_range(cluster, PROP_VISIBLE_RANGE)
+	_add(cluster, "Props/Mushrooms")
 
 
 ## A sound at pos, audible up to max_distance. interval > 0 repeats a
@@ -603,13 +842,14 @@ func _crystal_on_wall(seg: Dictionary, z: float) -> void:
 
 
 ## Glowing crystal cluster, size `scale` (big ones are landmarks).
-func _crystal(pos: Vector3, up: Vector3, scale := 1.0) -> void:
+## rng: decoration passes its own (the layout's random numbers stay put).
+func _crystal(pos: Vector3, up: Vector3, scale := 1.0, rng: RandomNumberGenerator = null) -> void:
 	var crystal: Node3D = CRYSTAL.instantiate()
 	var basis := Basis()
 	basis.y = up.normalized()
 	basis.x = basis.y.cross(Vector3.FORWARD if absf(basis.y.z) < 0.9 else Vector3.RIGHT).normalized()
 	basis.z = basis.x.cross(basis.y).normalized()
-	var spin := Basis(basis.y, _rng.randf_range(0, TAU))
+	var spin := Basis(basis.y, (rng if rng else _rng).randf_range(0, TAU))
 	crystal.transform = Transform3D((spin * basis).scaled_local(Vector3.ONE * scale), pos)
 	var glow: OmniLight3D = crystal.get_node("Glow")
 	glow.omni_range *= sqrt(scale)
@@ -617,9 +857,10 @@ func _crystal(pos: Vector3, up: Vector3, scale := 1.0) -> void:
 	_add(crystal, "Props/Crystal")
 
 
-func _shaft(top: Vector3) -> void:
+func _shaft(top: Vector3, length_scale := 1.0) -> void:
 	var shaft: Node3D = SHAFT.instantiate()
 	shaft.position = top
+	shaft.scale = Vector3(length_scale, length_scale, length_scale)
 	_limit_range(shaft, PROP_VISIBLE_RANGE)
 	_add(shaft, "Props/Shaft")
 	var light := OmniLight3D.new()
@@ -687,6 +928,25 @@ func _box(material: String, pos: Vector3, size: Vector3, rotation: Vector3) -> v
 	_box_basis(material, pos, size, Basis.from_euler(rotation))
 
 
+## Only collision, rotated, not drawn (the look comes from a model).
+## "ice" and "slick" do not hold the hook.
+func _collider(material: String, pos: Vector3, size: Vector3, rotation: Vector3) -> void:
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	shape.transform = Transform3D(Basis.from_euler(rotation), pos)
+	(_ice_body if material in ["ice", "slick"] else _body).add_child(shape)
+
+
+## Only drawn: a RockMesh model; the variant follows from the position.
+func _model(kind: String, material: String, xform: Transform3D) -> void:
+	var key := "%s|%d|%s" % [kind, RockMesh.variant_at(xform.origin) % RockMesh.VARIANTS, material]
+	if not _models.has(key):
+		_models[key] = []
+	_models[key].append(xform)
+
+
 ## Only drawn, no collision (the rough look of walls and ceiling).
 func _shape(material: String, pos: Vector3, size: Vector3, rotation: Vector3) -> void:
 	if not _meshes.has(material):
@@ -718,6 +978,7 @@ func _box_basis(material: String, pos: Vector3, size: Vector3, basis: Basis) -> 
 
 func _begin_hall() -> void:
 	_meshes = {}
+	_models = {}
 	_body = StaticBody3D.new()
 	_ice_body = StaticBody3D.new()
 	_ice_body.add_to_group(NO_HOOK_GROUP)
@@ -746,6 +1007,21 @@ func _end_hall() -> void:
 		instance.material_override = MATERIALS[material]
 		instance.visibility_range_end = HALL_VISIBLE_RANGE
 		instance.name = "Hall%d_%s" % [_hall, material]
+		geometry.add_child(instance)
+	for key: String in _models:
+		var parts := key.split("|")
+		var transforms: Array = _models[key]
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.mesh = RockMesh.get_mesh(parts[0], int(parts[1]))
+		multimesh.instance_count = transforms.size()
+		for i in transforms.size():
+			multimesh.set_instance_transform(i, transforms[i])
+		var instance := MultiMeshInstance3D.new()
+		instance.multimesh = multimesh
+		instance.material_override = MATERIALS[parts[2]]
+		instance.visibility_range_end = HALL_VISIBLE_RANGE
+		instance.name = "Hall%d_%s_%s_%s" % [_hall, parts[0], parts[1], parts[2]]
 		geometry.add_child(instance)
 	_hall += 1
 

@@ -14,7 +14,8 @@ Größe: S = klein, M = mittel, L = groß.
       Säulen, Licht, Seed. Die Höhle baut sich beim Loslassen neu (Aufbau dauert
       2–5 ms), „Copy“ schickt das Layout als Text. So wird Level-Design wie
       Physik-Tuning direkt am Handy gemacht.
-- [ ] **Licht für breite Hallen (M):** Die Wide Cave ist dunkel, weil die Lichter
+- [x] **Licht für breite Hallen (M):** (umgesetzt: Deckenkristalle als Lichtlinie
+      in Hallen ab 50 m Breite) Die Wide Cave ist dunkel, weil die Lichter
       an den Wänden sitzen und die Wände 40 m weg sind. Licht entlang der
       Flugbahn (Deckenkristalle, Lichtkegel in der Mitte) und ein Leitlicht zum
       Ausgang.
@@ -26,10 +27,24 @@ Größe: S = klein, M = mittel, L = groß.
       mit klarer Aufgabe (Sprint: lang und hoch; Slalom: Säulen versetzt;
       Kathedrale: sehr hoch, Ringe; Engstelle: schmal und niedrig, schräg
       angeschlossen). Level und Generator setzen sich daraus zusammen.
-- [ ] **Orientierung (S):** Landmarken und ein sichtbarer Ausgang je Halle, damit
+- [x] **Orientierung (S):** (umgesetzt: Bernstein-Marke am Ausgang jeder Halle) Landmarken und ein sichtbarer Ausgang je Halle, damit
       man in breiten Hallen die Richtung nicht verliert.
 - [ ] **Tempo-Ringe auf der Ideallinie (S):** zwischen zwei Ankerzonen statt
       zufällig in der Hallenmitte.
+
+- [x] **Neue Optik (Wunsch):** Felsmodelle statt Quader (Brocken, Stalaktiten,
+      Säulen), neue Texturen (Moos, nasser Fels, Adergestein, Wurzeln, Pilze,
+      Bernstein), leuchtende Pilze, hängende Wurzeln.
+- [x] **Offene Decke (Wunsch):** Hallen ohne Decke; schwebende Steine in einer
+      Zickzack-Bahn, an denen man sich entlanghangelt; glatte Wände.
+- [x] **Neu entdeckt:** Alle leuchtenden Materialien (auch Kristalle und Eis seit
+      Runde 2) waren fast weiß: Godot addiert Emissionsfarbe (weiß) und Textur.
+      Emissionsfarbe jetzt schwarz; das Eis-Leuchten aus Runde 3 wieder auf 0,8.
+- [x] **Neu entdeckt:** Übergang aus einer offenen Halle in eine niedrigere baute
+      eine 100 m lange Schräge über die ganze offene Halle → kurze Schräge ab der
+      Schwebe-Ebene plus Stirnwand bis zum Gewölbe.
+- [x] **Neu entdeckt:** Die Zeit-Skizze im TUNE-Panel nutzte `%g` (gibt es in
+      GDScript nicht) – Achsenbeschriftung fehlte.
 
 ## 2. Spielgefühl
 
