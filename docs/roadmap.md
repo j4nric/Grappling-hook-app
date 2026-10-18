@@ -3,6 +3,12 @@
 Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md` (Runde 2).
 Runde 1 (2026-10-17, PRs #1–#12): Tests/CI, Vorschau-Builds, Zip-Launch, Wurf-Feedback,
 Kamera, HUD, 5 Level, Speedrun, Optik, Sound, Debug/Auto-Qualität.
+Runde 2 (2026-10-18, PRs #13–#24): Eingabe-/Timer-Bugs, Physik-Interpolation,
+Kettenwürfe, Decken-Umlenkung/Landungen/Wall-Kick/Zerquetschen, Juice (Hit-Stop,
+FOV-Kick, Speed-Lines, Flow), prozedurale Texturen und Materialbibliothek,
+Kamera-Kollision, Kavernen-Baukasten mit neuen Leveln, Wurfwinkel-Hilfe,
+prozedurale Daily/Random Caves, Zwischenzeiten/Geist-Delta/versionierte Rekorde,
+Musik nach Tempo, Tutorial.
 
 ## M0 – Grauer Tunnel (erledigt mit diesem Gerüst)
 - [x] Projekt, Autoload, Hauptszene
@@ -48,7 +54,14 @@ Kamera, HUD, 5 Level, Speedrun, Optik, Sound, Debug/Auto-Qualität.
 
 ## M6 – Juice
 - [x] Sound (Haken, Loslassen, Wind, Aufprall)
-- [ ] Screenshake, Hit-Stop beim Einhaken
+- [x] Screenshake, Hit-Stop beim Einhaken
+- [x] Musik, die mit dem Tempo intensiver wird
+- [x] Speed-Lines, FOV-Kick, Flow-Zähler
+
+## M7 – Höhle (Runde 2)
+- [x] Prozedurale Texturen und Materialbibliothek
+- [x] Kavernen-Baukasten, Level 1–5 als Hallen über dem Abgrund, Tutorial
+- [x] Prozedurale Höhlen (Daily Cave, Random Cave)
 - [x] Ghost der Bestzeit
 
 ## Tuning-Log

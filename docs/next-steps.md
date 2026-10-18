@@ -1,7 +1,8 @@
 # Nächste Schritte – Runde 2
 
-Stand: 2026-10-18, Build `9adbab0`. Runde 1 (Zip-Launch, Level, Speedrun, Optik,
-Sound, CI) ist erledigt, siehe `roadmap.md` und PRs #1–#12.
+Stand: 2026-10-18. Runde 1 (Zip-Launch, Level, Speedrun, Optik, Sound, CI) ist
+erledigt, siehe `roadmap.md` und PRs #1–#12. **Runde 2 ist umgesetzt** (PRs #13–#24);
+offen sind nur Punkte, die ein echtes Gerät brauchen (unten „Auf dem Gerät“).
 
 Fokus dieser Runde: **flüssiges, befriedigendes Spielgefühl** und eine Höhle,
 die **groß, hoch und leer** wirkt statt wie ein enger Gang.
@@ -137,7 +138,7 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       kurzer FOV-Kick beim Zip-Launch, Seil spannt sich sichtbar (zittert kurz).
 - [x] **Tempo sichtbar machen:** (Speed-Lines ab 28 m/s, Wind-Streifen, Wind-Tonhöhe) Speed-Lines am Bildrand ab hohem Tempo,
       Wind-Partikel, stärkerer Tempo-Sound (Tonhöhe).
-- [ ] **Schwingen** (siehe Entscheidung): Pendelphase vor dem Einholen,
+- [x] **Schwingen** (siehe Entscheidung; gemessen in Gängen und Kavernen, Standard 0, Regler `swing_time` bleibt zum Ausprobieren): Pendelphase vor dem Einholen,
       damit es nicht nur geradlinige Zips gibt.
 - [x] **Landungen erhalten Schwung:** (`landing_roll`, `slide_friction`, Wall-Kick) Rollen/Rutschen statt harter Bremsung;
       Wand-Abprall (Wall-Kick) beim Auftreffen mit Tempo.
@@ -174,10 +175,31 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 
 ## 5. Technik
 
-- [ ] **Bildrate auf dem iPhone messen** (Debug-Anzeige in TUNE → Misc).
 - [x] **Bot-Test erweitern:** (Spam: `test_chain`, Timer-Start: `test_input`, Zerquetschen: `test_movement`) prüft auch Spam-Verhalten, Timer-Start und
       Zerquetschen (Regressionen der Bugs oben).
 - [x] **Onboarding-Level:** („Tutorial“ als erstes Level, Hinweise je nach Position: Werfen, Kette, Eis, Tor, Lösen/Neustart) kurzer Tutorial-Abschnitt (Werfen, Zip, Eis).
+
+## Auf dem Gerät (nur mit dem iPhone möglich)
+
+- [ ] **Bildrate auf dem iPhone messen** (TUNE → Misc → Debug-Anzeige). Bei
+      unter 60 fps: zuerst `stretch_shrink` (Pixelgröße) und die Zahl der
+      Kristall-Lichter prüfen.
+- [ ] **Neue Standardwerte erspielen:** Seil 70 m, Haken bis 90 m/s,
+      Wurfwinkel-Hilfe 14 m, Kamera 3,5/10 m. Abweichungen per **Copy** schicken.
+- [ ] **Musik-Lautstärke und Mix** (TUNE → Misc → Music/volume).
+
+## Ideen für Runde 3 (beim Umsetzen aufgefallen)
+
+- **Kamera unter der Decke:** Nach Zips ist man oft knapp unter der Decke; die
+  Kamera wird dann auf Spielerhöhe gedrückt. Eine leicht von unten blickende
+  Kamera in diesen Momenten könnte den Raum besser zeigen.
+- **Bot als Level-Prüfer im Generator:** Daily/Random Caves vor dem Spielen
+  einmal headless „anspielen“ lassen ist im Browser zu teuer; stattdessen
+  Regeln im Generator weiter schärfen (Abstände zwischen greifbaren Ankern messen).
+- **Mehr Hallen-Arten:** Aufwind-Schächte, einstürzende Stalaktiten, Wasserfall
+  (Eis-Vorhang), dunkle Hallen nur mit Kristall-Licht.
+- **Bestenliste für die Daily Cave** (braucht einen kleinen Server).
+- **Seil-Physik sichtbar:** Seil hängt beim Flug des Hakens durch statt gerade.
 
 ## Später
 
