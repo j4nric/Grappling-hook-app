@@ -125,6 +125,12 @@ Böden lösen das Seil nie. Am Boden bremst `floor_friction`, solange kein Seil 
 `hook_attached(point, normal)`, `hook_missed`, `rope_released(reason)`
 (`zip`, `contact`, `blocked`, `tap`, `throw`, `reset`), `landed(impact_speed)`.
 
+**Flüssige Darstellung:** Physik-Interpolation ist an (60-Hz-Physik, Darstellung
+in jeder Bildrate). Alles, was per Hand jedes Frame platziert wird (Kamera-Rig,
+Seil, Haken, Ziellinie, Geist), läuft in `_process`, nutzt
+`get_global_transform_interpolated()` und hat `physics_interpolation_mode = OFF`.
+Teleports (`reset_to`) rufen `reset_physics_interpolation()`.
+
 ## Arbeitsweise
 
 - Starte mit dem Spielgefühl. Bevor Features dazukommen: Läuft der Testtunnel,
