@@ -15,7 +15,8 @@ func run() -> void:
 	InputRouter.throw_requested.emit(Vector2(0, -300), Vector2(0, -3000))
 	await wait_frames(4)
 	await get_tree().process_frame
-	var origin: Vector3 = p.get_global_transform_interpolated().origin + p.HOOK_OFFSET
+	var origin: Vector3 = p.figure.hand_position()
+	check(p.figure.global_position.distance_to(p.get_global_transform_interpolated().origin) < 0.5, "the figure follows the interpolated player")
 	var vertices: PackedVector3Array = p.flight_rope.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
 	var nearest := INF
 	for v in vertices:
@@ -29,3 +30,4 @@ func run() -> void:
 	await get_tree().process_frame
 	var drawn := p.get_global_transform_interpolated().origin
 	check(drawn.distance_to(p.global_position) < 0.01, "a teleport is not interpolated")
+	check(p.figure.global_position.distance_to(p.global_position) < 0.01, "the figure jumps with the teleport")
