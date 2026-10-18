@@ -86,6 +86,14 @@ Musik nach Tempo, Tutorial.
 - [x] Tuning-Sätze A/B/C und Einfügen, Läufe als Code teilen (Rivalen-Geist), Zielzeiten-Kurve
 - [x] Sturz als Ragdoll, Nachhall je Halle, Leistungsmessung breiter Hallen
 
+## M11 – Können, Abwechslung, Fortschritt (Runde 6, geplant)
+- [ ] Perfekter Kettenwurf, Sprungpilze
+- [ ] Kurvige Höhlen, Abkürzungen, Level „Winding Rift“
+- [ ] Wasserfälle, Teilchen in der Luft, fließende Lava, Ausgang ins Tageslicht
+- [ ] Fortschritt im Menü, Zwischenzeiten, Figur-Farben, Daten sichern
+- [ ] Shader aufwärmen, Paketgröße, game.gd aufteilen
+- [ ] Siehe `next-steps.md`
+
 ## Tuning-Log
 
 | Datum | Wert | vorher → nachher | Grund |
