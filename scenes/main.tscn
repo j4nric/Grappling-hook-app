@@ -217,6 +217,31 @@ theme_override_font_sizes/font_size = 44
 text = "x2"
 horizontal_alignment = 1
 
+[node name="SplitLabel" type="Label" parent="HUD/Safe"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 140.0
+offset_right = 150.0
+offset_bottom = 196.0
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 44
+horizontal_alignment = 1
+
+[node name="GhostLabel" type="Label" parent="HUD/Safe"]
+visible = false
+layout_mode = 0
+offset_left = 16.0
+offset_top = 110.0
+offset_right = 400.0
+offset_bottom = 140.0
+theme_override_font_sizes/font_size = 22
+
 [node name="FinishPanel" type="PanelContainer" parent="HUD/Safe"]
 visible = false
 layout_mode = 1

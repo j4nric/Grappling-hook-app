@@ -4,7 +4,7 @@ extends SceneTree
 ## Exit code 1 if any check failed, a test file did not load, or a script
 ## error happened. TEST_FILTER=chain runs only matching files.
 
-const SAVED_FILES := ["user://tuning_v2.cfg", "user://tuning_v3.cfg", "user://records.cfg"]
+const SAVED_FILES := ["user://tuning_v2.cfg", "user://tuning_v3.cfg", "user://records.cfg", "user://settings.cfg"]
 
 
 ## Counts script errors (a broken test or game script must fail the run,
@@ -64,6 +64,9 @@ func _run() -> void:
 
 
 func _clear_saved_state() -> void:
+	Settings.ghost_enabled = true
+	Settings.sound_enabled = true
+	Settings.apply()
 	for path in SAVED_FILES:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)

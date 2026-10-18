@@ -50,6 +50,12 @@ func _ready() -> void:
 				killed.emit())
 
 
+## Short hash of what makes this level: name and layout (records belong to
+## one version of a level).
+func version() -> String:
+	return "%08x" % (hash(level_name + var_to_str(segments) + str(layout_seed)) & 0xffffffff)
+
+
 func start_position() -> Vector3:
 	return $Start.global_position
 

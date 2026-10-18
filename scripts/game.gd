@@ -24,7 +24,15 @@ signal level_loaded(level: Level)
 @onready var finish_panel: PanelContainer = $HUD/Safe/FinishPanel
 @onready var go_label: Label = $HUD/Safe/GoLabel
 @onready var flow_label: Label = $HUD/Safe/FlowLabel
+@onready var split_label: Label = $HUD/Safe/SplitLabel
+@onready var ghost_label: Label = $HUD/Safe/GhostLabel
+@onready var tuning := $Tuning
 @onready var ghost := $Ghost
+
+## Split time shows this long after a checkpoint (s).
+const SPLIT_SHOW_TIME := 2.5
+## The ghost delta shows once the player is this far into the level (m).
+const GHOST_DELTA_FROM := 5.0
 
 ## The levels in play order (tests swap in their own).
 var level_list: Array[String] = Levels.with_procedural()
@@ -35,6 +43,13 @@ var _elapsed := 0.0
 var _running := false
 var _finished := false
 var _best := INF
+## Record id of the loaded level version (Records.id()).
+var _record_id := ""
+## Times at the checkpoints of this run and of the best run.
+var _splits: Array = []
+var _best_splits: Array = []
+## Checkpoints reached in this run (respawn positions).
+var _reached: Array[Vector3] = []
 var _touch := DisplayServer.is_touchscreen_available()
 var _landscape := false
 ## The controls hint disappears after the first hook that sticks.
@@ -51,6 +66,7 @@ func _ready() -> void:
 	# The world is drawn by the pixel viewport (World/PixelView); the root
 	# viewport only draws the HUD.
 	get_viewport().disable_3d = true
+	Settings.load_settings()
 	player.hook_attached.connect(_on_hook_attached)
 	player.crushed.connect(_on_killed)
 	# The flow breaks on landing, a miss, or bumping into rock with the rope on.
@@ -103,9 +119,10 @@ func load_level(index: int, new_cave := false) -> void:
 	player.reset_to(level.get_node("Start").position)
 	add_child(level)
 	level.finished.connect(_on_finished)
-	level.checkpoint_reached.connect(func(point: Vector3) -> void: _respawn = point)
+	level.checkpoint_reached.connect(_on_checkpoint)
 	level.killed.connect(_on_killed)
-	_best = Records.best_time(level_list[index])
+	_record_id = Records.id(level_list[index], level)
+	_best = Records.best_time(_record_id)
 	restart()
 	level_loaded.emit(level)
 
@@ -115,14 +132,15 @@ func open_menu() -> void:
 	var entries := []
 	for path in level_list:
 		var scene: Level = Levels.instantiate(path)
-		var best := Records.best_time(path)
+		var record_id := Records.id(path, scene)
+		var best := Records.best_time(record_id)
 		var detail := ""
 		var level_title := scene.level_name
 		if Levels.is_random_cave(path):
 			level_title = "Random Cave"
 			detail = "new every time"
 		elif best < INF:
-			detail = "%.2f s  %s" % [best, Records.medal_name(Records.medal(scene, best))]
+			detail = "%.2f s%s  %s" % [best, _tuned_mark(record_id), Records.medal_name(Records.medal(scene, best))]
 		entries.append({"name": level_title, "detail": detail})
 		scene.free()
 	menu.open(entries)
@@ -134,6 +152,7 @@ func _process(delta: float) -> void:
 		# time during a hit-stop (juice must not cost time).
 		_elapsed += minf(TimeScale.timer_delta(delta), max_timer_step)
 		ghost.update_run(_elapsed, player.global_position)
+		_update_ghost_delta()
 	TimeScale.update(delta)
 	if player.global_position.y < level.kill_y:
 		_on_killed()
@@ -154,7 +173,12 @@ func restart() -> void:
 	_finished = false
 	best_flow = 0
 	_set_flow(0)
-	ghost.reset(Records.load_ghost(level_list[level_index]))
+	ghost.reset(Records.load_ghost(_record_id))
+	_splits.clear()
+	_best_splits = Records.best_splits(_record_id)
+	_reached.clear()
+	split_label.visible = false
+	ghost_label.visible = false
 	go_label.visible = false
 	_update_hud()
 
@@ -204,17 +228,26 @@ func _on_finished() -> void:
 		return
 	_finished = true
 	_running = false
-	var path: String = level_list[level_index]
-	var new_best := Records.submit(path, _elapsed)
+	var tuned: bool = tuning.is_tuned()
+	var previous_best := _best
+	var new_best := Records.submit(_record_id, _elapsed, _splits, tuned)
 	if new_best:
-		Records.save_ghost(path, ghost.recording())
+		Records.save_ghost(_record_id, ghost.recording())
 	_best = minf(_best, _elapsed)
+	ghost_label.visible = false
 	var medal := Records.medal(level, _elapsed)
 	var medal_label: Label = finish_panel.get_node("Lines/Medal")
 	medal_label.text = Records.medal_name(medal).to_upper() if medal != Records.Medal.NONE else "No medal"
 	medal_label.add_theme_color_override("font_color", Records.medal_color(medal))
 	finish_panel.get_node("Lines/Time").text = "%.2f s" % _elapsed
-	finish_panel.get_node("Lines/Best").text = "New best!" if new_best else "Best: %.2f s" % _best
+	var best_line := "Best: %.2f s" % _best
+	if new_best:
+		best_line = "New best!"
+	if previous_best < INF:
+		best_line += "  %s" % _signed(_elapsed - previous_best)
+	if tuned:
+		best_line += "  (TUNE*)"
+	finish_panel.get_node("Lines/Best").text = best_line
 	finish_panel.get_node("Lines/Flow").text = "Longest flow x%d" % best_flow if best_flow >= FLOW_MIN_SHOWN else ""
 	finish_panel.get_node("Lines/Target").text = _next_target(medal)
 	finish_panel.get_node("Lines/Again").text = "Tap to play again" if _touch else "Click to play again"
@@ -223,6 +256,58 @@ func _on_finished() -> void:
 	next.text = "New cave" if random else "Next"
 	next.visible = random or level_index + 1 < level_list.size()
 	_update_hud()
+
+
+## Checkpoint: new respawn point; the first time in a run also a split
+## time against the best run.
+func _on_checkpoint(point: Vector3) -> void:
+	_respawn = point
+	if not _running or point in _reached:
+		return
+	_reached.append(point)
+	var index := _splits.size()
+	_splits.append(_elapsed)
+	if index < _best_splits.size():
+		var delta: float = _elapsed - float(_best_splits[index])
+		_show_split(delta)
+
+
+func _show_split(delta: float) -> void:
+	split_label.text = _signed(delta)
+	split_label.add_theme_color_override("font_color", _delta_color(delta))
+	split_label.visible = true
+	split_label.modulate.a = 1.0
+	var tween := split_label.create_tween()
+	tween.tween_interval(SPLIT_SHOW_TIME)
+	tween.tween_property(split_label, "modulate:a", 0.0, 0.5)
+
+
+## Seconds ahead (-) or behind (+) the ghost at the same point of the level.
+func _update_ghost_delta() -> void:
+	var z: float = player.global_position.z
+	if not Settings.ghost_enabled or z > level.start_position().z - GHOST_DELTA_FROM:
+		ghost_label.visible = false
+		return
+	var ghost_time: float = ghost.time_at_z(z)
+	if ghost_time < 0.0:
+		ghost_label.visible = false
+		return
+	var delta := _elapsed - ghost_time
+	ghost_label.text = "ghost %s" % _signed(delta)
+	ghost_label.add_theme_color_override("font_color", _delta_color(delta))
+	ghost_label.visible = true
+
+
+static func _signed(seconds: float) -> String:
+	return ("+%.2f" if seconds >= 0.0 else "-%.2f") % absf(seconds)
+
+
+static func _delta_color(seconds: float) -> Color:
+	return Color(1.0, 0.4, 0.35) if seconds > 0.0 else Color(0.4, 1.0, 0.5)
+
+
+static func _tuned_mark(record_id: String) -> String:
+	return "*" if Records.is_tuned(record_id) else ""
 
 
 ## Finish screen "Next": the next level, or a new random cave.
@@ -269,6 +354,9 @@ func _apply_safe_area() -> void:
 
 func _update_hud() -> void:
 	finish_panel.visible = _finished
+	var best_text := "%.2f s%s" % [_best, _tuned_mark(_record_id)] if _best < INF else "-"
+	pause_menu.set_info("%s\nBest %s\nGold %.2f   Silver %.2f   Bronze %.2f" % [
+			level.level_name, best_text, level.gold_time, level.silver_time, level.bronze_time])
 	if _finished:
 		flow_label.visible = false
 	level_label.text = "%d  %s" % [level_index + 1, level.level_name]
@@ -276,7 +364,7 @@ func _update_hud() -> void:
 		best_label.text = "Gold %.2f" % level.gold_time
 	else:
 		var medal := Records.medal(level, _best)
-		best_label.text = "Best %.2f  %s" % [_best, Records.medal_name(medal)]
+		best_label.text = "Best %.2f%s  %s" % [_best, _tuned_mark(_record_id), Records.medal_name(medal)]
 	if _finished:
 		hint_label.text = ""
 	elif _landscape and _touch:

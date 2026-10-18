@@ -1,7 +1,10 @@
 class_name Records
-## Best times and ghost runs per level, kept in user:// (IndexedDB in the
-## browser). Levels are keyed by their scene file name, procedural caves by
-## kind and seed.
+## Best times, split times and ghost runs per level, kept in user://
+## (IndexedDB in the browser). A record belongs to one version of a level:
+## its id is the level key plus a hash of the level's layout, so a changed
+## level starts fresh instead of keeping a time (and ghost) that no longer
+## fits. Levels are keyed by their scene file name, procedural caves by kind
+## and seed.
 
 const PATH := "user://records.cfg"
 const GHOST_DIR := "user://"
@@ -16,20 +19,34 @@ static func key(level_path: String) -> String:
 	return level_path.get_file().get_basename()
 
 
-static func best_time(level_path: String) -> float:
-	var cfg := ConfigFile.new()
-	if cfg.load(PATH) != OK:
-		return INF
-	return cfg.get_value("best", key(level_path), INF)
+## Record id of this level in this version ("level_01@3f2a9c1d").
+static func id(level_path: String, level: Level) -> String:
+	return "%s@%s" % [key(level_path), level.version()]
 
 
-## Stores the time if it beats the best. Returns true for a new best.
-static func submit(level_path: String, time: float) -> bool:
-	if time >= best_time(level_path):
+static func best_time(record_id: String) -> float:
+	return _value("best", record_id, INF)
+
+
+## Times at each checkpoint of the best run (s).
+static func best_splits(record_id: String) -> Array:
+	return _value("splits", record_id, [])
+
+
+## The best run was made with changed tuning values (TUNE*).
+static func is_tuned(record_id: String) -> bool:
+	return _value("tuned", record_id, false)
+
+
+## Stores the run if it beats the best. Returns true for a new best.
+static func submit(record_id: String, time: float, splits: Array = [], tuned := false) -> bool:
+	if time >= best_time(record_id):
 		return false
 	var cfg := ConfigFile.new()
 	cfg.load(PATH)
-	cfg.set_value("best", key(level_path), time)
+	cfg.set_value("best", record_id, time)
+	cfg.set_value("splits", record_id, splits)
+	cfg.set_value("tuned", record_id, tuned)
 	cfg.save(PATH)
 	return true
 
@@ -53,19 +70,26 @@ static func medal_color(medal_value: Medal) -> Color:
 
 
 ## Ghost: player positions sampled every Ghost.SAMPLE_TIME seconds.
-static func save_ghost(level_path: String, samples: PackedVector3Array) -> void:
-	var file := FileAccess.open(_ghost_path(level_path), FileAccess.WRITE)
+static func save_ghost(record_id: String, samples: PackedVector3Array) -> void:
+	var file := FileAccess.open(_ghost_path(record_id), FileAccess.WRITE)
 	if file:
 		file.store_var(samples)
 
 
-static func load_ghost(level_path: String) -> PackedVector3Array:
-	var file := FileAccess.open(_ghost_path(level_path), FileAccess.READ)
+static func load_ghost(record_id: String) -> PackedVector3Array:
+	var file := FileAccess.open(_ghost_path(record_id), FileAccess.READ)
 	if file == null:
 		return PackedVector3Array()
 	var data = file.get_var()
 	return data if data is PackedVector3Array else PackedVector3Array()
 
 
-static func _ghost_path(level_path: String) -> String:
-	return GHOST_DIR + "ghost_%s.dat" % key(level_path)
+static func _ghost_path(record_id: String) -> String:
+	return GHOST_DIR + "ghost_%s.dat" % record_id.replace("@", "_")
+
+
+static func _value(section: String, record_id: String, default: Variant) -> Variant:
+	var cfg := ConfigFile.new()
+	if cfg.load(PATH) != OK:
+		return default
+	return cfg.get_value(section, record_id, default)

@@ -81,14 +81,15 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/level.gd` | `Level`: Signale `finished`, `checkpoint_reached`, `killed`, Medaillenzeiten |
 | `scripts/levels.gd` | `Levels.LIST`: Level-Reihenfolge |
 | `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel) |
-| `scripts/pause_menu.gd` | Pause-Knopf und -Menü (Weiter/Neustart/Level), öffnet bei Fokusverlust |
-| `scripts/records.gd` | `Records`: Bestzeit pro Level, Medaille, Ghost-Daten in `user://` |
+| `scripts/pause_menu.gd` | Pause-Knopf und -Menü (Medaillenziele, Weiter/Neustart/Level, Geist/Ton), öffnet bei Fokusverlust |
+| `scripts/records.gd` | `Records`: Bestzeit, Zwischenzeiten, TUNE*-Markierung und Ghost pro Level-Version (`Records.id()` = Schlüssel + Layout-Hash) in `user://` |
+| `scripts/settings.gd` | `Settings`: Geist und Ton an/aus (Pause-Menü), in `user://settings.cfg` |
 | `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur |
 | `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo |
 | `assets/sounds/*.wav` | Synthetisierte Sounds, erzeugt von `tools/gen_sounds.py` (numpy) |
 | `scripts/debug_overlay.gd` | Debug-Anzeige (FPS, Tempo, Haken, letzter Wurf) und Auto-Qualität |
 | `tools/gen_splash.py` | Erzeugt `assets/splash.png` (Ladebildschirm) |
-| `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab |
+| `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab, `time_at_z()` für das Geist-Delta im HUD |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Checkpoints, Ziel aus `segments` |
 | `scripts/cave_generator.gd` | `CaveGenerator`: prozedurale Höhle aus einem Seed (faire Hallenfolge, Medaillen aus Zeitschätzung); „Daily Cave“ (Seed = Datum) und „Random Cave“ |

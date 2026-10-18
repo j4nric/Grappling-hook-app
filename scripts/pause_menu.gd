@@ -1,7 +1,8 @@
 extends CanvasLayer
-## Pause: a small button in the HUD and an overlay with Continue / Restart /
-## Levels. Opens on its own when the app loses focus (tab switch, home
-## screen), so the run timer never counts time the player was away.
+## Pause: a small button in the HUD and an overlay with the level's medal
+## targets, Continue / Restart / Levels and the ghost and sound switches.
+## Opens on its own when the app loses focus (tab switch, home screen), so
+## the run timer never counts time the player was away.
 
 signal restart_pressed
 signal levels_pressed
@@ -10,6 +11,9 @@ const FONT_SIZE := 34
 
 var _button: Button
 var _panel: PanelContainer
+var _info: Label
+var _ghost_toggle: Button
+var _sound_toggle: Button
 ## Pause state found when opening (the level menu may already pause).
 var _was_paused := false
 
@@ -47,13 +51,27 @@ func _ready() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 52)
 	box.add_child(title)
+	_info = Label.new()
+	_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_info.add_theme_font_size_override("font_size", 26)
+	_info.modulate = Color(1, 1, 1, 0.8)
+	box.add_child(_info)
 	for entry in [["Continue", close], ["Restart", _on_restart], ["Levels", _on_levels]]:
-		var b := Button.new()
-		b.text = entry[0]
-		b.custom_minimum_size = Vector2(0, 100)
-		b.add_theme_font_size_override("font_size", FONT_SIZE)
-		b.pressed.connect(entry[1])
-		box.add_child(b)
+		box.add_child(_make_button(entry[0], entry[1]))
+	var switches := HBoxContainer.new()
+	switches.add_theme_constant_override("separation", 16)
+	box.add_child(switches)
+	_ghost_toggle = _make_button("", _on_ghost_toggle)
+	_sound_toggle = _make_button("", _on_sound_toggle)
+	for toggle in [_ghost_toggle, _sound_toggle]:
+		toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		switches.add_child(toggle)
+	_update_toggles()
+
+
+## Level name, best time and medal targets, shown above the buttons.
+func set_info(text: String) -> void:
+	_info.text = text
 
 
 func is_open() -> bool:
@@ -79,6 +97,32 @@ func close() -> void:
 
 func set_button_visible(shown: bool) -> void:
 	_button.visible = shown and not _panel.visible
+
+
+func _make_button(text: String, action: Callable) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.custom_minimum_size = Vector2(0, 100)
+	b.add_theme_font_size_override("font_size", FONT_SIZE)
+	b.pressed.connect(action)
+	return b
+
+
+func _on_ghost_toggle() -> void:
+	Settings.ghost_enabled = not Settings.ghost_enabled
+	Settings.save_settings()
+	_update_toggles()
+
+
+func _on_sound_toggle() -> void:
+	Settings.sound_enabled = not Settings.sound_enabled
+	Settings.save_settings()
+	_update_toggles()
+
+
+func _update_toggles() -> void:
+	_ghost_toggle.text = "Ghost: %s" % ("on" if Settings.ghost_enabled else "off")
+	_sound_toggle.text = "Sound: %s" % ("on" if Settings.sound_enabled else "off")
 
 
 func _on_restart() -> void:

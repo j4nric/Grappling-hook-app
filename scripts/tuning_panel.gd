@@ -263,11 +263,15 @@ func _set_open(open: bool) -> void:
 
 ## "TUNE*" shows that saved values differ from the defaults in the code.
 func _update_toggle_text() -> void:
-	var tuned := false
+	_toggle.text = "TUNE*" if is_tuned() else "TUNE"
+
+
+## Some value differs from its code default: records get marked (TUNE*).
+func is_tuned() -> bool:
 	for p in PARAMS:
 		if not _is_default(p):
-			tuned = true
-	_toggle.text = "TUNE*" if tuned else "TUNE"
+			return true
+	return false
 
 
 func _is_default(p: Array) -> bool:
