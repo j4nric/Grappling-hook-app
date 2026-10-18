@@ -30,6 +30,9 @@ signal ring_passed
 @export var hints: Array = []
 
 var _built := false
+## Lanes for the test bot: [z, x, pull] - the slit of a gate, the way round
+## a barrier, the middle of a shifted hall (filled by CavernBuilder).
+var lanes: Array = []
 ## Full segments (hall_at()), made on first use.
 var _halls: Array = []
 ## Dark halls as [z_from, z_to] (forward is -Z), from the builder.
@@ -86,6 +89,22 @@ func hall_at(z: float) -> Dictionary:
 		if z > end or i == _halls.size() - 1:
 			return _halls[i]
 	return {}
+
+
+func add_lane(z: float, x: float, pull: float) -> void:
+	lanes.append([z, x, pull])
+
+
+## The next lane ahead of z within `ahead` meters: [x, pull], or [].
+func lane_ahead(z: float, ahead: float) -> Array:
+	var best: Array = []
+	var nearest := INF
+	for lane: Array in lanes:
+		var distance := z - float(lane[0])
+		if distance > 0.0 and distance < ahead and distance < nearest:
+			nearest = distance
+			best = [lane[1], lane[2]]
+	return best
 
 
 ## The hint for a position, "" if none.

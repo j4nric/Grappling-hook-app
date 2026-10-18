@@ -49,7 +49,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   Zufall (brüchige Stalaktiten wackeln mit `randf` am Kollisionskörper) und
   `TimeScale` zurück, `Bot.prepare()` schaltet den Hit-Stop ab (sein
   Physik-Takt hängt vom Zeitrest früherer Zeitlupen ab) – gleicher Start,
-  gleiche Zeit. Der Bot sieht Eis-Tore und steuert auf den Schlitz zu.
+  gleiche Zeit im selben Testablauf (die Physik-Engine behält etwas Zustand:
+  die erste Fahrt nach dem Laden der Hauptszene kann abweichen). Der Bot sieht Eis-Tore und steuert auf den Schlitz zu.
 - **Prozedurale Höhlen** (`CaveGenerator`) nutzen denselben Baukasten; Rekorde gelten
   pro Art und Seed (`Records.key()`). `tests/test_procedural.gd` lässt den Bot mehrere
   Seeds spielen und gibt Bot-Zeit und Schätzung aus (Kalibrierung von `RUN_SPEED`).
@@ -63,7 +64,13 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   Zufallsstrom nur dort nutzen, wo sie vorkommen – sonst ändern sich alle
   bestehenden Höhlen (Rekorde, Medaillen). Neue Schlüssel in
   `SEGMENT_DEFAULTS` gehören auch in `CavernBuilder.LATE_KEYS`: auf Standard
-  bleiben sie aus `Level.version()` heraus, sonst verfallen alle Rekorde. Decke und Wände sind nur optisch
+  bleiben sie aus `Level.version()` heraus, sonst verfallen alle Rekorde.
+  **Kurven:** `shift` versetzt eine Halle seitlich; alle Bauteile laufen über
+  die Grundfunktionen (`_box`, `_collider`, `_model`, `_shape`, `_solid`,
+  `_add`), die `_shift` addieren – neue Bauteile nur über sie anlegen. Die
+  Übergänge (`_transition`) rechnen in Höhlen-Koordinaten. `shortcut` baut
+  einen Felsriegel mit Umweg und Röhre. `Level.lanes` (Torschlitz, Umweg,
+  Hallenmitte) führen den Test-Bot. Decke und Wände sind nur optisch
   rau (`_shape`), ihre Kollision ist flach (`_solid`, `CEILING_ROUGHNESS`),
   damit man an keiner Kante hängen bleibt (`tests/test_flow.gd`). Wenig
   Hindernisse = besserer Flow: Stalaktiten sind kurz (`STALACTITE_MAX`), die

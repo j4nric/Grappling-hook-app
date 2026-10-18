@@ -4,14 +4,18 @@ extends RefCounted
 ## CavernBuilder, built from its hall templates. Always a ground hall at the
 ## start and the end, 4-6 halls in between (open abyss, islands, pillars,
 ## lava, ice, gate, movers, updrafts, brittle stalactites, speed rings, dark,
-## skyway with floating stones - never the same kind twice in a row), a
-## checkpoint every second hall. Medal times
+## skyway with floating stones, bounce mushrooms over lava, a barrier with a
+## shortcut tube - never the same kind twice in a row), a checkpoint every
+## second hall; the halls sit sideways from each other, so the cave winds.
+## Medal times
 ## come from an estimate of the run time (calibrated against the test bot).
 
 ## Average speed of a good run (m/s) and extra seconds per kind of hall.
 const RUN_SPEED := 25.0
 const EXTRA_SECONDS := {"gate": 6.0, "ice": 2.0, "movers": 1.0, "brittle": 1.5, "dark": 1.0, "updraft": 3.0,
-		"skyway": 3.0}
+		"skyway": 3.0, "bounce": 2.0, "shortcut": 4.0}
+## Largest sideways shift of a hall (m).
+const MAX_SHIFT := 18.0
 ## Medal times as multiples of the estimate. The test bot needs about 0.8
 ## of the estimate in most caves, but up to twice as long in very wide and
 ## high halls (it is chaotic there): bronze is generous.
@@ -20,11 +24,12 @@ const SILVER := 1.0
 const BRONZE := 2.1
 ## Kind of hall -> chance weight.
 const KINDS := {"open": 1.0, "islands": 1.0, "pillars": 1.0, "lava": 1.0, "ice": 0.7, "gate": 0.6,
-		"movers": 0.6, "updraft": 0.7, "brittle": 0.6, "rings": 0.7, "dark": 0.5, "skyway": 0.6}
+		"movers": 0.6, "updraft": 0.7, "brittle": 0.6, "rings": 0.7, "dark": 0.5, "skyway": 0.6, "bounce": 0.6,
+		"shortcut": 0.5}
 ## The hall template (CavernBuilder.TEMPLATES) each kind starts from.
 const TEMPLATE_OF := {"open": "sprint", "islands": "cathedral", "pillars": "slalom", "lava": "lava_lake",
 		"ice": "ice_vault", "gate": "sprint", "movers": "sprint", "updraft": "sprint", "brittle": "sprint",
-		"rings": "cathedral", "dark": "narrows", "skyway": "skyway"}
+		"rings": "cathedral", "dark": "narrows", "skyway": "skyway", "bounce": "lava_lake", "shortcut": "cathedral"}
 
 
 ## A Level for "daily" or "random" with this seed (not built yet).
@@ -91,8 +96,20 @@ static func segments(seed_value: int) -> Array:
 				hall.crystals = 4
 			"skyway":
 				hall.floater_spacing = snappedf(rng.randf_range(14.0, 18.0), 1.0)
+			"bounce":
+				hall.bouncers = rng.randi_range(2, 3)
+				hall.islands = 0
+			"shortcut":
+				hall.shortcut = snappedf(rng.randf_range(7.0, 9.0), 1.0)
+				hall.islands = 0
 		halls.append(hall)
 	halls.append(_ground_hall(rng))
+	# The cave winds: each hall after the first sits sideways (own random
+	# numbers, so the halls themselves stay the same for a seed).
+	var winding := RandomNumberGenerator.new()
+	winding.seed = seed_value * 31 + 7
+	for i in range(1, halls.size()):
+		halls[i].shift = snappedf(winding.randf_range(-MAX_SHIFT, MAX_SHIFT), 2.0)
 	return halls
 
 

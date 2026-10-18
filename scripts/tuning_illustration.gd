@@ -967,6 +967,22 @@ func _draw_cave_section() -> void:
 			draw_rect(Rect2(_to(Vector2(-w / 2.0, -22.0)), _to(Vector2(w / 2.0, -28.0)) - _to(Vector2(-w / 2.0, -22.0))), Color(1.0, 0.4, 0.1) * glow)
 		_:
 			_text(_to(Vector2(-w / 2.0 + 2.0, -24.0)), "abyss", FAINT)
+	var tube := _cave("shortcut", 0.0)
+	if tube > 0.0:
+		# The barrier seen from the front: the way round at the side, the
+		# tube straight through.
+		var barrier := Color(ROCK.darkened(0.1), 0.92)
+		var gap := w / 3.0
+		draw_rect(Rect2(_to(Vector2(-w / 2.0, top)), _to(Vector2(w / 2.0 - gap, -28.0)) - _to(Vector2(-w / 2.0, top))), barrier)
+		var hole_center := Vector2(-w * 0.08, c * 0.5)
+		draw_rect(Rect2(_to(hole_center + Vector2(-tube / 2.0, tube / 2.0)), Vector2(tube, tube) * _scale), Color(0.07, 0.07, 0.1))
+		for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
+			draw_circle(_to(hole_center + corner * (tube / 2.0 + 0.6)), 4.0, ICE)
+		_arrow(Vector2(w / 2.0 - gap * 0.5, c * 0.2), Vector2(w / 2.0 - gap * 0.5, c * 0.7), FAINT)
+		var through := 0.5 + 0.5 * sin(_time * 2.0)
+		_player(hole_center + Vector2(0, -2.0 + through))
+		_caption("shortcut tube %.0f m, the long way round at the side" % tube)
+		return
 	var p := Vector2(sin(_time * 1.3) * w * 0.2, c * 0.4)
 	_line(p, anchor, ROPE)
 	_hook(anchor)
@@ -994,40 +1010,54 @@ func _draw_cave_top() -> void:
 		return
 	var selected := int(values.get("cave_hall", 0))
 	var total := 0.0
-	var widest := 20.0
+	var reach := 10.0
 	for seg in halls:
 		var full: Dictionary = CavernBuilder.full_segment(seg)
 		total += float(full.length)
-		widest = maxf(widest, float(full.width))
-	_view(Vector2(-4.0, -widest / 2.0 - 4.0), total + 8.0, widest + 8.0)
+		reach = maxf(reach, absf(float(full.shift)) + float(full.width) / 2.0)
+	_view(Vector2(-4.0, -reach - 4.0), total + 8.0, reach * 2.0 + 8.0)
 	var z := 0.0
+	var middles: Array[Vector2] = []
 	for i in halls.size():
 		var full: Dictionary = CavernBuilder.full_segment(halls[i])
 		var length := float(full.length)
 		var w := float(full.width)
-		var rect := Rect2(_to(Vector2(z, w / 2.0)), _to(Vector2(z + length, -w / 2.0)) - _to(Vector2(z, w / 2.0)))
+		# Top view: +x (right in the cave) is drawn downward, forward to the right.
+		var s := -float(full.shift)
+		middles.append(Vector2(z + length / 2.0, s))
+		var rect := Rect2(_to(Vector2(z, s + w / 2.0)), _to(Vector2(z + length, s - w / 2.0)) - _to(Vector2(z, s + w / 2.0)))
 		var fill := Color(0.18, 0.18, 0.22)
 		if full.open:
 			fill = Color(0.1, 0.16, 0.24)
 		draw_rect(rect, fill)
 		draw_rect(rect, ROPE if i == selected else FAINT, false, 3.0 if i == selected else 1.0)
 		if i == selected:
-			_hall_contents(full, z, length, w)
+			_hall_contents(full, z, length, w, s)
+		if float(full.shortcut) > 0.0:
+			var bz := z + length * 0.55
+			_line(Vector2(bz, s + w / 2.0), Vector2(bz, s - w / 6.0), ROCK.lightened(0.3), 5.0)
+			draw_circle(_to(Vector2(bz, s)), 3.0, ICE)
 		z += length
-	# A dot runs through the cave.
+	# A dot runs through the cave, along the middles of the halls.
 	var at := fmod(_time * 30.0, total)
-	draw_circle(_to(Vector2(at, sin(at * 0.05) * 4.0)), 5.0, PLAYER)
+	var lateral := 0.0
+	for k in middles.size():
+		if middles[k].x <= at:
+			lateral = middles[k].y
+			if k + 1 < middles.size():
+				lateral = lerpf(middles[k].y, middles[k + 1].y, clampf((at - middles[k].x) / (middles[k + 1].x - middles[k].x), 0.0, 1.0))
+	draw_circle(_to(Vector2(at, lateral + sin(at * 0.05) * 4.0)), 5.0, PLAYER)
 	var full_selected: Dictionary = CavernBuilder.full_segment(halls[selected])
 	_caption("%d halls, %.0f m; hall %d: %.0f m long (top view)" % [halls.size(), total, selected + 1, float(full_selected.length)])
 
 
-func _hall_contents(full: Dictionary, z: float, length: float, w: float) -> void:
+func _hall_contents(full: Dictionary, z: float, length: float, w: float, s := 0.0) -> void:
 	var items := {"pillars": ROCK.lightened(0.3), "islands": Color(0.3, 0.45, 0.25), "rings": Color(1.0, 0.8, 0.3),
 			"updrafts": Color(0.55, 0.8, 1.0), "shafts": Color(1, 0.95, 0.8, 0.6)}
 	for item: String in items:
 		var count := int(full[item])
 		for i in count:
-			var pos := Vector2(z + length * (i + 0.5) / count, w * (0.3 if i % 2 == 0 else -0.3) * (0.4 + 0.6 * fmod(i * 0.61, 1.0)))
+			var pos := Vector2(z + length * (i + 0.5) / count, s + w * (0.3 if i % 2 == 0 else -0.3) * (0.4 + 0.6 * fmod(i * 0.61, 1.0)))
 			var radius: float = {"pillars": 3.0, "islands": 6.0, "rings": 5.0, "updrafts": 4.0, "shafts": 4.0}[item] * _scale
 			if item == "rings":
 				draw_arc(_to(pos), maxf(radius, 4.0), 0, TAU, 16, items[item], 2.0)
@@ -1037,10 +1067,10 @@ func _hall_contents(full: Dictionary, z: float, length: float, w: float) -> void
 				draw_circle(_to(pos), maxf(radius, 3.0), items[item])
 	for i in int(full.crystals):
 		var side := -1.0 if i % 2 == 0 else 1.0
-		var pos := _to(Vector2(z + length * (i + 0.5) / int(full.crystals), side * (w / 2.0 - 1.0)))
+		var pos := _to(Vector2(z + length * (i + 0.5) / int(full.crystals), s + side * (w / 2.0 - 1.0)))
 		draw_colored_polygon(PackedVector2Array([pos + Vector2(0, -5), pos + Vector2(4, 0), pos + Vector2(0, 5), pos + Vector2(-4, 0)]), ICE)
 	if full.checkpoint:
-		_line(Vector2(z + 6.0, -w / 2.0), Vector2(z + 6.0, w / 2.0), Color(1.0, 0.85, 0.2), 3.0)
+		_line(Vector2(z + 6.0, s - w / 2.0), Vector2(z + 6.0, s + w / 2.0), Color(1.0, 0.85, 0.2), 3.0)
 
 
 ## Side view of the selected hall: stalactites under the ceiling, or the lane

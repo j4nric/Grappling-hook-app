@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level.gd" id="1_level"]
+
+[node name="Level" type="Node3D"]
+script = ExtResource("1_level")
+level_name = "Winding Rift"
+gold_time = 25.9
+silver_time = 36.6
+bronze_time = 61.0
+layout_seed = 909
+segments = [{"template": "start"}, {"template": "sprint", "length": 80.0, "shift": 18.0}, {"template": "cathedral", "length": 80.0, "shift": -12.0, "shortcut": 8.0, "islands": 0, "checkpoint": true}, {"template": "lava_lake", "length": 80.0, "shift": 16.0, "bouncers": 2, "islands": 0, "checkpoint": true}, {"template": "skyway", "length": 80.0, "shift": -10.0}, {"template": "start", "shift": 4.0}]
