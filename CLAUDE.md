@@ -79,6 +79,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/camera_rig.gd` | Verfolgerkamera: Lag, Look-Ahead (beim Zug Richtung Anker), Tempo-FOV (horizontal), Roll, Shake bei `hook_attached`/`landed` |
 | `scripts/game.gd` | Level laden, Timer, Ziel, Checkpoints (Lava/Absturz → letzter Checkpoint, Timer läuft weiter), Neustart, HUD |
 | `scripts/safe_area.gd` | `SafeArea.margins()`: Ränder für Notch/Home-Indikator in Viewport-Einheiten |
+| `scripts/time_scale.gd` | `TimeScale`: Zeitlupe beim Zielen und Hit-Stop teilen sich `Engine.time_scale` |
+| `scripts/speed_lines.gd` | Speed-Lines (Shader `shaders/speed_lines.gdshader`) ab hohem Tempo |
 | `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler in Tabs, pausiert das Spiel, speichert in `user://tuning_v3.cfg`, „Copy“ kopiert getunte Werte als Text |
 | `tests/` | Headless-Tests (`run_tests.gd` führt alle `test_*.gd` aus), laufen in CI vor jedem Merge/Deploy |
 | `.github/actions/setup-godot/` | Lädt Godot + Web-Vorlagen in CI (gecacht) |
@@ -138,6 +140,17 @@ frontale Crashs nicht. Boden + bewegtes Hindernis von oben = `crushed` → Check
 `hook_attached(point, normal)`, `hook_missed`, `rope_released(reason)`
 (`zip`, `contact`, `blocked`, `tap`, `chain`, `reset`), `landed(impact_speed)`,
 `deflected(impact_speed)`, `crushed`.
+
+**Zeit:** `Engine.time_scale` nie direkt setzen, sondern über `TimeScale`
+(`scripts/time_scale.gd`): Zielen-Zeitlupe (`set_aim`) und Hit-Stop (`hit_stop`)
+multiplizieren sich. Der Lauf-Timer zählt beim Zielen Echtzeit, beim Hit-Stop
+Spielzeit (`TimeScale.timer_delta()`); `game.gd` ruft `TimeScale.update()`.
+
+**Juice:** `effects.gd` (Funken, Staub, Hit-Stop, Wind-Streifen), `camera_rig.gd`
+(Shake, Roll, Tempo-FOV, Zip-FOV-Kick), `RopeVisual.pluck()` (Seil zittert beim
+Einhaken), `speed_lines.gd` + `shaders/speed_lines.gdshader` (Speed-Lines über
+der 3D-Ansicht), Flow-Zähler in `game.gd` (Haken in Folge ohne Bodenkontakt),
+`sfx.gd` (Wind-Tonhöhe nach Tempo, Haken-Ton steigt mit dem Flow).
 
 **Flüssige Darstellung:** Physik-Interpolation ist an (60-Hz-Physik, Darstellung
 in jeder Bildrate). Alles, was per Hand jedes Frame platziert wird (Kamera-Rig,

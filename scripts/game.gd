@@ -25,6 +25,7 @@ signal level_loaded(level: Level)
 @onready var version_label: Label = $HUD/Safe/VersionLabel
 @onready var finish_panel: PanelContainer = $HUD/Safe/FinishPanel
 @onready var go_label: Label = $HUD/Safe/GoLabel
+@onready var flow_label: Label = $HUD/Safe/FlowLabel
 @onready var ghost := $Ghost
 
 var level: Level
@@ -38,6 +39,11 @@ var _touch := DisplayServer.is_touchscreen_available()
 var _landscape := false
 ## The controls hint disappears after the first hook that sticks.
 var _hint_dismissed := false
+## Flow: hooks that bit in a row without touching the floor in between.
+var flow := 0
+var best_flow := 0
+## The flow counter shows from this many hooks in a row.
+const FLOW_MIN_SHOWN := 2
 
 
 func _ready() -> void:
@@ -46,6 +52,7 @@ func _ready() -> void:
 	get_viewport().disable_3d = true
 	player.hook_attached.connect(_on_hook_attached)
 	player.crushed.connect(_on_killed)
+	player.landed.connect(func(_speed: float) -> void: _set_flow(0))
 	InputRouter.restart_requested.connect(restart)
 	InputRouter.throw_requested.connect(_on_throw)
 	InputRouter.release_requested.connect(_on_tap)
@@ -108,9 +115,11 @@ func open_menu() -> void:
 
 func _process(delta: float) -> void:
 	if _running:
-		# Real time: slow motion while aiming must not shorten the run.
-		_elapsed += minf(delta / maxf(Engine.time_scale, 0.001), max_timer_step)
+		# Real time while aiming (slow motion must not shorten the run), game
+		# time during a hit-stop (juice must not cost time).
+		_elapsed += minf(TimeScale.timer_delta(delta), max_timer_step)
 		ghost.update_run(_elapsed, player.global_position)
+	TimeScale.update(delta)
 	if player.global_position.y < kill_y:
 		_on_killed()
 	time_label.text = "%.2f" % _elapsed
@@ -128,6 +137,8 @@ func restart() -> void:
 	_elapsed = 0.0
 	_running = false
 	_finished = false
+	best_flow = 0
+	_set_flow(0)
 	ghost.reset(Records.load_ghost(Levels.LIST[level_index]))
 	go_label.visible = false
 	_update_hud()
@@ -136,6 +147,7 @@ func restart() -> void:
 ## Lava or a fall: back to the last checkpoint, the timer keeps running.
 func _on_killed() -> void:
 	player.reset_to(_respawn)
+	_set_flow(0)
 
 
 ## Only a throw starts the run; after the finish it plays again.
@@ -165,6 +177,8 @@ func _flash_go() -> void:
 
 
 func _on_hook_attached(_point: Vector3, _normal: Vector3) -> void:
+	# A hook from the floor starts a new chain.
+	_set_flow(1 if player.is_on_floor() else flow + 1)
 	if not _hint_dismissed:
 		_hint_dismissed = true
 		_update_hud()
@@ -186,10 +200,26 @@ func _on_finished() -> void:
 	medal_label.add_theme_color_override("font_color", Records.medal_color(medal))
 	finish_panel.get_node("Lines/Time").text = "%.2f s" % _elapsed
 	finish_panel.get_node("Lines/Best").text = "New best!" if new_best else "Best: %.2f s" % _best
+	finish_panel.get_node("Lines/Flow").text = "Longest flow x%d" % best_flow if best_flow >= FLOW_MIN_SHOWN else ""
 	finish_panel.get_node("Lines/Target").text = _next_target(medal)
 	finish_panel.get_node("Lines/Again").text = "Tap to play again" if _touch else "Click to play again"
 	finish_panel.get_node("Lines/Buttons/Next").visible = level_index + 1 < Levels.LIST.size()
 	_update_hud()
+
+
+func _set_flow(value: int) -> void:
+	var grew := value > flow
+	flow = value
+	if _running:
+		best_flow = maxi(best_flow, flow)
+	flow_label.visible = flow >= FLOW_MIN_SHOWN and not _finished
+	if flow_label.visible and grew:
+		flow_label.text = "x%d" % flow
+		# Pop: bigger and brighter with every hook in the chain.
+		var pop := 1.0 + minf(flow, 10) * 0.06
+		flow_label.scale = Vector2.ONE * pop * 1.4
+		var tween := flow_label.create_tween()
+		tween.tween_property(flow_label, "scale", Vector2.ONE * pop, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _next_target(medal: Records.Medal) -> String:
@@ -213,6 +243,8 @@ func _apply_safe_area() -> void:
 
 func _update_hud() -> void:
 	finish_panel.visible = _finished
+	if _finished:
+		flow_label.visible = false
 	level_label.text = "%d  %s" % [level_index + 1, level.level_name]
 	if _best == INF:
 		best_label.text = "Gold %.2f" % level.gold_time
