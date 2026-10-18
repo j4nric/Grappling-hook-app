@@ -19,7 +19,10 @@ Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
   Haken werfen. Wie beim Pokéball zählt das Tempo kurz vor dem Loslassen:
   schnell schnippen = weiter, gerader Wurf; Finger stehen lassen = schwacher Wurf,
   der Haken fällt herunter. Der Haken zieht dich zum Treffpunkt; berührst du
-  Wand oder Decke, löst sich das Seil von selbst.
+  Wand oder Decke, löst sich das Seil von selbst. Seitlich wischen = seitlich
+  werfen. Würde ein Wurf nicht halten (Eis, zu nah unter der Decke), wirft das
+  Spiel automatisch flacher – die Ziellinie zeigt es vorher. Wirfst du, während
+  dich ein Seil zieht, hält das alte Seil, bis der neue Haken greift (Kette).
   Tippen = Seil lösen, zwei Finger halten (0,3 s) = Neustart, **II** = Pause.
 - **TUNE** (rechts oben) öffnet Regler für Physik und Kamera. Das Spiel pausiert,
   „Play“ macht weiter. Die Werte bleiben im Browser gespeichert (pro Browser
@@ -32,10 +35,17 @@ Vorschau: Jeder offene Pull Request ist zusätzlich unter
 `https://j4nric.github.io/Grappling-hook-app/preview/pr-<Nummer>/` spielbar
 (Übersicht: `/preview/`). So lassen sich Experimente testen, ohne `main` zu ändern.
 
-Inhalt: 5 Level (Level-Auswahl beim Start), Medaillen und Bestzeiten pro Level,
-Geist der Bestzeit, Checkpoints, Lava, Eis (Haken hält nicht), bewegliche
-Hindernisse, Sound. TUNE-Tabs: Throw, Rope, Move, Camera, Misc (Lautstärke,
-Debug-Anzeige mit FPS, Auto-Qualität, Vibration).
+Inhalt: Tutorial und 5 Höhlen-Level (weite Hallen über einem Abgrund: Lava,
+Eis-Decken, fahrende Blöcke, Eis-Tore), dazu **Daily Cave** (jeden Tag eine neue,
+für alle gleiche Höhle) und **Random Cave** (bei jeder Wahl neu). Medaillen,
+Bestzeiten, Zwischenzeiten an Checkpoints, Geist der Bestzeit mit Abstand im
+HUD, Flow-Zähler für Haken in Folge, Musik, die mit dem Tempo anzieht.
+Pause (**II**): Medaillenziele, Geist und Ton an/aus.
+TUNE-Tabs: Throw, Rope, Move, Camera, Misc (Lautstärken, Debug-Anzeige mit FPS,
+Auto-Qualität, Vibration, Hit-Stop, Speed-Lines). Rekorde mit veränderten Werten
+werden mit * markiert.
+
+Grafik, Sound und Musik sind komplett prozedural erzeugt (`tools/gen_*.py`).
 
 Einmalige Einrichtung: Repo → Settings → Pages → „Build and deployment“ →
 Source: **GitHub Actions**.
