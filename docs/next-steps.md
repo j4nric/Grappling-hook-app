@@ -33,10 +33,10 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 2. Spielgefühl
 
-- [ ] **Seilende (S):** Mit `min_rope_length` 9,25 m > `zip_release_distance`
-      5,5 m endet der Zug hängend, man kann um den Anker kreisen
-      (Kegelpendel; der Bot blieb so hängen). Vorschlag: Am kürzesten Seil löst
-      sich das Seil wie beim Zip mit vollem Tempo. *Entscheidung offen.*
+- [x] **Seilende (S):** Mit `min_rope_length` 9,25 m > `zip_release_distance`
+      5,5 m endete der Zug hängend, man konnte um den Anker kreisen
+      (Kegelpendel; der Bot blieb so hängen). Jetzt löst das Seil am kürzesten
+      Punkt wie ein Zip (`rope_end_release`, Regler „Rope end release“).
 - [ ] **Tuning-Presets (M):** mehrere Wertesätze speichern und mit einem Tipp
       wechseln (A/B-Vergleich), Werte als Code einfügen statt nur kopieren.
 - [ ] **Tutorial an die neue Physik anpassen (S):** Hinweise und Abstände
@@ -61,7 +61,8 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 5. Technik und Qualität
 
-- [ ] **Test-Profil statt Standardwerte (M):** Mechanik-Tests liefen mit den
+- [x] **Test-Profil statt Standardwerte (M):** (umgesetzt: `TEST_TUNING` in
+      `tests/test_case.gd` für alle Tests in den Testtunneln) Mechanik-Tests liefen mit den
       Standardwerten und brauchten nach jeder Übernahme von Handy-Werten
       Anpassungen (PR #36: 15 Tests). Ein festes Test-Tuning für Mechanik-Tests,
       Standardwerte nur noch in Level- und Bot-Tests.

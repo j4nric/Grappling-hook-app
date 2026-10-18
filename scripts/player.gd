@@ -116,6 +116,10 @@ const WALL_KICK_MIN_GLANCE := 0.5
 ## ... up to this speed (m/s).
 @export var reel_max_speed := 40.0
 @export var min_rope_length := 9.25
+## Rope end: once the reel has pulled the rope in to min_rope_length, it lets
+## go like a zip launch instead of leaving the player hanging (or circling
+## the anchor). 1 = on, 0 = hang. A float so it works as a tuning slider.
+@export var rope_end_release := 1.0
 ## Extra acceleration toward the anchor; makes the pull feel heavier.
 @export var tension_boost := 31.5
 ## The rope lets go this far before the anchor and the player flies on with
@@ -161,6 +165,9 @@ var _attached_time := 0.0
 ## Reel speed the current rope starts with (m/s): at least the speed the
 ## player already moves toward the anchor, so a new rope never brakes.
 var _reel_base := 0.0
+var _rope_end_armed := false
+## The rope end counts as reached within this distance (m) of the shortest rope.
+const ROPE_END_MARGIN := 0.5
 var _was_on_floor := false
 ## Flying hook position one physics tick ago, for smooth drawing.
 var _flight_prev := Vector3.ZERO
@@ -250,6 +257,8 @@ func _physics_process(delta: float) -> void:
 	if _attached and zip_release_distance > 0.0 \
 			and global_position.distance_to(anchor) <= zip_release_distance \
 			and velocity.dot(global_position.direction_to(anchor)) > 0.0:
+		_zip_launch()
+	elif _attached and _is_at_rope_end():
 		_zip_launch()
 	elif _attached and _attached_time >= contact_release_grace:
 		if release_on_contact and _touches_wall_or_ceiling():
@@ -396,6 +405,13 @@ func _roll_on_landing(fall_speed: float) -> void:
 		velocity = velocity.limit_length(max_speed)
 
 
+## The reel has pulled the rope in all the way and the player has arrived.
+func _is_at_rope_end() -> bool:
+	return rope_end_release >= 0.5 and _rope_end_armed \
+			and rope_length <= min_rope_length + 0.01 \
+			and global_position.distance_to(anchor) <= min_rope_length + ROPE_END_MARGIN
+
+
 func _zip_launch() -> void:
 	var speed := velocity.length()
 	if speed > 0.001:
@@ -443,6 +459,9 @@ func attach(point: Vector3, normal: Vector3, body: Object = null) -> void:
 	_reel_base = clampf(approach, reel_speed, reel_max_speed)
 	_attached = true
 	_attached_time = 0.0
+	# Only a rope that starts longer than its shortest length has an end to
+	# reach; a hook that bites close by just pulls.
+	_rope_end_armed = rope_length > min_rope_length + ROPE_END_MARGIN
 	_update_state()
 	velocity += global_position.direction_to(anchor) * pull_impulse
 	_rope_visual.pluck(rope_pluck, rope_pluck_decay)

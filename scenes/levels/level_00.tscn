@@ -5,9 +5,9 @@
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "Tutorial"
-gold_time = 6.3
-silver_time = 9.0
-bronze_time = 14.9
+gold_time = 7.8
+silver_time = 11.0
+bronze_time = 18.3
 layout_seed = 7
 segments = [{"length": 50.0, "width": 30.0, "ceiling": 20.0, "floor": "ground", "stalactites": 0.4, "crystals": 2, "shafts": 1}, {"length": 45.0, "width": 32.0, "ceiling": 22.0, "stalactites": 0.5, "crystals": 2, "shafts": 1}, {"length": 50.0, "width": 34.0, "ceiling": 24.0, "ice": 1.0, "checkpoint": true, "stalactites": 0.2, "outcrops": 0.25, "crystals": 2, "anchor_spacing": 14.0}, {"length": 50.0, "width": 34.0, "ceiling": 24.0, "checkpoint": true, "stalactites": 0.4, "crystals": 2, "gate": [0.0, 16.0]}, {"length": 30.0, "width": 30.0, "ceiling": 20.0, "floor": "ground", "stalactites": 0.25, "crystals": 1}]
 hints = [[0.0, "Swipe up and let go: the hook flies.\nA faster swipe throws further."], [-40.0, "Throw again while you fly:\nchain throws keep your speed."], [-95.0, "Ice does not hold the hook.\nAim for rock: stalactites, ledges."], [-150.0, "Fly through the gap in the ice wall.\nSwipe to the side to steer."], [-200.0, "Tap to let go of the rope.\nHold two fingers to restart."]]

@@ -58,3 +58,28 @@ func run() -> void:
 	await wait_until(func() -> bool: return p.hook_state == p.HookState.ATTACHED, 60)
 	await wait_until(func() -> bool: return p.hook_state == p.HookState.IDLE, 180)
 	check(_reasons.back() == "contact", "touching the wall lets go (%s)" % str(_reasons))
+
+	# Rope end: pulled in to the shortest rope, it lets go and the player
+	# flies on (instead of hanging there or circling the anchor).
+	for end_release in [1.0, 0.0]:
+		main.restart()
+		await wait_frames(10)
+		p.zip_release_distance = 0.0
+		p.flyby_release_distance = 0.0
+		p.min_rope_length = 6.0
+		p.rope_end_release = end_release
+		_reasons.clear()
+		InputRouter.throw_requested.emit(Vector2(0, -300), Vector2(0, -3000))
+		await wait_until(func() -> bool: return p.hook_state == p.HookState.ATTACHED, 60)
+		var end_anchor: Vector3 = p.anchor
+		var let_go := await wait_until(func() -> bool: return p.hook_state == p.HookState.IDLE, 180)
+		if end_release > 0.5:
+			check(let_go and _reasons.back() == "zip", "the rope end lets go like a zip (%s)" % str(_reasons))
+			check(p.global_position.distance_to(end_anchor) <= 6.0 + 2.0, "it lets go at the shortest rope")
+		else:
+			# It may still touch the rock and let go, but never zips off.
+			check(not _reasons.has("zip"), "rope end release off: no zip at the rope end (%s)" % str(_reasons))
+	p.rope_end_release = 1.0
+	p.min_rope_length = 0.5
+	p.zip_release_distance = 2.5
+	p.flyby_release_distance = 6.0

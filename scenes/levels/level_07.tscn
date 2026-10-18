@@ -5,8 +5,8 @@
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "Wide Cave"
-gold_time = 15.3
-silver_time = 21.6
-bronze_time = 36.0
+gold_time = 9.3
+silver_time = 13.1
+bronze_time = 21.8
 layout_seed = 707
 segments = [{"length": 40.0, "width": 50.0, "ceiling": 28.0, "floor": "ground", "stalactites": 0.1, "outcrops": 0.0, "crystals": 2, "shafts": 1}, {"length": 80.0, "width": 80.0, "ceiling": 34.0, "stalactites": 0.15, "outcrops": 0.1, "islands": 1, "crystals": 4, "shafts": 2}, {"length": 70.0, "width": 90.0, "ceiling": 36.0, "checkpoint": true, "stalactites": 0.1, "outcrops": 0.1, "pillars": 1, "crystals": 4, "shafts": 3}, {"length": 80.0, "width": 80.0, "ceiling": 32.0, "stalactites": 0.15, "outcrops": 0.1, "islands": 1, "crystals": 4, "shafts": 2}, {"length": 40.0, "width": 50.0, "ceiling": 28.0, "floor": "ground", "stalactites": 0.1, "outcrops": 0.0, "crystals": 2, "shafts": 1}]

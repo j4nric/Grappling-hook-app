@@ -48,6 +48,7 @@ const PARAMS := [
 	["Player", "reel_max_speed", 5.0, 80.0, 1.0, "Rope"],
 	["Player", "tension_boost", 0.0, 80.0, 0.5, "Rope"],
 	["Player", "min_rope_length", 0.0, 25.0, 0.25, "Rope"],
+	["Player", "rope_end_release", 0.0, 1.0, 1.0, "Rope"],
 	["Player", "zip_release_distance", 0.0, 20.0, 0.25, "Rope"],
 	["Player", "zip_boost", 0.0, 20.0, 0.5, "Rope"],
 	["Player", "flyby_release_distance", 0.0, 30.0, 0.5, "Rope"],

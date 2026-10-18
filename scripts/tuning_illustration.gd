@@ -440,14 +440,20 @@ func _draw_zip() -> void:
 	var release := anchor - dir * zip
 	var t := _phase(2.2)
 	if kind == "zip_min":
-		# Zip off: pulled in until the rope is at its shortest.
+		# Pulled in until the rope is at its shortest: hang there, or (rope end
+		# release on) let go and fly on.
 		var stop := anchor - dir * maxf(min_rope, 0.6)
+		var lets_go := _v("Player/rope_end_release", 1.0) >= 0.5
 		_circle(anchor, maxf(min_rope, 0.3), FAINT)
 		var p := start.lerp(stop, minf(t * 1.5, 1.0))
-		_line(p, anchor, ROPE)
+		if lets_go and t * 1.5 > 1.0:
+			p = stop + dir * 30.0 * (t - 1.0 / 1.5)
+			_arrow(p, p + dir * 6.0, ROPE)
+		else:
+			_line(p, anchor, ROPE)
 		_hook(anchor)
 		_player(p)
-		_caption("zip off: the rope stops at %.1f m" % min_rope)
+		_caption("shortest rope %.1f m: %s" % [min_rope, "lets go, flies on" if lets_go else "hangs there"])
 		return
 	_circle(anchor, zip, ROPE if kind == "zip" else FAINT)
 	var p: Vector2
