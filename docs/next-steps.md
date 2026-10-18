@@ -15,7 +15,7 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       Strecken Abgrund. Größer/kleiner?
 - [x] **Schwingen:** (`swing_time`, Regler; in den Gängen kostet schon 0,1 s die 2–3-fache Zeit → Standard 0; in den Kavernen neu bewertet: 0,15 s fast doppelte Zeit, 0,3 s scheitert schon am ersten Abgrund → bleibt 0) Kurze Pendelphase (Seil hält seine Länge ~0,3 s), bevor
       das Einholen startet? Als Vorschau-Build A/B vergleichen.
-- [ ] **Rekorde mit verstellten Reglern (TUNE\*):** nicht speichern, oder
+- [x] **Rekorde mit verstellten Reglern (TUNE\*):** (gespeichert und markiert: „*“ in HUD und Menü, „(TUNE*)“ im Ziel) nicht speichern, oder
       speichern und markieren?
 
 ## 1. Bugs und Übersehenes (zuerst)
@@ -50,7 +50,7 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       53 statt 50 m/s. Vereinheitlichen.
 - [x] **Wind-Sound knackt:** Der Wind wird beim Unterschreiten der Schwelle hart
       gestoppt/gestartet. Ein- und ausblenden.
-- [ ] **Rekorde/Geister veralten:** Ändert sich ein Level im Generator, bleiben
+- [x] **Rekorde/Geister veralten:** (Rekord-ID = Level + Hash des Layouts) Ändert sich ein Level im Generator, bleiben
       alte Bestzeiten und Geister (passen nicht mehr zur Geometrie). Rekorde an
       eine Level-Version koppeln.
 - [x] **Kein Weg zurück ins Menü** außer über den Ziel-Bildschirm → Pause-Menü.
@@ -163,11 +163,14 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 
 ## 4. Speedrun
 
-- [ ] **Zwischenzeiten:** an Checkpoints „−0,4 s“/„+1,2 s“ gegenüber der
+- [x] **Zwischenzeiten:** (an jedem Checkpoint, grün/rot, und im Ziel gegen die Bestzeit) an Checkpoints „−0,4 s“/„+1,2 s“ gegenüber der
       Bestzeit (grün/rot) – stärkster Antrieb für Wiederholungen.
-- [ ] **Geist-Delta** im HUD (Abstand zum Geist in Metern/Sekunden).
-- [ ] **Sofort-Neustart** ohne Ladezeit und mit einem Griff (siehe Bug zum
+- [x] **Geist-Delta** im HUD (Sekunden vor/hinter dem Geist an derselben Stelle) (Abstand zum Geist in Metern/Sekunden).
+- [x] **Sofort-Neustart** (zwei Finger 0,3 s halten, ohne Neuladen) ohne Ladezeit und mit einem Griff (siehe Bug zum
       Zwei-Finger-Tipp).
+
+- [x] **Pause-Menü:** zeigt Level, Bestzeit und Medaillenziele; Schalter für
+      Geist und Ton (gespeichert).
 
 ## 5. Technik
 
