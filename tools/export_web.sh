@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Exports the Godot project in $1 for the web into $2, stamped with version $3.
 # The pack gets a unique name so GitHub Pages' 10 minute cache never serves
-# stale game data to the phone.
+# stale game data to the phone. The files in web/ (manifest, icons, service
+# worker) make it an installable web app that also runs offline.
 set -euo pipefail
 src="$1"; out="$2"; version="$3"
 
@@ -25,3 +26,11 @@ pck="index-${version//[^a-zA-Z0-9]/-}.pck"
 mv "$out/index.pck" "$out/$pck"
 sed -i "s/\"executable\":\"index\"/\"executable\":\"index\",\"mainPack\":\"$pck\"/; s/\"index.pck\":/\"$pck\":/" "$out/index.html"
 grep -q "\"mainPack\":\"$pck\"" "$out/index.html"
+
+# Older branches (previews) have no web/ yet: they stay a plain web page.
+if [ -f "$src/web/sw.js" ]; then
+  cp "$src"/web/manifest.webmanifest "$src"/web/sw.js "$src"/web/icon-*.png "$out/"
+  files=$(cd "$out" && ls | grep -v '^sw\.js$' | sed 's/.*/"&"/' | paste -sd, -)
+  sed -i "s/__VERSION__/${version}/; s/__FILES__/[${files}]/" "$out/sw.js"
+  grep -q 'rel="manifest"' "$out/index.html"
+fi

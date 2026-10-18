@@ -79,7 +79,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `.github/workflows/pages.yml` | Web-Export + Deploy nach GitHub Pages: `main` unter `/`, jeder offene PR unter `/preview/pr-N/` |
 | `.github/workflows/ci.yml` | Pull Requests: Tests + Probe-Export |
 | `.github/workflows/test.yml` | Wiederverwendbarer Test-Job (von `ci.yml` und `pages.yml` genutzt) |
-| `tools/export_web.sh` | Web-Export mit Versionsstempel und eindeutigem Paketnamen (Cache-Busting) |
+| `tools/export_web.sh` | Web-Export mit Versionsstempel und eindeutigem Paketnamen (Cache-Busting); kopiert `web/` dazu |
+| `web/` | Installierbare Web-App: `manifest.webmanifest`, `sw.js` (Service Worker: Netz zuerst, offline aus dem Cache), Icons von `tools/gen_icon.py`; `.gdignore`, nicht im Godot-Paket |
 | `scenes/main.tscn` | Hauptszene: Player + CameraRig + HUD + LevelMenu + Tuning; das Level lädt `game.gd` |
 | `scenes/levels/level_*.tscn` | Level als Layout (`segments`, `layout_seed`, Medaillen, Tutorial-`hints`); gebaut von `CavernBuilder` |
 | `scripts/cave_generator.gd` | `CaveGenerator`: prozedurale Höhle aus einem Seed (faire Hallenfolge, Medaillen aus Zeitschätzung); „Daily Cave“ (Seed = Datum) und „Random Cave“ |

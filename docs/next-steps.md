@@ -1,7 +1,7 @@
 # Nächste Schritte – Runde 3
 
-Stand: 2026-10-18. Runde 1 und 2 sind erledigt (PRs #1–#24, Zusammenfassung in
-`roadmap.md`). Diese Runde nimmt sich bewusst die aufwendigen Brocken vor:
+Stand: 2026-10-18. Runde 1 und 2 sind erledigt (PRs #1–#24), Runde 3 ebenfalls
+(PRs #26–#33, Zusammenfassung in `roadmap.md`, M8). Diese Runde nimmt sich bewusst die aufwendigen Brocken vor:
 Figur und Seil als Physik, neue Hallen-Mechaniken, Kamera-Regie, Raumklang,
 Replays, installierbare Web-App – plus Bugs und Leistung.
 Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
@@ -96,13 +96,39 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 
 ## 8. Web-App
 
-- [ ] **Installierbar (PWA):** Manifest, Icon, Offline-Cache, Vollbild ohne
-      Safari-Leisten, wenn vom Home-Bildschirm gestartet.
+- [x] **Installierbar (PWA):** Manifest, Icon, Offline-Cache, Vollbild ohne
+      Safari-Leisten, wenn vom Home-Bildschirm gestartet. In Safari auf dem
+      iPhone zeigt das Level-Menü, wie man installiert.
+- [x] **Neu entdeckt:** Godots eingebauter PWA-Service-Worker liefert die Seite
+      aus dem Cache – neue Builds kämen erst nach einem Neustart der App an.
+      Eigener Service Worker (`web/sw.js`): Netz zuerst, Cache nur ohne Netz;
+      er speichert beim Installieren alle Dateien des Builds, sodass schon der
+      erste Besuch offline spielbar macht.
+- [x] **Neu entdeckt:** Der Service Worker von `main` gilt für die ganze Seite,
+      also auch für `/preview/` – er übergeht Dateien in Unterordnern, jede
+      Vorschau hat ihren eigenen.
+- [x] **Neu entdeckt:** Level-Menü-Titel stieß an den TUNE-Knopf, HUD schien
+      durch → Abstand oben, deckender Hintergrund.
+
+Hinweis: Auf dem iPhone hat die installierte App einen eigenen Speicher –
+Bestzeiten aus Safari sind dort nicht zu sehen (iOS trennt das, nicht änderbar).
 
 ## Auf dem Gerät (nur mit dem iPhone möglich)
 
 - [ ] **Bildrate auf dem iPhone messen** (TUNE → Misc → Debug-Anzeige).
 - [ ] **Neue Standardwerte erspielen** und per **Copy** schicken.
+
+## Ideen für Runde 4 (aus Runde 3 gelernt)
+
+- [ ] **Hall je Halle:** große Hallen mehr Nachhall als enge Gänge (zwei
+      Varianten je Sound backen, nach Hallengröße wählen).
+- [ ] **Sturz als Ragdoll:** Die Gelenkfigur fällt bei Lava/Absturz schlaff,
+      statt hart zu verschwinden (Blende bleibt).
+- [ ] **Replay teilen:** Lauf als kurzer Text-Code exportieren, als Geist eines
+      Freundes laden (ohne Server).
+- [ ] **Statistik-Verlauf:** Bestzeit pro Level über die Zeit (kleine Kurve).
+- [ ] **Tempo-Ringe im Generator ausrichten:** Ringe auf der Ideallinie zwischen
+      zwei Ankern statt zufällig in der Hallenmitte.
 
 ## Später
 
