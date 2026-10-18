@@ -2,13 +2,14 @@ class_name CaveGenerator
 extends RefCounted
 ## Procedural caves: from a seed, a random but fair run of halls for the
 ## CavernBuilder. Always a ground hall at the start and the end, 4-6 halls in
-## between (open abyss, islands, pillars, lava, ice, gate, movers - never the
-## same kind twice in a row), a checkpoint every second hall. Medal times
+## between (open abyss, islands, pillars, lava, ice, gate, movers, updrafts,
+## brittle stalactites, speed rings, dark - never the same kind twice in a
+## row), a checkpoint every second hall. Medal times
 ## come from an estimate of the run time (calibrated against the test bot).
 
 ## Average speed of a good run (m/s) and extra seconds per kind of hall.
 const RUN_SPEED := 16.0
-const EXTRA_SECONDS := {"gate": 6.0, "ice": 2.0, "movers": 1.0}
+const EXTRA_SECONDS := {"gate": 6.0, "ice": 2.0, "movers": 1.0, "brittle": 1.5, "dark": 1.0}
 ## Medal times as multiples of the estimate. The test bot needs about 0.82
 ## of the estimate; like the authored levels, gold is 0.85, silver 1.2 and
 ## bronze 2 times the bot's time.
@@ -16,7 +17,8 @@ const GOLD := 0.7
 const SILVER := 1.0
 const BRONZE := 1.65
 ## Kind of hall -> chance weight.
-const KINDS := {"open": 1.0, "islands": 1.0, "pillars": 1.0, "lava": 1.0, "ice": 0.7, "gate": 0.6, "movers": 0.6}
+const KINDS := {"open": 1.0, "islands": 1.0, "pillars": 1.0, "lava": 1.0, "ice": 0.7, "gate": 0.6,
+		"movers": 0.6, "updraft": 0.7, "brittle": 0.6, "rings": 0.7, "dark": 0.5}
 
 
 ## A Level for "daily" or "random" with this seed (not built yet).
@@ -80,6 +82,19 @@ static func segments(seed_value: int) -> Array:
 					[-8.0, y, snappedf(length * 0.3, 1.0), 6.0, 4.0, 4.0, Vector3(16, 0, 0), 3.0, rng.randf()],
 					[8.0, y + 2.0, snappedf(length * 0.7, 1.0), 6.0, 4.0, 4.0, Vector3(-16, 0, 0), 3.5, rng.randf()],
 				]
+			"updraft":
+				hall.updrafts = rng.randi_range(2, 3)
+				hall.ceiling = maxf(float(hall.ceiling), 30.0)
+			"brittle":
+				hall.brittle = snappedf(rng.randf_range(0.5, 0.7), 0.05)
+				hall.stalactites = snappedf(rng.randf_range(1.0, 1.3), 0.05)
+			"rings":
+				hall.rings = rng.randi_range(3, 4)
+				hall.islands = 1
+			"dark":
+				hall.dark = true
+				hall.crystals = 4
+				hall.stalactites = 0.9
 		halls.append(hall)
 	halls.append(_ground_hall(rng))
 	return halls

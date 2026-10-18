@@ -47,7 +47,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   Hallen sind schräg (sonst prallt man ab); Decken haben einen Deckel (keine Taschen
   zum Steckenbleiben); Boden-Hallen sind massiv bis in die Tiefe; Tore sind Eis mit
   senkrechtem Schlitz und Felsinsel dahinter; in Eis-Hallen garantiert
-  `anchor_spacing` greifbare Stalaktiten.
+  `anchor_spacing` greifbare Stalaktiten. Neue Elemente im Baukasten dürfen den
+  Zufallsstrom nur dort nutzen, wo sie vorkommen – sonst ändern sich alle
+  bestehenden Höhlen (Rekorde, Medaillen).
 - Tuning-Werte sind `@export`-Variablen und werden im Inspector verändert, nicht
   im Code verstreut. Neue Stellschrauben ebenfalls als `@export` anlegen.
 - Gameplay-Input läuft **ausschließlich** über das Autoload `InputRouter`
@@ -94,7 +96,10 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `tools/gen_splash.py` | Erzeugt `assets/splash.png` (Ladebildschirm) |
 | `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab, `time_at_z()` für das Geist-Delta im HUD |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
-| `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Checkpoints, Ziel aus `segments` |
+| `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Aufwind, brüchige Stalaktiten, Tempo-Ringe, dunkle Hallen, Checkpoints, Ziel aus `segments` |
+| `scripts/updraft.gd` | `Updraft`: Luftsäule, hebt Körper bis `max_rise` |
+| `scripts/brittle.gd` | `Brittle`: Stalaktit hält den Haken `hold_time`, bricht dann (Seil löst sich mit `broke`), `restore()` beim Neustart |
+| `scripts/speed_ring.gd` | `SpeedRing`: Ring, Durchfliegen gibt mindestens `boost_speed` nach vorn |
 | `scripts/level.gd` | `Level`: Name, Medaillen, `segments`, `layout_seed`, `kill_y`, `hints` (Tutorial-Hinweise nach Position); Signale `finished`, `checkpoint_reached`, `killed` |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Figur, Seil, Haken und Ziellinie |
 | `scripts/player_figure.gd` | `PlayerFigure`: Gelenkfigur (Meshes an Gelenk-Pivots), Posen aus dem Zustand (Seilarm zum Anker, Beine im Fahrtwind, Salto beim Zip, Hocke bei Landung), Kopflampe, Schal; `player.gd` ruft `update_pose()` |
@@ -172,7 +177,7 @@ frontale Crashs nicht. Boden + bewegtes Hindernis von oben = `crushed` → Check
 
 **Signale** von `player.gd` für Kamera, Sound und Effekte: `hook_thrown`,
 `hook_attached(point, normal)`, `hook_missed`, `rope_released(reason)`
-(`zip`, `contact`, `blocked`, `tap`, `chain`, `reset`), `landed(impact_speed)`,
+(`zip`, `contact`, `blocked`, `tap`, `chain`, `broke`, `reset`), `landed(impact_speed)`,
 `deflected(impact_speed)`, `crushed`.
 
 **Zeit:** `Engine.time_scale` nie direkt setzen, sondern über `TimeScale`

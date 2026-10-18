@@ -16,6 +16,7 @@ const MATERIALS := {
 	"rock_dark": preload("res://assets/materials/rock_dark.tres"),
 	"rock_floor": preload("res://assets/materials/rock_floor.tres"),
 	"obstacle": preload("res://assets/materials/obstacle.tres"),
+	"brittle": preload("res://assets/materials/brittle.tres"),
 	"ice": preload("res://assets/materials/ice.tres"),
 	"metal": preload("res://assets/materials/metal.tres"),
 	"lava": preload("res://assets/materials/lava.tres"),
@@ -24,6 +25,9 @@ const CRYSTAL := preload("res://scenes/props/crystal.tscn")
 const SHAFT := preload("res://scenes/props/light_shaft.tscn")
 const MOVER := preload("res://scripts/mover.gd")
 const FLICKER := preload("res://scripts/flicker.gd")
+const UPDRAFT := preload("res://scripts/updraft.gd")
+const BRITTLE := preload("res://scripts/brittle.gd")
+const SPEED_RING := preload("res://scripts/speed_ring.gd")
 const NO_HOOK_GROUP := "no_hook"
 ## Beyond these distances (m) the fog has nearly swallowed things: they are
 ## not drawn at all (props are small, a hall is long so it reaches further).
@@ -70,6 +74,15 @@ const SEGMENT_DEFAULTS := {
 	"movers": [],
 	## Fixed blocks: [x, y, z_from_hall_start, sx, sy, sz, "rock"|"ice"|"obstacle"].
 	"blocks": [],
+	## Columns of rising air from the depth.
+	"updrafts": 0,
+	## Share of the stalactites that are brittle: they hold the hook briefly,
+	## then break off (pale sandstone).
+	"brittle": 0.0,
+	## Glowing speed rings in the air (optional boosts).
+	"rings": 0,
+	## Dark hall: no light shafts, the ambient light dims, the head lamp goes on.
+	"dark": false,
 }
 
 var _level: Node3D
@@ -85,7 +98,7 @@ var _hall := 0
 func build(level: Node3D, segments: Array, seed_value: int) -> float:
 	_level = level
 	_rng.seed = seed_value
-	for group in ["Geometry", "Props", "Lights", "Movers", "KillZones", "Checkpoints"]:
+	for group in ["Geometry", "Props", "Lights", "Movers", "KillZones", "Checkpoints", "Dynamic"]:
 		_add(Node3D.new(), group)
 
 	var start := Marker3D.new()
@@ -147,8 +160,19 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 	var w: float = seg.width
 	var c: float = seg.ceiling
 	for i in roundi(float(seg.stalactites) * length / 10.0):
-		_stalactite(Vector3(_rng.randf_range(-w / 2.0 + 5.0, w / 2.0 - 5.0), c, _rng.randf_range(z1 + 3.0, z0 - 3.0)),
-				_rng.randf_range(4.0, minf(13.0, c - 6.0)), seg.ice_stalactites)
+		var top := Vector3(_rng.randf_range(-w / 2.0 + 5.0, w / 2.0 - 5.0), c, _rng.randf_range(z1 + 3.0, z0 - 3.0))
+		var hang := _rng.randf_range(4.0, minf(13.0, c - 6.0))
+		# Only halls with brittle ones roll for it: other caves stay as they were.
+		if float(seg.brittle) > 0.0 and _rng.randf() < float(seg.brittle):
+			_brittle_stalactite(top, hang)
+		else:
+			_stalactite(top, hang, seg.ice_stalactites)
+	for i in int(seg.updrafts):
+		_updraft(Vector3(_rng.randf_range(-w / 2.0 + 8.0, w / 2.0 - 8.0), 0, z0 - length * (i + 0.5) / float(seg.updrafts)), c)
+	for i in int(seg.rings):
+		_ring(Vector3(_rng.randf_range(-w / 3.0, w / 3.0), c * _rng.randf_range(0.45, 0.7), z0 - length * (i + 0.5) / float(seg.rings)))
+	if seg.dark and _level.has_method("add_dark_range"):
+		_level.add_dark_range(z0, z1)
 	var spacing: float = seg.anchor_spacing
 	if spacing < 0.0:
 		spacing = 18.0 if float(seg.ice) >= 0.5 or seg.ice_stalactites else 0.0
@@ -168,7 +192,7 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 		_outcrop(seg, _rng.randf_range(z1 + 2.0, z0 - 2.0))
 	for i in int(seg.crystals):
 		_crystal_on_wall(seg, z0 - length * (i + 0.5) / float(seg.crystals))
-	for i in int(seg.shafts):
+	for i in (0 if seg.dark else int(seg.shafts)):
 		_shaft(Vector3(_rng.randf_range(-w / 3.0, w / 3.0), c, z0 - length * (i + 0.5) / float(seg.shafts)))
 	if not (seg.gate as Array).is_empty():
 		_gate(seg, z0 - length / 2.0)
@@ -265,6 +289,107 @@ func _stalactite(top: Vector3, length: float, ice: bool) -> void:
 	# Upper body and a narrower tip: tapers like a stalactite.
 	_box(mat, top + Vector3(0, -length * 0.35 + 1.0, 0), Vector3(thick, length * 0.7, thick), tilt)
 	_box(mat, top + Vector3(0, -length * 0.8 + 1.0, 0), Vector3(thick * 0.55, length * 0.4, thick * 0.55), tilt)
+
+
+## A stalactite that breaks off a moment after the hook bites: its own
+## moving body (not part of the hall), in pale sandstone to tell it apart.
+func _brittle_stalactite(top: Vector3, length: float) -> void:
+	var body := AnimatableBody3D.new()
+	body.set_script(BRITTLE)
+	body.position = top
+	var thick := _rng.randf_range(1.6, 2.6)
+	for part in [[Vector3(0, -length * 0.35 + 1.0, 0), Vector3(thick, length * 0.7, thick)],
+			[Vector3(0, -length * 0.8 + 1.0, 0), Vector3(thick * 0.55, length * 0.4, thick * 0.55)]]:
+		var shape := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		box.size = part[1]
+		shape.shape = box
+		shape.position = part[0]
+		body.add_child(shape)
+		var mesh := MeshInstance3D.new()
+		var box_mesh := BoxMesh.new()
+		box_mesh.size = part[1]
+		box_mesh.material = MATERIALS.brittle
+		mesh.mesh = box_mesh
+		mesh.position = part[0]
+		mesh.visibility_range_end = PROP_VISIBLE_RANGE
+		body.add_child(mesh)
+	_add(body, "Dynamic/Brittle")
+
+
+## A column of rising air from the depth up to below the ceiling, with wisps.
+func _updraft(base: Vector3, ceiling: float) -> void:
+	var area := Area3D.new()
+	area.set_script(UPDRAFT)
+	var height := ceiling - 4.0 - DEPTH_Y
+	area.position = Vector3(base.x, DEPTH_Y + height / 2.0, base.z)
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(7.0, height, 7.0)
+	shape.shape = box
+	area.add_child(shape)
+	var wisps := CPUParticles3D.new()
+	wisps.amount = 40
+	wisps.lifetime = 3.0
+	wisps.preprocess = 3.0
+	wisps.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	wisps.emission_box_extents = Vector3(3.0, height * 0.35, 3.0)
+	wisps.position = Vector3(0, -height * 0.1, 0)
+	wisps.direction = Vector3.UP
+	wisps.spread = 8.0
+	wisps.gravity = Vector3.ZERO
+	wisps.initial_velocity_min = 10.0
+	wisps.initial_velocity_max = 16.0
+	wisps.particle_flag_align_y = true
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.albedo_color = Color(0.6, 0.85, 1.0, 0.35)
+	var streak := BoxMesh.new()
+	streak.size = Vector3(0.05, 1.6, 0.05)
+	streak.material = material
+	wisps.mesh = streak
+	wisps.visibility_range_end = PROP_VISIBLE_RANGE
+	area.add_child(wisps)
+	_add(area, "Dynamic/Updraft")
+	var light := OmniLight3D.new()
+	light.light_color = Color(0.55, 0.8, 1.0)
+	light.light_energy = 1.2
+	light.omni_range = 16.0
+	light.position = Vector3(base.x, ceiling * 0.4, base.z)
+	_add(light, "Lights/Updraft")
+
+
+## A glowing ring facing down the cave (-Z): flying through it boosts.
+func _ring(center: Vector3) -> void:
+	var ring := Area3D.new()
+	ring.set_script(SPEED_RING)
+	ring.position = center
+	var shape := CollisionShape3D.new()
+	var cylinder := CylinderShape3D.new()
+	cylinder.radius = 2.4
+	cylinder.height = 1.2
+	shape.shape = cylinder
+	shape.rotation = Vector3(PI / 2.0, 0, 0)
+	ring.add_child(shape)
+	var mesh := MeshInstance3D.new()
+	var torus := TorusMesh.new()
+	torus.inner_radius = 2.4
+	torus.outer_radius = 2.8
+	torus.rings = 24
+	torus.ring_segments = 6
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(1.0, 0.8, 0.25)
+	material.emission_enabled = true
+	material.emission = Color(1.0, 0.75, 0.2)
+	material.emission_energy_multiplier = 2.0
+	torus.material = material
+	mesh.mesh = torus
+	mesh.rotation = Vector3(PI / 2.0, 0, 0)
+	mesh.visibility_range_end = HALL_VISIBLE_RANGE
+	ring.add_child(mesh)
+	_add(ring, "Dynamic/Ring")
 
 
 ## A column rising out of the depth, ending in a broken top below the ceiling

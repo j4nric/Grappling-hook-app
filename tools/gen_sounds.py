@@ -126,6 +126,18 @@ def main():
     grit = lowpass(noise(d), 2500) * (0.5 + 0.5 * (rng.uniform(0, 1, len(t(d))) > 0.7))
     save("scrape", lowpass(grit, 1800) * env(len(t(d)), 0.005, curve=1.5), 0.55)
 
+    # Crack: a brittle stalactite snaps (sharp crack, then a falling rumble).
+    d = 0.6
+    snap = noise(d) * env(len(t(d)), 0.0005, curve=25)
+    rumble = lowpass(noise(d), 300) * env(len(t(d)), 0.05, curve=2)
+    save("crack", snap + 0.8 * rumble, 0.7)
+
+    # Ring: bright rising chime when flying through a speed ring.
+    d = 0.4
+    sweep = np.linspace(880, 1760, len(t(d)))
+    chime = tone(sweep, d, ((1, 1), (2, 0.4), (3, 0.15))) * env(len(t(d)), 0.002, curve=2.5)
+    save("ring", chime, 0.5)
+
 
 if __name__ == "__main__":
     main()

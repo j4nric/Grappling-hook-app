@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level.gd" id="1_level"]
+
+[node name="Level" type="Node3D"]
+script = ExtResource("1_level")
+level_name = "Updraft"
+gold_time = 16.1
+silver_time = 22.7
+bronze_time = 37.8
+layout_seed = 606
+segments = [{"length": 40.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.6, "crystals": 2, "shafts": 1}, {"length": 70.0, "width": 44.0, "ceiling": 34.0, "updrafts": 3, "stalactites": 0.5, "islands": 1, "crystals": 2, "shafts": 2}, {"length": 60.0, "width": 40.0, "ceiling": 30.0, "checkpoint": true, "brittle": 0.65, "stalactites": 1.2, "crystals": 2, "shafts": 1}, {"length": 70.0, "width": 44.0, "ceiling": 32.0, "rings": 4, "pillars": 2, "stalactites": 0.6, "crystals": 3, "shafts": 1}, {"length": 60.0, "width": 38.0, "ceiling": 28.0, "checkpoint": true, "dark": true, "stalactites": 0.9, "crystals": 4}, {"length": 40.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.5, "crystals": 1}]
