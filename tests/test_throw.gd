@@ -37,3 +37,18 @@ func run() -> void:
 	InputRouter.throw_requested.emit(Vector2(300, -100), Vector2(3000, -1000))
 	await wait_until(func() -> bool: return p.hook_state == p.HookState.ATTACHED, 60)
 	check(p.anchor.x > 2.0, "sideways swipe aims right (x=%.1f)" % p.anchor.x)
+
+	# Pitch assist: right under the ceiling the throw goes flatter, so it
+	# still reaches far; from the floor it keeps its pitch.
+	main.restart()
+	await wait_frames(10)
+	var up := Vector2(0, -300)
+	var normal_dir: Vector3 = p._throw_direction(up, 60.0)
+	check(is_equal_approx(rad_to_deg(asin(normal_dir.y)), p.throw_pitch), "from the floor the throw keeps its pitch")
+	p.global_position = main.level.start_position() + Vector3(0, 10, -10)
+	p.reset_physics_interpolation()
+	var flat_dir: Vector3 = p._throw_direction(up, 60.0)
+	check(flat_dir.y < normal_dir.y - 0.1, "under the ceiling the throw is flatter (%.0f deg)" % rad_to_deg(asin(flat_dir.y)))
+	var path: Dictionary = p.predict_hook_path(flat_dir, 60.0)
+	var points: PackedVector3Array = path.points
+	check(path.hit and p.global_position.distance_to(points[-1]) >= p.min_throw_reach, "the flatter throw holds further away")

@@ -34,6 +34,7 @@ const PARAMS := [
 	["Player", "hook_max_speed", 10.0, 150.0, 1.0, "Throw"],
 	["Player", "hook_gravity", 0.0, 80.0, 1.0, "Throw"],
 	["Player", "throw_pitch", 0.0, 90.0, 1.0, "Throw"],
+	["Player", "min_throw_reach", 0.0, 40.0, 1.0, "Throw"],
 	["Player", "throw_yaw_gain", 0.0, 2.0, 0.05, "Throw"],
 	["Player", "max_rope_length", 10.0, 100.0, 1.0, "Throw"],
 	["Player", "min_hook_distance", 0.0, 10.0, 0.25, "Throw"],

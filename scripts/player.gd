@@ -68,7 +68,7 @@ const WALL_KICK_MIN_GLANCE := 0.5
 ## Hook speed (m/s) per finger speed (px/s, 720 px wide screen).
 @export var throw_speed_per_px := 0.015
 @export var hook_min_speed := 8.0
-@export var hook_max_speed := 70.0
+@export var hook_max_speed := 90.0
 ## Gravity on the flying hook. Higher = weak throws drop sooner.
 @export var hook_gravity := 25.0
 ## Angle above the horizon for a straight-up swipe (degrees).
@@ -85,7 +85,12 @@ const WALL_KICK_MIN_GLANCE := 0.5
 @export_group("Aim")
 ## The aim preview shows the arc of a throw at this hook speed (m/s), about a
 ## good flick. The real throw depends on the flick.
-@export var aim_preview_speed := 35.0
+@export var aim_preview_speed := 50.0
+## Pitch assist: a throw that would not hold - ice, nothing in reach, or rock
+## closer than this (m), as right under the ceiling - is thrown flatter, down
+## to min_throw_pitch (degrees; = throw_pitch turns it off).
+@export var min_throw_reach := 14.0
+@export var min_throw_pitch := 5.0
 ## Aim assist: if the throw would find nothing to stick to, search this cone
 ## (degrees) for the closest wall or ceiling. 0 = off.
 @export var aim_assist_angle := 0.0
@@ -96,7 +101,7 @@ const WALL_KICK_MIN_GLANCE := 0.5
 
 @export_group("Rope")
 ## The hook gives up when it gets further away than this.
-@export var max_rope_length := 45.0
+@export var max_rope_length := 70.0
 ## Hooks closer than this do not hold: there is nothing left to pull.
 @export var min_hook_distance := 3.0
 ## Speed (m/s) toward the anchor added the moment the hook sticks: the yank.
@@ -442,12 +447,34 @@ func _touches_wall_or_ceiling() -> bool:
 ## Screen swipe -> 3D throw direction. Straight up on screen throws forward
 ## (-Z) and up at throw_pitch; sideways swipes turn the throw toward the walls.
 ## Aim assist may bend it toward the closest surface the hook can stick to.
-func _throw_direction(swipe: Vector2) -> Vector3:
+## Throw direction for a swipe and a hook speed: yaw from the swipe, pitch
+## throw_pitch - unless that throw would not hold (ice, nothing in reach, or
+## rock closer than min_throw_reach, as right under the ceiling): then the
+## first flatter pitch that holds, down to min_throw_pitch.
+func _throw_direction(swipe: Vector2, speed: float) -> Vector3:
 	var s := Vector2(swipe.x, -swipe.y).normalized()
 	var yaw := atan2(s.x, s.y) * throw_yaw_gain
-	var pitch := deg_to_rad(throw_pitch)
-	var dir := Vector3(sin(yaw) * cos(pitch), sin(pitch), -cos(yaw) * cos(pitch))
+	var dir := _pitched(yaw, throw_pitch)
+	if is_inside_tree() and not _holds(dir, speed):
+		var pitch := throw_pitch
+		while pitch > min_throw_pitch:
+			pitch = maxf(pitch - 10.0, min_throw_pitch)
+			var flatter := _pitched(yaw, pitch)
+			if _holds(flatter, speed):
+				dir = flatter
+				break
 	return _assisted_direction(dir)
+
+
+func _pitched(yaw: float, pitch_degrees: float) -> Vector3:
+	var pitch := deg_to_rad(pitch_degrees)
+	return Vector3(sin(yaw) * cos(pitch), sin(pitch), -cos(yaw) * cos(pitch))
+
+
+func _holds(dir: Vector3, speed: float) -> bool:
+	var path := predict_hook_path(dir, speed)
+	var points: PackedVector3Array = path.points
+	return path.hit and global_position.distance_to(points[-1]) >= min_throw_reach
 
 
 func _assisted_direction(dir: Vector3) -> Vector3:
@@ -514,7 +541,7 @@ func _on_aim_changed(swipe: Vector2) -> void:
 	if not _is_valid_swipe(swipe):
 		_hide_aim()
 		return
-	var path := predict_hook_path(_throw_direction(swipe), aim_preview_speed)
+	var path := predict_hook_path(_throw_direction(swipe, aim_preview_speed), aim_preview_speed)
 	var points: PackedVector3Array = path.points
 	aim_line.update_points(points, true)
 	aim_line.visible = true
@@ -552,7 +579,7 @@ func throw_hook(swipe: Vector2, flick_velocity: Vector2) -> void:
 	_since_throw = 0.0
 	flight_position = _hook_origin()
 	_flight_prev = flight_position
-	_hook_velocity = _throw_direction(swipe) * speed + velocity
+	_hook_velocity = _throw_direction(swipe, speed) * speed + velocity
 	_flying = true
 	_update_state()
 	hook_thrown.emit()

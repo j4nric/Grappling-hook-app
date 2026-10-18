@@ -11,9 +11,9 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 
 - [x] **Wurf während eines Zugs:** → Seil-Übergabe (umgesetzt). Seil-Übergabe (altes Seil hält, bis der neue
       Haken greift – Spider-Man-Kette) oder wie jetzt sofort lösen?
-- [ ] **Höhlenmaßstab:** Vorschlag 40 m breit, 35 m hoch, Boden über weite
+- [x] **Höhlenmaßstab:** (umgesetzt: 30–46 m breit, Decke 22–32 m, Abgrund) Vorschlag 40 m breit, 35 m hoch, Boden über weite
       Strecken Abgrund. Größer/kleiner?
-- [x] **Schwingen:** (`swing_time`, Regler; in den Gängen kostet schon 0,1 s die 2–3-fache Zeit → Standard 0, in den Kavernen neu bewerten) Kurze Pendelphase (Seil hält seine Länge ~0,3 s), bevor
+- [x] **Schwingen:** (`swing_time`, Regler; in den Gängen kostet schon 0,1 s die 2–3-fache Zeit → Standard 0; in den Kavernen neu bewertet: 0,15 s fast doppelte Zeit, 0,3 s scheitert schon am ersten Abgrund → bleibt 0) Kurze Pendelphase (Seil hält seine Länge ~0,3 s), bevor
       das Einholen startet? Als Vorschau-Build A/B vergleichen.
 - [ ] **Rekorde mit verstellten Reglern (TUNE\*):** nicht speichern, oder
       speichern und markieren?
@@ -84,29 +84,44 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 - [x] **Texturen auf dem iPhone:** Godot hätte 3D-Texturen fürs Web als
       Desktop-VRAM-Format (S3TC) komprimiert, das iPhone-Browser nicht können →
       Texturen verlustfrei importiert (klein, 128 px).
-- [ ] **Bot wirft nie während des Zugs:** Ein Ketten-Bot würde zeigen, welche
+- [x] **Bot wirft nie während des Zugs:** (Bot wirft jetzt in der Kette, zwei Wurfstärken, 17 Richtungen, variiert nach jedem Tod) Ein Ketten-Bot würde zeigen, welche
       Zeiten mit Kettenwürfen möglich sind (Medaillen-Kalibrierung).
+- [x] **Decken-Krabbeln:** Nach jedem Zip ist man unter der Decke; der feste
+      50°-Wurf traf dann die Decke 2–3 m voraus. → Wurfwinkel-Hilfe: hält der Wurf
+      nicht oder ist zu nah, wird flacher geworfen (bis 5°).
+- [x] **Stufen zwischen Hallen:** Eine niedrigere Decke in der nächsten Halle war
+      eine senkrechte Wand, an der man abprallte und in den Abgrund fiel. →
+      schräge Übergänge (Decke und Wände).
+- [x] **Taschen über Deckenblöcken:** Zwischen gedrehten Blöcken konnte man auf
+      einen Block steigen und feststecken. → durchgehender Deckel über der Decke.
+- [x] **Tore:** Ein Loch in der Wand funktioniert mit Zug-zum-Anker kaum (lange
+      Seile hängen durch, die Unterkante fängt den Spieler). → Eiswand mit
+      senkrechtem Schlitz und Felsinsel als Ziel dahinter.
+- [x] **Test-Runner meldete Erfolg trotz kaputtem Testskript** → Ladefehler und
+      Skriptfehler zählen als Fehlschlag (CI).
+- [x] **Mechanik-Tests hingen an der Level-Geometrie** → feste Test-Tunnel
+      (`tests/levels/`).
 
 ## 2. Die Höhle: groß, hoch, leer
 
-- [ ] **Neuer Level-Baukasten „Kaverne“:** statt Kasten-Tunnel weite Hallen
+- [x] **Neuer Level-Baukasten „Kaverne“:** statt Kasten-Tunnel weite Hallen
       (Richtwert 40 × 35 m) mit unregelmäßigen Wänden aus versetzten,
       gedrehten Felsblöcken. Seed-basiert im Generator, damit Level
       reproduzierbar bleiben.
-- [ ] **Leere als Gestaltungsmittel:** Boden größtenteils Abgrund (Nebel nach
+- [x] **Leere als Gestaltungsmittel:** Boden größtenteils Abgrund (Nebel nach
       unten, kein sichtbarer Grund), wenige, klare Haken-Ziele: Stalaktiten,
       überhängende Felsnasen, frei hängende Felsinseln, Säulen aus der Tiefe.
-- [ ] **Maßstab spürbar machen:** Spieler klein im Bild (Kamera weiter weg,
+- [x] **Maßstab spürbar machen:** Spieler klein im Bild (Kamera weiter weg,
       höher), ferne Silhouetten, schwebender Staub, Lichtkegel von oben,
       leuchtende Kristalle als Orientierung statt Fackel-Reihe.
-- [ ] **Licht und Tiefe:** Wenige große Lichtquellen + Nebel mit Höhenverlauf;
+- [x] **Licht und Tiefe:** Wenige große Lichtquellen + Nebel mit Höhenverlauf;
       dunkle Tiefe unten, hellere Decke. Farbkontrast Nähe/Ferne.
-- [ ] **Physik an den Maßstab anpassen:** größere Reichweite
+- [x] **Physik an den Maßstab anpassen:** (Seil 70 m, Haken bis 90 m/s, Vorschau 50 m/s, Kamera 3,5/10 m, Wurfwinkel-Hilfe) größere Reichweite
       (`max_rope_length` ~70 m), schnellerer Haken, Wurfwinkel evtl. aus dem
       Wischwinkel (steil/flach), Kamera-FOV und Abstand.
-- [ ] **Level 1–5 als Kavernen neu bauen**, Bot-Test anpassen (Abgrund statt
+- [x] **Level 1–5 als Kavernen neu bauen**, Bot-Test anpassen (Abgrund statt
       Lava, Medaillen neu).
-- [ ] **Performance prüfen:** mehr/größere Geometrie, Nebel; Ziel bleibt 60 fps.
+- [x] **Performance prüfen:** (je Halle ein MultiMesh pro Material statt einzelner CSG-Boxen: ~20 Draws, 200–280 Blöcke, 15–38 Lichter ohne Schatten pro Level; FPS auf dem iPhone weiter in TUNE → Misc messen) mehr/größere Geometrie, Nebel; Ziel bleibt 60 fps.
 
 ## 3. Spielgefühl: flüssig und befriedigend
 
@@ -138,7 +153,7 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       Staub, weiche Tempo-Spur statt Kästen.
 - [x] **Props für die Kavernen:** Lichtkegel (`scenes/props/light_shaft.tscn`),
       leuchtender Kristall (`scenes/props/crystal.tscn`).
-- [ ] **Lichtkegel, Kristalle, Silhouetten in den Leveln** (mit den Kavernen).
+- [x] **Lichtkegel, Kristalle, Silhouetten in den Leveln** (mit den Kavernen).
 
 ## 4. Speedrun
 

@@ -29,12 +29,22 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   `stretch_shrink` = Pixelgröße, Nearest-Filter). Die Kamera darin kopiert die
   Kamera von `CameraRig`; der Root-Viewport zeichnet nur das HUD
   (`disable_3d`). Nicht in Scripts hartkodieren.
-- Vorwärts im Tunnel ist **-Z**. Der Spieler startet bei z=0. Tunnel: 12 m breit
-  (x −6..6), Boden y=−5, Decke y=9.
-- **Level** entstehen aus `tools/gen_levels.py` (Beschreibungen dort ändern, dann
-  `python3 tools/gen_levels.py`); die erzeugten `scenes/levels/*.tscn` nicht von Hand
-  ändern. Reihenfolge in `scripts/levels.gd`. Medaillenzeiten aus der Bot-Zeit
-  (`tests/test_levels.gd` gibt sie aus).
+- Vorwärts in der Höhle ist **-Z**. Der Spieler startet bei z=0 auf einem Felsvorsprung
+  (Oberkante y=0); darunter Abgrund, `kill_y` −30.
+- **Level** sind Kavernen: `scenes/levels/*.tscn` ist nur ein `Level`-Knoten mit
+  `segments` (eine Halle pro Dictionary: Länge, Breite, Deckenhöhe, Boden
+  abyss/ground/lava, Stalaktiten, Säulen, Inseln, Kristalle, Lichtkegel, Eis, Tor,
+  Mover, Checkpoint – Schlüssel und Standardwerte in
+  `CavernBuilder.SEGMENT_DEFAULTS`) und `layout_seed`. `CavernBuilder` baut daraus beim
+  Laden die Geometrie (Felsblöcke als MultiMesh je Halle und Material, Kollision je
+  Halle in einem StaticBody). Gleicher Seed, gleiche Höhle. Reihenfolge in
+  `scripts/levels.gd`. Medaillenzeiten aus der Bot-Zeit (`tests/test_levels.gd`
+  gibt die beste von drei Startvarianten aus).
+- Level-Design-Regeln (gelernt beim Bauen): Übergänge zu niedrigeren/schmaleren
+  Hallen sind schräg (sonst prallt man ab); Decken haben einen Deckel (keine Taschen
+  zum Steckenbleiben); Boden-Hallen sind massiv bis in die Tiefe; Tore sind Eis mit
+  senkrechtem Schlitz und Felsinsel dahinter; in Eis-Hallen garantiert
+  `anchor_spacing` greifbare Stalaktiten.
 - Tuning-Werte sind `@export`-Variablen und werden im Inspector verändert, nicht
   im Code verstreut. Neue Stellschrauben ebenfalls als `@export` anlegen.
 - Gameplay-Input läuft **ausschließlich** über das Autoload `InputRouter`
@@ -75,7 +85,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `tools/gen_splash.py` | Erzeugt `assets/splash.png` (Ladebildschirm) |
 | `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
-| `tools/gen_levels.py` | Level-Generator |
+| `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Checkpoints, Ziel aus `segments` |
+| `scripts/level.gd` | `Level`: Name, Medaillen, `segments`, `layout_seed`, `kill_y`; Signale `finished`, `checkpoint_reached`, `killed` |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil, Haken-Kugel und Ziellinie |
 | `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `aim_changed`, `aim_cancelled`, `throw_requested` (Swipe + Flick-Tempo), `release_requested`, `restart_requested` |
 | `scripts/player.gd` | Schwerkraft, Hakenwurf (Flugbahn), Seilzug als Geschwindigkeit, Ziel-Vorschau |
@@ -99,7 +110,10 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 Swipe-Vektor und das Fingertempo der letzten 0,1 s (`FLICK_WINDOW`).
 - Richtung: Swipe gerade nach oben = nach vorn (-Z) und um `throw_pitch` nach
   oben; seitliche Swipes drehen den Wurf Richtung Wand (`throw_yaw_gain`).
-  Swipes nach unten werden verworfen.
+  Swipes nach unten werden verworfen. **Wurfwinkel-Hilfe:** Würde der Wurf nicht
+  halten (Eis, nichts in Reichweite, Fels näher als `min_throw_reach` – etwa direkt
+  unter der Decke), wird in 10°-Schritten flacher geworfen (bis `min_throw_pitch`);
+  die Ziellinie zeigt das vorher an.
 - Tempo: Fingertempo × `throw_speed_per_px`, begrenzt auf
   `hook_min_speed`..`hook_max_speed`. Der Haken erbt die Spielergeschwindigkeit.
 - Flug: Der Haken fliegt mit `hook_gravity` auf einer Bahn, Raycast pro Frame.
@@ -181,8 +195,13 @@ Teleports (`reset_to`) rufen `reset_physics_interpolation()`.
 - Web-Export lokal: `godot --headless --path . --export-release "Web" build/web/index.html`
   (braucht die Web-Exportvorlagen `web_nothreads_*`).
 - **Tests:** `godot --headless --fixed-fps 60 --path . --script res://tests/run_tests.gd`
-  (Exit-Code 1 bei Fehlern; `TEST_FILTER=chain` führt nur passende Dateien aus). Neue Mechaniken bekommen einen Test in
-  `tests/test_*.gd` (erbt von `test_case.gd`, Helfer für Touch/Swipe und Warten).
+  (Exit-Code 1 bei Fehlern, auch wenn ein Testskript nicht lädt oder ein Skriptfehler
+  auftritt; `TEST_FILTER=chain` führt nur passende Dateien aus). Neue Mechaniken
+  bekommen einen Test in `tests/test_*.gd` (erbt von `test_case.gd`, Helfer für
+  Touch/Swipe und Warten). Mechanik-Tests spielen in festen Tunneln
+  (`tests/levels/tunnel_*.tscn`: Decke y=9, Ziel z=−200, Lava/Checkpoint in Tunnel 2),
+  Tests der echten Level setzen `levels = Levels.LIST`. Der Bot (`tests/bot.gd`) wirft
+  auch während eines Zugs (Kette) und variiert nach jedem Tod die Richtung.
   `--fixed-fps 60` ist wichtig: `InputRouter` misst das Fingertempo über die
   Frame-Zeit.
 - Änderungen laufen als PR pro Themengebiet; CI (Tests + Export) muss grün sein.

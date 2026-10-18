@@ -13,9 +13,10 @@ func run() -> void:
 	check(main.get_node("World/PixelView").stretch_shrink >= 2, "world renders at reduced resolution")
 
 	for i in Levels.LIST.size():
-		var level: Node = load(Levels.LIST[i]).instantiate()
+		var level: Level = load(Levels.LIST[i]).instantiate()
+		level.build()
 		var lights := level.find_children("*", "OmniLight3D", true, false).size()
-		check(lights >= 5, "level %d has torches (%d lights)" % [i + 1, lights])
+		check(lights >= 5, "level %d has lights (%d)" % [i + 1, lights])
 		level.free()
 
 	InputRouter.throw_requested.emit(Vector2(0, -300), Vector2(0, -3000))

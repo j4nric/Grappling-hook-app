@@ -123,6 +123,10 @@ func _make_motes() -> CPUParticles3D:
 	mat.vertex_color_use_as_albedo = true
 	mat.albedo_color = Color(1.0, 0.85, 0.6, 0.5)
 	mat.albedo_texture = preload("res://assets/textures/dust.png")
+	# Right in front of the camera a mote would be a big blob: fade it out.
+	mat.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_ALPHA
+	mat.distance_fade_min_distance = 1.5
+	mat.distance_fade_max_distance = 5.0
 	var mesh := QuadMesh.new()
 	mesh.size = Vector2(0.12, 0.12)
 	mesh.material = mat

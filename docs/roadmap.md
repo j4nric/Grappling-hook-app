@@ -75,4 +75,9 @@ Kamera, HUD, 5 Level, Speedrun, Optik, Sound, Debug/Auto-Qualität.
 | 2026-10-18 | `landing_roll` | neu: 0,3 | 30 % der Fallgeschwindigkeit werden Vorwärtstempo |
 | 2026-10-18 | `deflect_keep` / `deflect_min_speed` | neu: 1,0 / 8 m/s | Zip in die Decke: 38 → 24 m/s vorher, jetzt bleibt das Tempo entlang der Decke |
 | 2026-10-18 | Juice | neu | `hit_stop_time` 0,05 s bei 0,05× ab 12 m/s, `zip_fov_kick` 12°, `rope_pluck` 0,5 m, Speed-Lines ab 28 m/s, Wind-Streifen ab 22 m/s |
+| 2026-10-18 | `max_rope_length` | 45 → 70 m | Kavernen: Anker liegen weiter weg |
+| 2026-10-18 | `hook_max_speed` / `aim_preview_speed` | 70 → 90 / 35 → 50 m/s | Decke 22–32 m hoch erreichbar |
+| 2026-10-18 | Kamera `offset` / `look_ahead` | (0; 2,5; 7) → (0; 3,5; 10) / (0; 2,5; −8) → (0; 3; −12) | Spieler kleiner im Bild, Maßstab spürbar |
+| 2026-10-18 | `min_throw_reach` / `min_throw_pitch` | neu: 14 m / 5° | Wurfwinkel-Hilfe unter der Decke und bei Eis |
+| 2026-10-18 | Medaillen | neu kalibriert | Kavernen, beste von 3 Bot-Starts, Gold ≈ 0,85×, Silber ≈ 1,2×, Bronze ≈ 2× (Bot-Streuung) |
 | 2026-10-18 | `wall_bounce` / `wall_kick_up` | neu: 0,2 / 4 m/s | Wall-Kick nur bei streifenden Treffern; 0,35 und frontaler Abprall warfen den Bot zurück |
