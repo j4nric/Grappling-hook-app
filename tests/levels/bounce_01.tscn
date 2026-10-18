@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level.gd" id="1_level"]
+
+[node name="Level" type="Node3D"]
+script = ExtResource("1_level")
+level_name = "Bounce Test"
+layout_seed = 4242
+segments = [{"length": 60.0, "width": 40.0, "ceiling": 26.0, "floor": "ground", "bouncers": 1, "stalactites": 0.0}, {"length": 60.0, "width": 40.0, "ceiling": 26.0, "floor": "lava", "bouncers": 2, "stalactites": 0.0}, {"length": 40.0, "width": 40.0, "ceiling": 26.0, "floor": "ground"}]

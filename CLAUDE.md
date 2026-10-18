@@ -61,7 +61,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   Öffnung (sonst fliegt man hinter die Wände ins Leere); in Eis-Hallen garantiert
   `anchor_spacing` greifbare Stalaktiten. Neue Elemente im Baukasten dürfen den
   Zufallsstrom nur dort nutzen, wo sie vorkommen – sonst ändern sich alle
-  bestehenden Höhlen (Rekorde, Medaillen). Decke und Wände sind nur optisch
+  bestehenden Höhlen (Rekorde, Medaillen). Neue Schlüssel in
+  `SEGMENT_DEFAULTS` gehören auch in `CavernBuilder.LATE_KEYS`: auf Standard
+  bleiben sie aus `Level.version()` heraus, sonst verfallen alle Rekorde. Decke und Wände sind nur optisch
   rau (`_shape`), ihre Kollision ist flach (`_solid`, `CEILING_ROUGHNESS`),
   damit man an keiner Kante hängen bleibt (`tests/test_flow.gd`). Wenig
   Hindernisse = besserer Flow: Stalaktiten sind kurz (`STALACTITE_MAX`), die
@@ -130,6 +132,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Aufwind, brüchige Stalaktiten, Tempo-Ringe, dunkle Hallen, Checkpoints, Ziel aus `segments` |
 | `scripts/rock_mesh.gd` | `RockMesh`: prozedurale Felsmodelle (Brocken, Stalaktit-Kegel, Säule, Wurzel; je 4 Varianten, flach schattiert, Einheitsgröße) für die MultiMeshes des Baukastens |
 | `scripts/floater.gd` | `Floater`: schwebender Stein in offenen Hallen (AnimatableBody3D, wippt; der Haken fährt mit) |
+| `scripts/bouncer.gd` | `Bouncer`: Sprungpilz (Area3D über dem Hut): wer von oben kommt, fliegt mit `bounce_speed` hoch und `forward_boost` weiter (`player.bounce()`, Signal `bounced`), der Hut federt |
 | `scripts/updraft.gd` | `Updraft`: Luftsäule, hebt Körper bis `max_rise` |
 | `scripts/brittle.gd` | `Brittle`: Stalaktit hält den Haken `hold_time`, bricht dann (Seil löst sich mit `broke`), `restore()` beim Neustart |
 | `scripts/speed_ring.gd` | `SpeedRing`: Ring, Durchfliegen gibt mindestens `boost_speed` nach vorn |
@@ -221,7 +224,7 @@ frontale Crashs nicht. Boden + bewegtes Hindernis von oben = `crushed` → Check
 **Signale** von `player.gd` für Kamera, Sound und Effekte: `hook_thrown`,
 `hook_attached(point, normal)`, `hook_missed`, `rope_released(reason)`
 (`zip`, `contact`, `blocked`, `tap`, `chain`, `broke`, `reset`), `landed(impact_speed)`,
-`deflected(impact_speed)`, `crushed`, `perfect_chain`.
+`deflected(impact_speed)`, `crushed`, `perfect_chain`, `bounced`.
 **Sturz:** Lava, Absturz unter `kill_y` oder Zerquetschen → `game.gd` ruft
 `player.fall()`: keine Physik, kein Input, die Figur fliegt schlaff weiter
 (`PlayerFigure.go_limp()`), nach `fall_show_time` Respawn per `reset_to()`.

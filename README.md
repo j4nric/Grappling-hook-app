@@ -42,7 +42,7 @@ Vorschau: Jeder offene Pull Request ist zusätzlich unter
 
 Inhalt: Tutorial und 8 Höhlen-Level (weite, hohe Hallen über einem Abgrund: Lava,
 Eis-Decken, fahrende Blöcke, Eis-Tore, Aufwinde, brüchige Stalaktiten,
-Tempo-Ringe, dunkle Hallen, offene Decken mit schwebenden Steinen in „Skyway“;
+Tempo-Ringe, dunkle Hallen, offene Decken mit schwebenden Steinen in „Skyway“, Sprungpilze;
 Arbeitslevel „Wide Cave“), dazu **Daily Cave** (jeden Tag eine neue, für alle
 gleiche Höhle) und **Random Cave** (bei jeder Wahl neu). Medaillen, Bestzeiten,
 Zwischenzeiten an Checkpoints, Geist der Bestzeit mit Abstand im HUD, **Replay**

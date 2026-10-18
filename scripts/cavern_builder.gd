@@ -35,6 +35,7 @@ const UPDRAFT := preload("res://scripts/updraft.gd")
 const BRITTLE := preload("res://scripts/brittle.gd")
 const SPEED_RING := preload("res://scripts/speed_ring.gd")
 const FLOATER := preload("res://scripts/floater.gd")
+const BOUNCER := preload("res://scripts/bouncer.gd")
 const AMBIENT := preload("res://scripts/ambient_sound.gd")
 const SOUNDS := {
 	"lava": preload("res://assets/sounds/amb_lava.wav"),
@@ -54,6 +55,8 @@ const HALL_VISIBLE_RANGE := 230.0
 const LEDGE_Y := 0.0
 ## Walls and pillars reach down to here; below is only fog.
 const DEPTH_Y := -60.0
+## Top of the rock column under a bounce mushroom in a hall without floor.
+const BOUNCER_COLUMN_TOP := -4.0
 ## Lava lakes lie this deep.
 const LAVA_Y := -24.0
 ## How far the drawn rock of ceiling and walls may stand out from or sink
@@ -122,7 +125,13 @@ const SEGMENT_DEFAULTS := {
 	"slick_walls": false,
 	## A hall template (TEMPLATES) whose values this hall starts from.
 	"template": "",
+	## Giant bounce mushrooms (Bouncer) along the hall: on the floor of a
+	## ground hall, on a rock column from the depth elsewhere.
+	"bouncers": 0,
 }
+## Keys added after round 5: Level.version() leaves them out while they are
+## at their default, so a new key does not reset every record.
+const LATE_KEYS := ["bouncers"]
 
 ## Hall templates, built on the Wide Cave (wide, high, few obstacles): a hall
 ## names one with "template", its own keys win. Each has a clear job.
@@ -279,6 +288,8 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 	_decorate(seg, z0, z1)
 	if float(seg.floater_spacing) > 0.0:
 		_floaters(seg, z0, z1)
+	if int(seg.bouncers) > 0:
+		_bouncers(seg, z0, z1)
 	for m in seg.movers:
 		_mover(Vector3(m[0], m[1], z0 - m[2]), Vector3(m[3], m[4], m[5]), m[6], m[7], m[8])
 
@@ -953,6 +964,82 @@ func _banner(pos: Vector3, color: Color, size: Vector3, parent: Node = null) -> 
 		parent.add_child(mesh)
 	else:
 		_add(mesh, "Props/Banner")
+
+
+## Bounce mushrooms spread along the hall, near the middle. Own random
+## numbers: halls without them stay as they were.
+func _bouncers(seg: Dictionary, z0: float, z1: float) -> void:
+	var rng := _deco_rng(31)
+	var count := int(seg.bouncers)
+	var w: float = seg.width
+	for i in count:
+		var z := z0 - (z0 - z1) * (i + 0.5) / float(count)
+		var x := rng.randf_range(-w / 4.0, w / 4.0)
+		var base := LEDGE_Y
+		if seg.floor != "ground":
+			# A rock column from the depth carries it, a little below the ledges.
+			base = BOUNCER_COLUMN_TOP
+			var column := Vector3(x, (DEPTH_Y + base) / 2.0, z)
+			var size := Vector3(4.0, base - DEPTH_Y, 4.0)
+			_collider("rock", column, size, Vector3.ZERO)
+			_model("pillar", "rock", Transform3D(Basis.IDENTITY.scaled(size * Vector3(1.3, 1.0, 1.3)), column))
+		_bouncer(Vector3(x, base, z))
+
+
+## One giant mushroom standing at base: stem, a wide glowing cap to land on
+## (flat collision on top), the bounce area just above it, a teal light.
+func _bouncer(base: Vector3) -> void:
+	var stem_height := 3.0
+	var radius := 4.0
+	var top := base.y + stem_height + 1.0
+	_collider("rock", Vector3(base.x, base.y + stem_height / 2.0, base.z), Vector3(1.6, stem_height, 1.6), Vector3.ZERO)
+	_collider("rock", Vector3(base.x, top - 0.5, base.z), Vector3(radius * 1.6, 1.0, radius * 1.6), Vector3.ZERO)
+	var look := Node3D.new()
+	look.position = base
+	var stem := MeshInstance3D.new()
+	var stem_mesh := CylinderMesh.new()
+	stem_mesh.top_radius = 0.7
+	stem_mesh.bottom_radius = 1.1
+	stem_mesh.height = stem_height + 0.5
+	stem_mesh.radial_segments = 8
+	stem_mesh.rings = 1
+	stem.mesh = stem_mesh
+	stem.material_override = MATERIALS.root
+	stem.position = Vector3(0, (stem_height + 0.5) / 2.0, 0)
+	look.add_child(stem)
+	# The cap squashes around its bottom (Bouncer.bounce()).
+	var pivot := Node3D.new()
+	pivot.position = Vector3(0, stem_height, 0)
+	var cap := MeshInstance3D.new()
+	var cap_mesh := SphereMesh.new()
+	cap_mesh.radius = radius
+	cap_mesh.height = 2.6
+	cap_mesh.is_hemisphere = true
+	cap_mesh.radial_segments = 14
+	cap_mesh.rings = 4
+	cap.mesh = cap_mesh
+	cap.material_override = MATERIALS.cap
+	pivot.add_child(cap)
+	look.add_child(pivot)
+	_limit_range(look, PROP_VISIBLE_RANGE)
+	_add(look, "Props/Bouncer")
+	var area := Area3D.new()
+	area.set_script(BOUNCER)
+	area.position = Vector3(base.x, top + 0.7, base.z)
+	var shape := CollisionShape3D.new()
+	var cylinder := CylinderShape3D.new()
+	cylinder.radius = radius * 0.8
+	cylinder.height = 1.4
+	shape.shape = cylinder
+	area.add_child(shape)
+	area.cap = pivot
+	_add(area, "Dynamic/Bouncer")
+	var light := OmniLight3D.new()
+	light.light_color = Color(0.4, 1.0, 0.8)
+	light.light_energy = 1.4
+	light.omni_range = 14.0
+	light.position = Vector3(base.x, top + 2.0, base.z)
+	_add(light, "Lights/Bouncer")
 
 
 func _mover(pos: Vector3, size: Vector3, travel: Vector3, period: float, phase: float) -> void:
