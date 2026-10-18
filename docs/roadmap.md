@@ -71,3 +71,7 @@ Kamera, HUD, 5 Level, Speedrun, Optik, Sound, Debug/Auto-Qualität.
 | 2026-10-18 | `flyby_release_distance` | neu: 6 m | am Anker vorbei = Zip statt Zurückschwingen |
 | 2026-10-18 | `swing_time` | neu: 0 | Pendelphase kostet in Gängen 2–3× Zeit |
 | 2026-10-18 | Medaillen | ~45 % schneller | Bot-Zeiten nach Ketten-/Vorbeiflug-Fixes |
+| 2026-10-18 | `slide_friction` / `slide_speed` | neu: 6 / 8 m/s | Landungen rutschen weiter statt hart zu bremsen |
+| 2026-10-18 | `landing_roll` | neu: 0,3 | 30 % der Fallgeschwindigkeit werden Vorwärtstempo |
+| 2026-10-18 | `deflect_keep` / `deflect_min_speed` | neu: 1,0 / 8 m/s | Zip in die Decke: 38 → 24 m/s vorher, jetzt bleibt das Tempo entlang der Decke |
+| 2026-10-18 | `wall_bounce` / `wall_kick_up` | neu: 0,2 / 4 m/s | Wall-Kick nur bei streifenden Treffern; 0,35 und frontaler Abprall warfen den Bot zurück |

@@ -124,11 +124,20 @@ die nötige Geschwindigkeit nach innen → Pendeln.
   weg vom Anker) → wie Zip-Launch, statt zurückzuschwingen.
 - Nach `contact_release_grace`: Berührung von Wand oder Decke (`release_on_contact`) → Seil löst sich.
 - Hindernis zwischen Spieler und Anker (`release_when_blocked`) → Seil löst sich.
-Böden lösen das Seil nie. Am Boden bremst `floor_friction`, solange kein Seil zieht.
+Böden lösen das Seil nie. Am Boden bremst `floor_friction`, solange kein Seil zieht;
+über `slide_speed` nur `slide_friction` (Rutschen). Landungen geben `landing_roll`
+der Fallgeschwindigkeit als Vorwärtstempo dazu.
+
+**Aufprall** (`_handle_impacts()`, nur ohne Seil): Wand oder Decke mit mehr als
+`deflect_min_speed` → das Tempo wird entlang der Fläche umgelenkt, skaliert mit dem
+Streifwinkel (streifend ≈ voll, frontal ≈ nichts; nie schneller als vorher).
+Streifende Wandtreffer (< 60°) geben einen Wall-Kick (`wall_bounce`, `wall_kick_up`),
+frontale Crashs nicht. Boden + bewegtes Hindernis von oben = `crushed` → Checkpoint.
 
 **Signale** von `player.gd` für Kamera, Sound und Effekte: `hook_thrown`,
 `hook_attached(point, normal)`, `hook_missed`, `rope_released(reason)`
-(`zip`, `contact`, `blocked`, `tap`, `throw`, `reset`), `landed(impact_speed)`.
+(`zip`, `contact`, `blocked`, `tap`, `chain`, `reset`), `landed(impact_speed)`,
+`deflected(impact_speed)`, `crushed`.
 
 **Flüssige Darstellung:** Physik-Interpolation ist an (60-Hz-Physik, Darstellung
 in jeder Bildrate). Alles, was per Hand jedes Frame platziert wird (Kamera-Rig,
