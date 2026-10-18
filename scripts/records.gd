@@ -1,6 +1,7 @@
 class_name Records
 ## Best times and ghost runs per level, kept in user:// (IndexedDB in the
-## browser). Levels are keyed by their scene file name.
+## browser). Levels are keyed by their scene file name, procedural caves by
+## kind and seed.
 
 const PATH := "user://records.cfg"
 const GHOST_DIR := "user://"
@@ -9,6 +10,9 @@ enum Medal { NONE, BRONZE, SILVER, GOLD }
 
 
 static func key(level_path: String) -> String:
+	# Procedural caves: one record per kind and seed ("daily_20261018").
+	if level_path.begins_with(Levels.CAVE_PREFIX):
+		return level_path.trim_prefix(Levels.CAVE_PREFIX).replace("/", "_")
 	return level_path.get_file().get_basename()
 
 

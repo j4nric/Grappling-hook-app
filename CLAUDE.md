@@ -40,6 +40,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   Halle in einem StaticBody). Gleicher Seed, gleiche Höhle. Reihenfolge in
   `scripts/levels.gd`. Medaillenzeiten aus der Bot-Zeit (`tests/test_levels.gd`
   gibt die beste von drei Startvarianten aus).
+- **Prozedurale Höhlen** (`CaveGenerator`) nutzen denselben Baukasten; Rekorde gelten
+  pro Art und Seed (`Records.key()`). `tests/test_procedural.gd` lässt den Bot mehrere
+  Seeds spielen und gibt Bot-Zeit und Schätzung aus (Kalibrierung von `RUN_SPEED`).
 - Level-Design-Regeln (gelernt beim Bauen): Übergänge zu niedrigeren/schmaleren
   Hallen sind schräg (sonst prallt man ab); Decken haben einen Deckel (keine Taschen
   zum Steckenbleiben); Boden-Hallen sind massiv bis in die Tiefe; Tore sind Eis mit
@@ -73,6 +76,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `tools/export_web.sh` | Web-Export mit Versionsstempel und eindeutigem Paketnamen (Cache-Busting) |
 | `scenes/main.tscn` | Hauptszene: Player + CameraRig + HUD + LevelMenu + Tuning; das Level lädt `game.gd` |
 | `scenes/levels/level_*.tscn` | Generierte Level (Start, Finish, Checkpoints, KillZones, Movers) |
+| `scripts/cave_generator.gd` | `CaveGenerator`: prozedurale Höhle aus einem Seed (faire Hallenfolge, Medaillen aus Zeitschätzung); „Daily Cave“ (Seed = Datum) und „Random Cave“ |
+| `scripts/levels.gd` | `Levels`: feste Level (`LIST`) plus prozedurale Pfade `cave://daily/<seed>`, `cave://random/<seed>`; `Levels.instantiate(path)` |
 | `scripts/level.gd` | `Level`: Signale `finished`, `checkpoint_reached`, `killed`, Medaillenzeiten |
 | `scripts/levels.gd` | `Levels.LIST`: Level-Reihenfolge |
 | `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel) |
@@ -86,6 +91,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Checkpoints, Ziel aus `segments` |
+| `scripts/cave_generator.gd` | `CaveGenerator`: prozedurale Höhle aus einem Seed (faire Hallenfolge, Medaillen aus Zeitschätzung); „Daily Cave“ (Seed = Datum) und „Random Cave“ |
+| `scripts/levels.gd` | `Levels`: feste Level (`LIST`) plus prozedurale Pfade `cave://daily/<seed>`, `cave://random/<seed>`; `Levels.instantiate(path)` |
 | `scripts/level.gd` | `Level`: Name, Medaillen, `segments`, `layout_seed`, `kill_y`; Signale `finished`, `checkpoint_reached`, `killed` |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil, Haken-Kugel und Ziellinie |
 | `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `aim_changed`, `aim_cancelled`, `throw_requested` (Swipe + Flick-Tempo), `release_requested`, `restart_requested` |

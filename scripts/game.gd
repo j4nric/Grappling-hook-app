@@ -27,7 +27,7 @@ signal level_loaded(level: Level)
 @onready var ghost := $Ghost
 
 ## The levels in play order (tests swap in their own).
-var level_list: Array[String] = Levels.LIST
+var level_list: Array[String] = Levels.with_procedural()
 var level: Level
 var level_index := 0
 var _respawn := Vector3.ZERO
@@ -62,7 +62,8 @@ func _ready() -> void:
 	InputRouter.restart_requested.connect(restart)
 	InputRouter.throw_requested.connect(_on_throw)
 	InputRouter.release_requested.connect(_on_tap)
-	menu.level_chosen.connect(load_level)
+	# From the menu, the random cave is a new one every time.
+	menu.level_chosen.connect(func(index: int) -> void: load_level(index, true))
 	pause_menu.restart_pressed.connect(restart)
 	pause_menu.levels_pressed.connect(open_menu)
 	version_label.text = "build %s" % ProjectSettings.get_setting("application/config/version", "dev")
@@ -73,7 +74,7 @@ func _ready() -> void:
 	finish_panel.add_theme_stylebox_override("panel", panel_style)
 	for button_name in ["Next", "Levels"]:
 		finish_panel.get_node("Lines/Buttons/" + button_name).add_to_group(InputRouter.BLOCKING_GUI_GROUP)
-	finish_panel.get_node("Lines/Buttons/Next").pressed.connect(func() -> void: load_level(level_index + 1))
+	finish_panel.get_node("Lines/Buttons/Next").pressed.connect(_on_next)
 	finish_panel.get_node("Lines/Buttons/Levels").pressed.connect(open_menu)
 	get_viewport().size_changed.connect(_apply_safe_area)
 	_apply_safe_area()
@@ -82,16 +83,19 @@ func _ready() -> void:
 		open_menu()
 
 
-func load_level(index: int) -> void:
+## new_cave: a random cave gets a fresh seed (else the same cave again).
+func load_level(index: int, new_cave := false) -> void:
 	if index < 0 or index >= level_list.size():
 		open_menu()
 		return
+	if new_cave and Levels.is_random_cave(level_list[index]):
+		level_list[index] = Levels.random_cave_path()
 	if level:
 		remove_child(level)
 		level.queue_free()
 	level_index = index
 	pause_menu.set_button_visible(true)
-	level = load(level_list[index]).instantiate()
+	level = Levels.instantiate(level_list[index])
 	level.name = "Level"
 	level.build()
 	# Move the player before the level exists, so it never overlaps the new
@@ -110,12 +114,16 @@ func open_menu() -> void:
 	pause_menu.set_button_visible(false)
 	var entries := []
 	for path in level_list:
-		var scene: Level = load(path).instantiate()
+		var scene: Level = Levels.instantiate(path)
 		var best := Records.best_time(path)
 		var detail := ""
-		if best < INF:
+		var level_title := scene.level_name
+		if Levels.is_random_cave(path):
+			level_title = "Random Cave"
+			detail = "new every time"
+		elif best < INF:
 			detail = "%.2f s  %s" % [best, Records.medal_name(Records.medal(scene, best))]
-		entries.append({"name": scene.level_name, "detail": detail})
+		entries.append({"name": level_title, "detail": detail})
 		scene.free()
 	menu.open(entries)
 
@@ -210,8 +218,19 @@ func _on_finished() -> void:
 	finish_panel.get_node("Lines/Flow").text = "Longest flow x%d" % best_flow if best_flow >= FLOW_MIN_SHOWN else ""
 	finish_panel.get_node("Lines/Target").text = _next_target(medal)
 	finish_panel.get_node("Lines/Again").text = "Tap to play again" if _touch else "Click to play again"
-	finish_panel.get_node("Lines/Buttons/Next").visible = level_index + 1 < level_list.size()
+	var next: Button = finish_panel.get_node("Lines/Buttons/Next")
+	var random := Levels.is_random_cave(level_list[level_index])
+	next.text = "New cave" if random else "Next"
+	next.visible = random or level_index + 1 < level_list.size()
 	_update_hud()
+
+
+## Finish screen "Next": the next level, or a new random cave.
+func _on_next() -> void:
+	if Levels.is_random_cave(level_list[level_index]):
+		load_level(level_index, true)
+	else:
+		load_level(level_index + 1)
 
 
 func _set_flow(value: int) -> void:

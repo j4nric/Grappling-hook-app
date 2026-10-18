@@ -121,6 +121,12 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       Wischwinkel (steil/flach), Kamera-FOV und Abstand.
 - [x] **Level 1–5 als Kavernen neu bauen**, Bot-Test anpassen (Abgrund statt
       Lava, Medaillen neu).
+- [x] **Prozedurales Level:** `CaveGenerator` baut aus einem Seed eine faire
+      Hallenfolge (Boden-Hallen am Anfang und Ende, 4–6 Hallen dazwischen, nie
+      zweimal dieselbe Art, kein Tor zuerst, Checkpoint jede zweite Halle).
+      „Daily Cave“ (Seed = Datum, für alle gleich) und „Random Cave“ (neu bei jeder
+      Wahl, „New cave“ nach dem Ziel). Medaillen aus Zeitschätzung, am Bot kalibriert
+      (Bot ≈ 0,82 × Schätzung über 4 Seeds).
 - [x] **Performance prüfen:** (je Halle ein MultiMesh pro Material statt einzelner CSG-Boxen: ~20 Draws, 200–280 Blöcke, 15–38 Lichter ohne Schatten pro Level; FPS auf dem iPhone weiter in TUNE → Misc messen) mehr/größere Geometrie, Nebel; Ziel bleibt 60 fps.
 
 ## 3. Spielgefühl: flüssig und befriedigend
