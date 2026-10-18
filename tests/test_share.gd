@@ -60,7 +60,7 @@ func _rival() -> void:
 	for i in 200:
 		positions.append(start + Vector3(0, 0, -i * 1.5))
 	var run := {"positions": positions, "anchors": PackedVector3Array()}
-	var message: String = main.load_run_code("from a friend: " + RunCode.encode(tutorial_id, 9.5, run))
+	var message: String = main.sharing.load_run_code("from a friend: " + RunCode.encode(tutorial_id, 9.5, run))
 	check(message.begins_with("Rival loaded"), "a friend's run loads (%s)" % message)
 	check(main.level_list[main.level_index] == tutorial, "its level is loaded")
 	var rival: Ghost = main.rival
@@ -68,25 +68,25 @@ func _rival() -> void:
 	rival.update_run(1.0, Vector3.ZERO)
 	check(rival.global_position.distance_to(positions[20]) < 0.1, "the rival plays the friend's run")
 	check(rival.recording().positions.is_empty(), "the rival records nothing")
-	check(main._rival_time() == 9.5, "the rival's time is shown")
+	check(main.sharing.rival_time() == 9.5, "the rival's time is shown")
 	main.free()
 	await load_main()
 	main.load_level(Levels.LIST.find(tutorial))
 	check(main.rival.has_replay(), "the rival stays for the level")
 
-	check(main.load_run_code(RunCode.encode("level_00@deadbeef", 9.0, run)).contains("another version"),
+	check(main.sharing.load_run_code(RunCode.encode("level_00@deadbeef", 9.0, run)).contains("another version"),
 			"a run from another level version is refused")
-	check(main.load_run_code(RunCode.encode("level_99@deadbeef", 9.0, run)).contains("does not have"),
+	check(main.sharing.load_run_code(RunCode.encode("level_99@deadbeef", 9.0, run)).contains("does not have"),
 			"a run from an unknown level is refused")
-	check(main.load_run_code("no code").begins_with("No run code"), "pasted text without a code is refused")
-	check(main.share_run().begins_with("Finish the level"), "nothing to share before the first finish")
+	check(main.sharing.load_run_code("no code").begins_with("No run code"), "pasted text without a code is refused")
+	check(main.sharing.share_run().begins_with("Finish the level"), "nothing to share before the first finish")
 
 	# A daily cave of another day takes the place of today's.
 	var daily := Levels.cave_path("daily", 20260101)
 	var daily_scene := Levels.instantiate(daily)
 	var daily_id := Records.id(daily, daily_scene)
 	daily_scene.free()
-	message = main.load_run_code(RunCode.encode(daily_id, 30.0, run))
+	message = main.sharing.load_run_code(RunCode.encode(daily_id, 30.0, run))
 	check(message.begins_with("Rival loaded") and main.level_list[main.level_index] == daily, "a run of another daily cave loads it (%s)" % message)
 
 	# Sharing the own best run.
@@ -94,7 +94,7 @@ func _rival() -> void:
 	Records.submit(main._record_id, 12.0)
 	Records.save_ghost(main._record_id, run)
 	main._best = 12.0
-	check(main.share_run().begins_with("Run copied"), "the best run is shared")
+	check(main.sharing.share_run().begins_with("Run copied"), "the best run is shared")
 
 
 func _tuning_sets() -> void:

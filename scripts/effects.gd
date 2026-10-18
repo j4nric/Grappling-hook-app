@@ -26,6 +26,9 @@ extends Node3D
 ## Floating dust motes around the player: scale and stillness of the cave.
 @export var dust_amount := 60
 
+## Physics ticks the warm-up stays drawn (behind the black of the start).
+const WARM_TICKS := 4
+
 ## Motes per kind of air: [color, gravity (m/s², + rises), top speed (m/s), size].
 const AIR := {
 	"dust": [Color(1.0, 0.85, 0.6, 0.5), -0.02, 0.3, 1.0],
@@ -51,6 +54,9 @@ var _motes: CPUParticles3D
 var air := "dust"
 var _air_check := 0
 var _gold: CPUParticles3D
+## Shader warm-up (warm_up()): physics ticks left, and the stand-in meshes.
+var _warming := 0
+var _warm_meshes: Node3D
 var _spores: CPUParticles3D
 
 
@@ -89,6 +95,11 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if _warming > 0:
+		_warming -= 1
+		if _warming == 0:
+			_end_warm_up()
+		return
 	_air_check -= 1
 	if _air_check <= 0:
 		_air_check = 30
@@ -108,6 +119,58 @@ func _physics_process(_delta: float) -> void:
 		_streaks.direction = -dir
 		var strength := clampf((speed - streak_speed) / (streak_full_speed - streak_speed), 0.15, 1.0)
 		_streak_material.albedo_color.a = 0.4 * strength
+
+
+## Browsers compile a shader the first time something with it is drawn,
+## which stalls that frame: the first spark, zip burst, bounce, the first
+## waterfall. At the start, while the screen is still black, every effect
+## fires once and every level material is drawn once just in front of the
+## player; a few ticks later they are hidden again.
+func warm_up() -> void:
+	var at := player.global_position + Vector3(0, 1.5, -3.0)
+	for p: CPUParticles3D in _bursts():
+		p.visible = true
+		_emit(p, at, Vector3.UP)
+	for p: CPUParticles3D in [_trail, _streaks]:
+		p.global_position = at
+		p.emitting = true
+	_warm_meshes = Node3D.new()
+	_warm_meshes.top_level = true
+	add_child(_warm_meshes)
+	var materials: Array[Material] = []
+	materials.assign(CavernBuilder.MATERIALS.values())
+	for shader: Shader in [CavernBuilder.WATERFALL_SHADER, CavernBuilder.SKY_SHADER]:
+		var material := ShaderMaterial.new()
+		material.shader = shader
+		material.set_shader_parameter("noise", CavernBuilder.NOISE_TEXTURE)
+		materials.append(material)
+	for i in materials.size():
+		var mesh := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3.ONE * 0.05
+		box.material = materials[i]
+		mesh.mesh = box
+		mesh.position = at + Vector3((i - materials.size() / 2.0) * 0.06, 0, 0)
+		_warm_meshes.add_child(mesh)
+	_warming = WARM_TICKS
+
+
+func _end_warm_up() -> void:
+	for p: CPUParticles3D in _bursts():
+		p.visible = false
+	_trail.emitting = false
+	_streaks.emitting = false
+	if _warm_meshes:
+		_warm_meshes.queue_free()
+		_warm_meshes = null
+
+
+func is_warming_up() -> bool:
+	return _warming > 0
+
+
+func _bursts() -> Array[CPUParticles3D]:
+	return [_sparks, _dust, _burst, _gold, _spores]
 
 
 ## The kind of air in a hall (CavernBuilder segment).
@@ -219,6 +282,7 @@ func _make_streaks() -> CPUParticles3D:
 
 
 func _emit(particles: CPUParticles3D, at: Vector3, normal: Vector3) -> void:
+	particles.visible = true
 	particles.global_position = at
 	if not normal.is_zero_approx():
 		particles.direction = normal

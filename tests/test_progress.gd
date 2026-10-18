@@ -56,11 +56,11 @@ func run() -> void:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 	check(Outfits.unlocked_names(Outfits.best_medals()) == ["Classic"], "progress gone")
-	var message: String = main.restore_backup("my backup: " + backup)
+	var message: String = main.progress.restore_backup("my backup: " + backup)
 	check(message.begins_with("Restored"), "the code restores (%s)" % message)
 	check("Ember" in Outfits.unlocked_names(Outfits.best_medals()) and Stats.of("level_01").runs == 7, "medals and stats are back (%s, %s)" % [Outfits.unlocked_names(Outfits.best_medals()), Stats.of("level_01")])
 	check(Stats.daily_streak(20261101) == 3, "the streak is back")
-	check(main.restore_backup("nothing").begins_with("No backup"), "text without a code is refused")
+	check(main.progress.restore_backup("nothing").begins_with("No backup"), "text without a code is refused")
 	check(Backup.is_plain([1, "a", {"b": 2.0}, PackedStringArray(["c"])]) and not Backup.is_plain(RefCounted.new()) \
 			and not Backup.is_plain([RefCounted.new()]), "only plain values come in")
 	Settings.outfit = "Classic"

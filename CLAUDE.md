@@ -113,13 +113,15 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `.github/workflows/ci.yml` | Pull Requests: Tests + Probe-Export |
 | `.github/workflows/test.yml` | Wiederverwendbarer Test-Job (von `ci.yml` und `pages.yml` genutzt) |
 | `tools/export_web.sh` | Web-Export mit Versionsstempel und eindeutigem Paketnamen (Cache-Busting); kopiert `web/` dazu |
-| `web/` | Installierbare Web-App: `manifest.webmanifest`, `sw.js` (Service Worker: Netz zuerst, offline aus dem Cache), Icons von `tools/gen_icon.py`; `.gdignore`, nicht im Godot-Paket |
+| `web/` | Installierbare Web-App: `manifest.webmanifest`, `sw.js` (Service Worker: Spieldateien Netz zuerst, offline aus dem Cache; die Engine `index.wasm`/`index.js` aus eigenem Cache, benannt nach ihrem Hash, den `export_web.sh` einträgt), Icons von `tools/gen_icon.py`; `.gdignore`, nicht im Godot-Paket |
 | `scenes/main.tscn` | Hauptszene: Player + CameraRig + HUD + LevelMenu + Tuning; das Level lädt `game.gd` |
 | `scenes/levels/level_*.tscn` | Level als Layout (`segments`, `layout_seed`, Medaillen, Tutorial-`hints`); gebaut von `CavernBuilder` |
 | `scripts/cave_generator.gd` | `CaveGenerator`: prozedurale Höhle aus einem Seed (faire Hallenfolge, Medaillen aus Zeitschätzung); „Daily Cave“ (Seed = Datum) und „Random Cave“ |
 | `scripts/levels.gd` | `Levels`: feste Level (`LIST`) plus prozedurale Pfade `cave://daily/<seed>`, `cave://random/<seed>`; `Levels.instantiate(path)` |
 | `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel): Medaillen-Marke je Level, Zeile mit Medaillen und Daily-Serie; Stats-Bildschirm mit Backup/Restore |
 | `scripts/pause_menu.gd` | Pause-Knopf und -Menü (Medaillenziele, Weiter/Neustart/Level, Geist/Ton, „Share run“/„Load run“), öffnet bei Fokusverlust |
+| `scripts/sharing.gd` | `Sharing` (Knoten in `main.tscn`): „Share run“/„Load run“ des Pause-Menüs, Rivalen-Zeit |
+| `scripts/progress.gd` | `Progress` (Knoten in `main.tscn`): Medaillen-Zeile über den Leveln, Stats-Bildschirm, Backup/Restore |
 | `scripts/run_code.gd` | `RunCode`: Lauf als Text-Code `GC1:<Level>@<Version>:<ms>:<Daten>` (5-cm-Raster, Deflate, Base64; ~1–2 KB); ein geladener Code wird zum orangen Rivalen-Geist (`Rival` in `main.tscn`, `Records.save_rival()`) |
 | `scripts/clipboard.gd` | `Clipboard`: Kopieren/Einfügen; im Browser auf `button_down` scharf gestellt und im `touchend` ausgeführt (iOS), Einfügen per Browser-Dialog, Ergebnis per `take_paste()` |
 | `scripts/sparkline.gd` | `Sparkline`: Kurve der Zielzeiten eines Levels (Statistik), Gold = Bestzeit bis dahin |
@@ -127,7 +129,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/settings.gd` | `Settings`: Geist und Ton an/aus, Outfit (Pause-Menü), in `user://settings.cfg` |
 | `scripts/outfits.gd` | `Outfits`: Farben der Figur (Jacke, Schal, Helm), freigespielt durch Medaillen (`needs`), `PlayerFigure.set_outfit()` |
 | `scripts/backup.gd` | `Backup`: Bestzeiten, Statistik, Verlauf, Einstellungen und Tuning als Code `GCB1:` (Stats-Bildschirm „Backup“/„Restore“); beim Einlesen nur einfache Werte |
-| `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur; Teilchen in der Luft je Halle (`air_for()`: Staub, Glut, Schnee, Glühwürmchen, Pollen) |
+| `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur, Gold (perfekter Kettenwurf), Sporen (Sprungpilz); Teilchen in der Luft je Halle (`air_for()`: Staub, Glut, Schnee, Glühwürmchen, Pollen); `warm_up()` zeichnet beim Start alle Effekte und Materialien einmal (Shader-Kompilierung im Browser) |
 | `scripts/music.gd` | Musik: drei synchrone Spuren (`AudioStreamSynchronized`), Puls und Arpeggio nach Tempo und Flow; Spuren von `tools/gen_music.py` (QOA-komprimiert, nahtlos) |
 | `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo; Bus „Cave“ mit Reverb nach Größe der Halle (`Level.hall_at()`) |
 | `assets/sounds/*.wav` | Synthetisierte Sounds mit eingebackenem Höhlen-Hall, erzeugt von `tools/gen_sounds.py` (numpy); `amb_*` sind Schleifen |
