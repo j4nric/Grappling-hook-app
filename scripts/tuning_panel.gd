@@ -26,6 +26,11 @@ const LEGACY_DEFAULTS := {
 }
 const SECTION := "tuning"
 const DEFAULTS_SECTION := "defaults"
+## Tuning sets A, B, C: switch with one tap to compare two feels. The live
+## values are always the active set; the others wait in this file (in the
+## same format: only changed values, with the default they were tuned against).
+const PRESETS_PATH := "user://tuning_presets.cfg"
+const SLOTS := ["A", "B", "C"]
 
 ## [node path relative to the parent, property path, min, max, step, tab]
 const PARAMS := [
@@ -140,6 +145,11 @@ var _info_text: Label
 var _selected := ""
 ## Pause state before the panel opened (the level menu may pause, too).
 var _was_paused := false
+## Active tuning set (SLOTS) and its buttons.
+var _slot := "A"
+var _slot_buttons := {}
+var _paste: Button
+var _awaiting_paste := false
 
 
 func _ready() -> void:
@@ -300,6 +310,29 @@ func _build_ui() -> void:
 	close.pressed.connect(_set_open.bind(false))
 	header.add_child(close)
 
+	# Tuning sets: tap to switch; a set used for the first time starts as a
+	# copy of the current values. "Paste" takes values copied with "Copy".
+	var sets := HBoxContainer.new()
+	root.add_child(sets)
+	var sets_label := Label.new()
+	sets_label.text = "Set"
+	sets_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sets.add_child(sets_label)
+	for slot: String in SLOTS:
+		var button := Button.new()
+		button.text = slot
+		button.custom_minimum_size = Vector2(90, ROW_HEIGHT)
+		button.pressed.connect(switch_slot.bind(slot))
+		sets.add_child(button)
+		_slot_buttons[slot] = button
+	_paste = Button.new()
+	_paste.text = "Paste"
+	_paste.custom_minimum_size = Vector2(120, ROW_HEIGHT)
+	_paste.button_down.connect(func() -> void:
+		Clipboard.request_paste("Paste tuning values (from Copy):")
+		_awaiting_paste = true)
+	sets.add_child(_paste)
+
 	_last_throw = Label.new()
 	_last_throw.add_theme_font_size_override("font_size", 22)
 	root.add_child(_last_throw)
@@ -455,29 +488,134 @@ func _copy_values() -> void:
 
 
 func _copy_text(text: String, button: Button, label: String) -> void:
-	if OS.has_feature("web"):
-		# Browsers (iOS Safari above all) only allow clipboard writes inside a
-		# real input event handler. Godot handles input a frame later, so the
-		# write is armed now and runs when the finger lifts.
-		JavaScriptBridge.eval("""
-			window.gcCopyText = %s;
-			const gcCopy = () => navigator.clipboard.writeText(window.gcCopyText).catch(() => {});
-			window.addEventListener('touchend', gcCopy, {once: true, capture: true});
-			window.addEventListener('mouseup', gcCopy, {once: true, capture: true});
-		""" % JSON.stringify(text))
-	else:
-		DisplayServer.clipboard_set(text)
-	button.text = "Copied"
+	Clipboard.copy(text)
+	_flash(button, "Copied", label)
+
+
+## Shows a short message on a button, then its label again.
+func _flash(button: Button, message: String, label: String) -> void:
+	button.text = message
 	get_tree().create_timer(1.5, true, false, true).timeout.connect(func() -> void: button.text = label)
 
 
 func _reset() -> void:
+	apply_values({})
+
+
+func _process(_delta: float) -> void:
+	if not _awaiting_paste:
+		return
+	var text: Variant = Clipboard.take_paste()
+	if text == null:
+		return
+	_awaiting_paste = false
+	var values := parse_values(text)
+	if values.is_empty():
+		_flash(_paste, "No values", "Paste")
+		return
+	apply_values(values)
+	_flash(_paste, "%d set" % values.size(), "Paste")
+
+
+## Every tuning value at its default, except the given ones (key -> value).
+func apply_values(values: Dictionary) -> void:
 	for p in PARAMS:
-		if p[5] == CAVE_TAB:
-			continue
-		_sliders[_key(p)].value = _defaults[_key(p)]
+		if p[5] != CAVE_TAB:
+			_sliders[_key(p)].value = values.get(_key(p), _defaults[_key(p)])
 	_save()
 	_update_toggle_text()
+
+
+## The values that differ from the defaults (key -> value).
+func tuned_values() -> Dictionary:
+	var values := {}
+	for p in PARAMS:
+		if not _is_default(p):
+			values[_key(p)] = _sliders[_key(p)].value
+	return values
+
+
+## Tuning values in a text: the lines of "Copy" ("Player/gravity = 30 (default
+## 43)") or a list like "Player gravity 30, floor_friction 76, CameraRig base_fov 61"
+## (a node name holds for the values after it). Unknown names are skipped.
+func parse_values(text: String) -> Dictionary:
+	var nodes := {}
+	for p in PARAMS:
+		if p[5] != CAVE_TAB:
+			nodes[p[0]] = p[0]
+			nodes[(p[0] as String).get_file()] = p[0]
+	var names: Array = nodes.keys()
+	# Longest first: "World/SpeedLines" before "World".
+	names.sort_custom(func(a: String, b: String) -> bool: return a.length() > b.length())
+	var entry := RegEx.create_from_string("^([a-z_]+(?::[a-z])?)\\s*[=:]?\\s*(-?\\d+(?:\\.\\d+)?)")
+	var values := {}
+	var node := ""
+	for token in text.replace(";", "\n").replace(",", "\n").split("\n"):
+		var rest := token.strip_edges()
+		for node_name: String in names:
+			if rest.begins_with(node_name + " ") or rest.begins_with(node_name + "/"):
+				node = nodes[node_name]
+				rest = rest.substr(node_name.length() + 1).strip_edges()
+				break
+		var found := entry.search(rest)
+		if found == null or node == "":
+			continue
+		var key := "%s/%s" % [node, found.get_string(1)]
+		if _sliders.has(key) and not key.begins_with("CaveEditor/"):
+			values[key] = found.get_string(2).to_float()
+	return values
+
+
+## Switches to another tuning set: the current values are kept in their
+## set, the other set's values come in (a new set copies the current ones).
+func switch_slot(slot: String) -> void:
+	if slot == _slot or slot not in SLOTS:
+		return
+	var cfg := ConfigFile.new()
+	cfg.load(PRESETS_PATH)
+	_store_slot(cfg, _slot)
+	if cfg.has_section_key("used", slot):
+		var values := {}
+		for key: String in _slot_keys(cfg, slot):
+			# A value tuned against an older default is dropped, as in _load().
+			if _defaults.has(key) and is_equal_approx(cfg.get_value("defaults_" + slot, key, INF), _defaults[key]):
+				values[key] = cfg.get_value("slot_" + slot, key)
+		apply_values(values)
+	_slot = slot
+	_store_slot(cfg, slot)
+	cfg.set_value("active", "slot", slot)
+	cfg.save(PRESETS_PATH)
+	_update_slots()
+
+
+func active_slot() -> String:
+	return _slot
+
+
+func _store_slot(cfg: ConfigFile, slot: String) -> void:
+	for section in ["slot_" + slot, "defaults_" + slot]:
+		if cfg.has_section(section):
+			cfg.erase_section(section)
+	var values := tuned_values()
+	for key: String in values:
+		cfg.set_value("slot_" + slot, key, values[key])
+		cfg.set_value("defaults_" + slot, key, _defaults[key])
+	cfg.set_value("used", slot, true)
+
+
+func _slot_keys(cfg: ConfigFile, slot: String) -> PackedStringArray:
+	return cfg.get_section_keys("slot_" + slot) if cfg.has_section("slot_" + slot) else PackedStringArray()
+
+
+func _update_slots() -> void:
+	for slot: String in _slot_buttons:
+		var button: Button = _slot_buttons[slot]
+		if slot == _slot:
+			button.add_theme_color_override("font_color", Color(0.91, 0.77, 0.28))
+			button.add_theme_color_override("font_hover_color", Color(0.91, 0.77, 0.28))
+		else:
+			button.remove_theme_color_override("font_color")
+			button.remove_theme_color_override("font_hover_color")
 
 
 # --- Persistence --------------------------------------------------------------
@@ -508,4 +646,8 @@ func _load() -> void:
 			if LEGACY_DEFAULTS.has(key) and is_equal_approx(value, LEGACY_DEFAULTS[key]):
 				continue
 			_sliders[key].value = value
+	var presets := ConfigFile.new()
+	if presets.load(PRESETS_PATH) == OK:
+		_slot = presets.get_value("active", "slot", "A")
+	_update_slots()
 	_update_toggle_text()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
@@ -39,6 +39,16 @@ material = SubResource("mat_ghost")
 radius = 0.4
 height = 1.6
 
+[sub_resource type="StandardMaterial3D" id="mat_rival"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.5, 0.2, 0.4)
+
+[sub_resource type="CapsuleMesh" id="mesh_rival"]
+material = SubResource("mat_rival")
+radius = 0.4
+height = 1.6
+
 [node name="Main" type="Node3D"]
 script = ExtResource("1_game")
 
@@ -56,6 +66,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.6, 0)
 [node name="Ghost" type="MeshInstance3D" parent="."]
 mesh = SubResource("mesh_ghost")
 script = ExtResource("7_ghost")
+
+[node name="Rival" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh_rival")
+script = ExtResource("7_ghost")
+record = false
 
 [node name="Effects" type="Node3D" parent="." node_paths=PackedStringArray("player")]
 script = ExtResource("8_effects")

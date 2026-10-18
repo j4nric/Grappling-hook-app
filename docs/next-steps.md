@@ -70,7 +70,8 @@ Größe: S = klein, M = mittel, L = groß.
       5,5 m endete der Zug hängend, man konnte um den Anker kreisen
       (Kegelpendel; der Bot blieb so hängen). Jetzt löst das Seil am kürzesten
       Punkt wie ein Zip (`rope_end_release`, Regler „Rope end release“).
-- [ ] **Tuning-Presets (M):** mehrere Wertesätze speichern und mit einem Tipp
+- [x] **Tuning-Presets (M):** (umgesetzt: Sätze A/B/C im TUNE-Panel, ein neuer Satz
+      startet als Kopie; „Paste“ liest kopierte Werte oder eine getippte Liste) mehrere Wertesätze speichern und mit einem Tipp
       wechseln (A/B-Vergleich), Werte als Code einfügen statt nur kopieren.
 - [x] **Tutorial an die neue Physik anpassen (S):** (umgesetzt: breitere, höhere
       Hallen bei gleichen Längen, damit die Hinweise an ihren Stellen bleiben) Hinweise und Abstände
@@ -78,12 +79,16 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 3. Speedrun und Motivation
 
-- [ ] **Medaillen aus echten Läufen (M):** Der Bot spielt anders als ein Mensch
+- [ ] ~~**Medaillen aus echten Läufen (M):**~~ (Entscheidung 4: nein, Medaillen bleiben aus Bot-Zeiten) Der Bot spielt anders als ein Mensch
       (keine Zeitlupe, keine Zielhilfe). Deine Bestzeiten als „Dev-Zeit“ und
       Referenz-Geist mitliefern; Medaillen daraus ableiten.
-- [ ] **Replay teilen (M):** Lauf als kurzer Text-Code, als Geist eines Freundes
+- [x] **Replay teilen (M):** (umgesetzt: Pause → „Share run“ kopiert die Bestzeit
+      als Code, ~1–2 KB; „Load run“ lädt das Level und zeigt den Lauf als orangen
+      Rivalen-Geist, Rivalen-Zeit im Pause-Menü und im Ziel; auch Daily/Random
+      Caves anderer Tage) Lauf als kurzer Text-Code, als Geist eines Freundes
       laden (ohne Server).
-- [ ] **Statistik-Verlauf (S):** Bestzeit pro Level über die Zeit als kleine Kurve.
+- [x] **Statistik-Verlauf (S):** (umgesetzt: Kurve der letzten 50 Zielzeiten je
+      Level im Stats-Bildschirm, Gold-Linie = Bestzeit bis dahin) Bestzeit pro Level über die Zeit als kleine Kurve.
 
 ## 4. Präsentation
 
