@@ -15,10 +15,13 @@ const SOUNDS := ["throw", "hook", "miss", "zip", "land", "lava", "checkpoint", "
 			_apply_volume()
 ## Wind gets loud from this speed (m/s).
 @export var wind_full_speed := 35.0
+## How fast the wind volume follows the speed (1/s).
+@export var wind_fade_speed := 4.0
 
 var _players := {}
 var _wind: AudioStreamPlayer
 var _checkpoint := Vector3.INF
+var _wind_level := 0.0
 
 
 func _ready() -> void:
@@ -67,14 +70,14 @@ func _on_level_loaded(level: Level) -> void:
 			play("checkpoint"))
 
 
-func _process(_delta: float) -> void:
-	var speed := player.velocity.length()
-	var loudness := clampf(speed / wind_full_speed, 0.0, 1.0)
-	if loudness > 0.05 and not _wind.playing:
+func _process(delta: float) -> void:
+	# The wind loop never stops (stopping and starting clicks); its volume
+	# glides with the speed instead.
+	if not _wind.playing:
 		_wind.play()
-	elif loudness <= 0.05 and _wind.playing:
-		_wind.stop()
-	_wind.volume_db = linear_to_db(maxf(volume * loudness * 0.6, 0.0001))
+	var target := clampf(player.velocity.length() / wind_full_speed, 0.0, 1.0)
+	_wind_level = lerpf(_wind_level, target, 1.0 - exp(-wind_fade_speed * delta))
+	_wind.volume_db = linear_to_db(maxf(volume * _wind_level * 0.6, 0.0001))
 
 
 func _apply_volume() -> void:

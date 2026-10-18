@@ -25,18 +25,18 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       Spitze 17 statt 53 m/s), das Seil flackert, es gibt keine Abklingzeit.
       → Seil-Übergabe, Wurf-Puffer (Wisch während der Haken fliegt wird
       gemerkt statt den Flug abzubrechen), kurze Sperre gegen Doppel-Wische.
-- [ ] **Tippen startet den Timer** (gemessen: nach einem Tipp läuft die Zeit,
+- [x] **Tippen startet den Timer** (gemessen: nach einem Tipp läuft die Zeit,
       ohne dass man sich bewegt). Nur ein Wurf soll den Lauf starten.
-- [ ] **Kurzer Wisch zählt als Tipp:** Unter 24 px (ca. 13 pt) und 0,25 s gilt ein
+- [x] **Kurzer Wisch zählt als Tipp:** (Tipp nur unter 20 px *und* 500 px/s; 0,15 s Tipp-Sperre nach dem Einhaken) Unter 24 px (ca. 13 pt) und 0,25 s gilt ein
       Wisch als Tipp und löst das Seil – mitten im Zug ärgerlich. Schwelle prüfen,
       Tippen während des Zugs evtl. erst nach 0,15 s zulassen.
-- [ ] **TUNE während des Zielens startet neu:** Ein zweiter Finger (z. B. auf
+- [x] **TUNE während des Zielens startet neu:** (zweiter Finger auf Buttons zählt nicht; Neustart = zwei Finger 0,3 s halten) Ein zweiter Finger (z. B. auf
       TUNE) macht aus dem Zielen einen Zwei-Finger-Tipp → Neustart. Zweiter
       Finger auf GUI darf nicht zählen; Neustart evtl. nur mit Halten (0,4 s).
 - [ ] **Stampfer drückt in den Boden:** Der vertikale Mover in Level 4 schiebt
       den Spieler 0,4 m in den Boden (Gefahr, durchzufallen). Zerquetschen soll
       wie Lava zum Checkpoint führen.
-- [ ] **Hintergrund/Tab-Wechsel:** Kommt die App zurück, kann ein riesiger
+- [x] **Hintergrund/Tab-Wechsel:** (Pause bei Fokusverlust, Timer-Schritt max. 0,1 s) Kommt die App zurück, kann ein riesiger
       Frame-Schritt den Timer springen lassen. Bei Fokusverlust pausieren,
       Delta begrenzen.
 - [ ] **Ruckeln bei 120 Hz und schwankender Bildrate:** Physik läuft mit 60 Hz,
@@ -46,14 +46,14 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 - [ ] **Zip-Launch in die Decke:** Wer nach oben zippt, prallt an die Decke und
       verliert den Großteil des Tempos (gemessen 38 → 24 m/s). Tempo entlang
       der Fläche umlenken statt vernichten.
-- [ ] **Tempo-Grenze:** Der Zip-Boost kommt nach der Begrenzung, kurz
+- [x] **Tempo-Grenze:** Der Zip-Boost kommt nach der Begrenzung, kurz
       53 statt 50 m/s. Vereinheitlichen.
-- [ ] **Wind-Sound knackt:** Der Wind wird beim Unterschreiten der Schwelle hart
+- [x] **Wind-Sound knackt:** Der Wind wird beim Unterschreiten der Schwelle hart
       gestoppt/gestartet. Ein- und ausblenden.
 - [ ] **Rekorde/Geister veralten:** Ändert sich ein Level im Generator, bleiben
       alte Bestzeiten und Geister (passen nicht mehr zur Geometrie). Rekorde an
       eine Level-Version koppeln.
-- [ ] **Kein Weg zurück ins Menü** außer über den Ziel-Bildschirm → Pause-Menü.
+- [x] **Kein Weg zurück ins Menü** außer über den Ziel-Bildschirm → Pause-Menü.
 
 ## 2. Die Höhle: groß, hoch, leer
 

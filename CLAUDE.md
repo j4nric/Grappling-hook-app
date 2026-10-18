@@ -62,6 +62,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/level.gd` | `Level`: Signale `finished`, `checkpoint_reached`, `killed`, Medaillenzeiten |
 | `scripts/levels.gd` | `Levels.LIST`: Level-Reihenfolge |
 | `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel) |
+| `scripts/pause_menu.gd` | Pause-Knopf und -Menü (Weiter/Neustart/Level), öffnet bei Fokusverlust |
 | `scripts/records.gd` | `Records`: Bestzeit pro Level, Medaille, Ghost-Daten in `user://` |
 | `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur |
 | `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo |

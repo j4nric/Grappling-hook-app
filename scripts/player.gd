@@ -78,6 +78,9 @@ const NO_HOOK_GROUP := "no_hook"
 ## No contact or zip release right after the hook sticks (s), so a throw from
 ## close to a wall still pulls.
 @export var contact_release_grace := 0.15
+## A tap right after the hook sticks (s) does not let go: it is almost always
+## an accidental touch at the end of the throw.
+@export var tap_release_lock := 0.15
 ## Let go when level geometry gets between player and anchor.
 @export var release_when_blocked := true
 
@@ -192,7 +195,7 @@ func _apply_floor_friction(delta: float) -> void:
 func _zip_launch() -> void:
 	var speed := velocity.length()
 	if speed > 0.001:
-		velocity += velocity / speed * zip_boost
+		velocity = (velocity + velocity / speed * zip_boost).limit_length(max_speed)
 	release("zip")
 
 
@@ -373,6 +376,8 @@ func _miss() -> void:
 ## Lets go of the rope. Signals only if a rope or hook was out.
 func release(reason := "tap") -> void:
 	if hook_state == HookState.IDLE:
+		return
+	if reason == "tap" and hook_state == HookState.ATTACHED and _attached_time < tap_release_lock:
 		return
 	_set_idle(reason != "throw" and reason != "reset")
 	rope_released.emit(reason)

@@ -8,7 +8,7 @@ extends Node
 ##   let go            -> throw the hook (throw_requested with the swipe vector
 ##                        and the flick velocity of the last FLICK_WINDOW)
 ##   tap               -> let go of the rope
-## Extra:   two-finger tap / R -> restart level, right click -> let go
+## Extra:   hold two fingers (RESTART_HOLD) / R -> restart, right click -> let go
 
 signal aim_changed(swipe: Vector2)
 signal aim_cancelled
@@ -16,9 +16,15 @@ signal throw_requested(swipe: Vector2, flick_velocity: Vector2)
 signal release_requested
 signal restart_requested
 
-## Below this distance (px) and duration (s) a touch counts as a tap.
-const TAP_MAX_DISTANCE := 24.0
+## Below this distance (px) and duration (s) a touch counts as a tap ...
+const TAP_MAX_DISTANCE := 20.0
 const TAP_MAX_DURATION := 0.25
+## ... unless the finger moved faster than this (px/s): a short quick flick is
+## a throw, not a tap.
+const TAP_MAX_FLICK := 500.0
+## Two fingers held this long (s) restart the level. A hold instead of a tap,
+## so a palm or a second finger on a button does not restart by accident.
+const RESTART_HOLD := 0.3
 ## The throw strength comes from the finger speed over this trailing window (s).
 const FLICK_WINDOW := 0.1
 ## Visible Controls in this group swallow touches and clicks (tuning panel).
@@ -37,6 +43,8 @@ var _touches := {}
 var _primary_touch := -1
 ## Set once a second finger touches; the gesture then only counts as restart.
 var _multi_touch := false
+## Clock time when the second finger came down, -1 if no restart is pending.
+var _restart_from := -1.0
 ## Unscaled frame clock (s). Frame time instead of wall time keeps slow motion
 ## out of the flick speed and makes headless tests with --fixed-fps exact.
 var _clock := 0.0
@@ -52,6 +60,9 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_clock += delta / maxf(Engine.time_scale, 0.001)
+	if _restart_from >= 0.0 and _touches.size() >= 2 and _now() - _restart_from >= RESTART_HOLD:
+		_restart_from = -1.0
+		restart_requested.emit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -89,19 +100,21 @@ func _handle_touch(event: InputEventScreenTouch) -> void:
 			_primary_touch = event.index
 			_multi_touch = false
 			_pointer_pressed(event.position)
-		else:
+		elif not _is_over_gui(event.position):
+			# A second finger on a button (TUNE, pause) is not a gesture.
 			_touches[event.index] = true
 			_multi_touch = true
+			_restart_from = _now()
 			_cancel_aim()
 		return
 
 	_touches.erase(event.index)
 	if _multi_touch:
 		_pointer_down = false
+		_restart_from = -1.0
 		if _touches.is_empty():
 			_multi_touch = false
 			_primary_touch = -1
-			restart_requested.emit()
 	elif event.index == _primary_touch:
 		_primary_touch = -1
 		_pointer_released(event.position)
@@ -136,13 +149,14 @@ func _pointer_released(pos: Vector2) -> void:
 	_pointer_down = false
 	_add_sample(pos)
 	var swipe := pos - _start_pos
-	if swipe.length() < TAP_MAX_DISTANCE:
+	var flick := _flick_velocity()
+	if swipe.length() < TAP_MAX_DISTANCE and flick.length() < TAP_MAX_FLICK:
 		_cancel_aim()
 		if _now() - _start_time < TAP_MAX_DURATION:
 			release_requested.emit()
 		return
 	_aiming = false
-	throw_requested.emit(swipe, _flick_velocity())
+	throw_requested.emit(swipe, flick)
 
 
 func _cancel_aim() -> void:
