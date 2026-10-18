@@ -7,6 +7,7 @@ signal level_chosen(index: int)
 const FONT_SIZE := 34
 
 var _list: VBoxContainer
+var _scroll: ScrollContainer
 var _panel: PanelContainer
 
 
@@ -31,9 +32,16 @@ func _ready() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 52)
 	root.add_child(title)
+	# Scrolls when the levels do not fit (small phones, landscape).
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(scroll)
+	_scroll = scroll
 	_list = VBoxContainer.new()
 	_list.add_theme_constant_override("separation", 16)
-	root.add_child(_list)
+	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(_list)
 	visible = false
 
 
@@ -49,7 +57,10 @@ func open(entries: Array) -> void:
 		button.custom_minimum_size = Vector2(0, 96)
 		button.add_theme_font_size_override("font_size", FONT_SIZE)
 		button.pressed.connect(_choose.bind(i))
+		# A drag on a button scrolls the list instead of being swallowed.
+		button.mouse_filter = Control.MOUSE_FILTER_PASS
 		_list.add_child(button)
+	_scroll.scroll_vertical = 0
 	visible = true
 	get_tree().paused = true
 

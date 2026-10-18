@@ -11,6 +11,12 @@ const GHOST_DIR := "user://"
 
 enum Medal { NONE, BRONZE, SILVER, GOLD }
 
+## Records of procedural caves kept (newest first); older ones are deleted
+## with their ghosts, so the save file does not grow forever.
+const KEEP_RANDOM := 20
+const KEEP_DAILY := 14
+const SECTIONS := ["best", "splits", "tuned", "played"]
+
 
 static func key(level_path: String) -> String:
 	# Procedural caves: one record per kind and seed ("daily_20261018").
@@ -47,6 +53,8 @@ static func submit(record_id: String, time: float, splits: Array = [], tuned := 
 	cfg.set_value("best", record_id, time)
 	cfg.set_value("splits", record_id, splits)
 	cfg.set_value("tuned", record_id, tuned)
+	cfg.set_value("played", record_id, Time.get_unix_time_from_system())
+	_prune(cfg, record_id)
 	cfg.save(PATH)
 	return true
 
@@ -86,6 +94,37 @@ static func load_ghost(record_id: String) -> PackedVector3Array:
 
 static func _ghost_path(record_id: String) -> String:
 	return GHOST_DIR + "ghost_%s.dat" % record_id.replace("@", "_")
+
+
+## Drops records of older versions of this level, and all but the newest
+## random and daily caves.
+static func _prune(cfg: ConfigFile, record_id: String) -> void:
+	if not cfg.has_section("best"):
+		return
+	var key := record_id.get_slice("@", 0)
+	var ids := cfg.get_section_keys("best")
+	for other in ids:
+		if other != record_id and other.get_slice("@", 0) == key:
+			_erase(cfg, other)
+	var limits := {"random_": KEEP_RANDOM, "daily_": KEEP_DAILY}
+	for prefix: String in limits:
+		var keep: int = limits[prefix]
+		var caves: Array[String] = []
+		for other in cfg.get_section_keys("best"):
+			if other.begins_with(prefix):
+				caves.append(other)
+		caves.sort_custom(func(a: String, b: String) -> bool:
+			return float(cfg.get_value("played", a, 0.0)) > float(cfg.get_value("played", b, 0.0)))
+		for i in range(keep, caves.size()):
+			_erase(cfg, caves[i])
+
+
+static func _erase(cfg: ConfigFile, record_id: String) -> void:
+	for section: String in SECTIONS:
+		if cfg.has_section_key(section, record_id):
+			cfg.erase_section_key(section, record_id)
+	if FileAccess.file_exists(_ghost_path(record_id)):
+		DirAccess.remove_absolute(_ghost_path(record_id))
 
 
 static func _value(section: String, record_id: String, default: Variant) -> Variant:

@@ -8,19 +8,21 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 
 ## 1. Bugs und Aufräumen
 
-- [ ] **Daily Cave hängt an der lokalen Zeitzone:** Der Seed kommt aus dem
+- [x] **Daily Cave hängt an der lokalen Zeitzone:** Der Seed kommt aus dem
       Systemdatum; um Mitternacht UTC sehen Spieler in verschiedenen Zonen
       verschiedene „Daily Caves“. → UTC-Datum.
-- [ ] **Level-Menü läuft über:** 8 Einträge (Tutorial, 5 Level, Daily, Random)
+- [x] **Level-Menü läuft über:** 8 Einträge (Tutorial, 5 Level, Daily, Random)
       à 96 px + Titel passen auf kleine Handys/Querformat nicht mehr. →
       scrollbare Liste.
-- [ ] **Rekord-Datei wächst ewig:** Jede Level-Version und jede Random Cave legt
+- [x] **Rekord-Datei wächst ewig:** Jede Level-Version und jede Random Cave legt
       Einträge und Geister-Dateien an, nichts wird gelöscht. → alte Versionen
-      und alte Random Caves aufräumen (nur die letzten N behalten).
-- [ ] **CLAUDE.md doppelt:** Dateiüberblick listet `levels.gd`, `level.gd` und
+      und alte Random Caves aufräumen (umgesetzt: alte Versionen sofort, Random
+      Caves nur die 20, Daily Caves die 14 zuletzt gespielten).
+- [x] **CLAUDE.md doppelt:** Dateiüberblick listet `levels.gd`, `level.gd` und
       `cave_generator.gd` zweimal, „Generierte Level“ stimmt nicht mehr.
-- [ ] **Fehlwurf beim Einstieg ins Menü:** Der Tipp, der im Level-Menü ein Level
-      wählt, darf nicht als Spiel-Tipp/Wurf weiterlaufen (prüfen und testen).
+- [x] **Fehlwurf beim Einstieg ins Menü:** Der Tipp, der im Level-Menü ein Level
+      wählt, darf nicht als Spiel-Tipp/Wurf weiterlaufen (geprüft: der Druck
+      fällt in die Pause des Menüs und wird verworfen; Test in `test_records`).
 
 ## 2. Leistung
 

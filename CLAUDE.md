@@ -75,11 +75,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `.github/workflows/test.yml` | Wiederverwendbarer Test-Job (von `ci.yml` und `pages.yml` genutzt) |
 | `tools/export_web.sh` | Web-Export mit Versionsstempel und eindeutigem Paketnamen (Cache-Busting) |
 | `scenes/main.tscn` | Hauptszene: Player + CameraRig + HUD + LevelMenu + Tuning; das Level lädt `game.gd` |
-| `scenes/levels/level_*.tscn` | Generierte Level (Start, Finish, Checkpoints, KillZones, Movers) |
+| `scenes/levels/level_*.tscn` | Level als Layout (`segments`, `layout_seed`, Medaillen, Tutorial-`hints`); gebaut von `CavernBuilder` |
 | `scripts/cave_generator.gd` | `CaveGenerator`: prozedurale Höhle aus einem Seed (faire Hallenfolge, Medaillen aus Zeitschätzung); „Daily Cave“ (Seed = Datum) und „Random Cave“ |
 | `scripts/levels.gd` | `Levels`: feste Level (`LIST`) plus prozedurale Pfade `cave://daily/<seed>`, `cave://random/<seed>`; `Levels.instantiate(path)` |
-| `scripts/level.gd` | `Level`: Signale `finished`, `checkpoint_reached`, `killed`, Medaillenzeiten |
-| `scripts/levels.gd` | `Levels.LIST`: Level-Reihenfolge |
 | `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel) |
 | `scripts/pause_menu.gd` | Pause-Knopf und -Menü (Medaillenziele, Weiter/Neustart/Level, Geist/Ton), öffnet bei Fokusverlust |
 | `scripts/records.gd` | `Records`: Bestzeit, Zwischenzeiten, TUNE*-Markierung und Ghost pro Level-Version (`Records.id()` = Schlüssel + Layout-Hash) in `user://` |
@@ -93,8 +91,6 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/ghost.gd` | Zeichnet den Lauf auf, spielt den besten Lauf als Geist ab, `time_at_z()` für das Geist-Delta im HUD |
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Checkpoints, Ziel aus `segments` |
-| `scripts/cave_generator.gd` | `CaveGenerator`: prozedurale Höhle aus einem Seed (faire Hallenfolge, Medaillen aus Zeitschätzung); „Daily Cave“ (Seed = Datum) und „Random Cave“ |
-| `scripts/levels.gd` | `Levels`: feste Level (`LIST`) plus prozedurale Pfade `cave://daily/<seed>`, `cave://random/<seed>`; `Levels.instantiate(path)` |
 | `scripts/level.gd` | `Level`: Name, Medaillen, `segments`, `layout_seed`, `kill_y`, `hints` (Tutorial-Hinweise nach Position); Signale `finished`, `checkpoint_reached`, `killed` |
 | `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil, Haken-Kugel und Ziellinie |
 | `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `aim_changed`, `aim_cancelled`, `throw_requested` (Swipe + Flick-Tempo), `release_requested`, `restart_requested` |
