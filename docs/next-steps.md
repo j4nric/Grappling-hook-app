@@ -1,140 +1,113 @@
-# Nächste Schritte
+# Nächste Schritte – Runde 2
 
-Stand: 2026-10-17, Build `e61bbcc`. Sortiert nach Priorität. Maßstab bleiben die
-drei Säulen aus `CLAUDE.md`: Schwunggefühl, ein Finger, Speedrun.
-Status-Häkchen setzen, wenn erledigt; Erledigtes wandert nach `roadmap.md`.
+Stand: 2026-10-18, Build `9adbab0`. Runde 1 (Zip-Launch, Level, Speedrun, Optik,
+Sound, CI) ist erledigt, siehe `roadmap.md` und PRs #1–#12.
 
-## Offene Entscheidungen (vor allem anderen klären)
+Fokus dieser Runde: **flüssiges, befriedigendes Spielgefühl** und eine Höhle,
+die **groß, hoch und leer** wirkt statt wie ein enger Gang.
+Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Build.
 
-- [x] **Level-Richtung im Hochformat:** → waagerecht (Entscheidung 2026-10-17). Der Tunnel läuft waagerecht (-Z), das
-      Bild ist hochkant und man wirft nach oben. Variante A: waagerechter
-      Tunnel bleibt, Kamera stärker von oben/hinten. Variante B: senkrechte
-      Höhle, man klettert nach oben (passt zu Hochformat und „Haken an die
-      Decke werfen“). Beeinflusst Kamera, Level-Bau und Wurf-Mapping.
-- [x] **Ende eines Zugs:** → Zip-Launch (Entscheidung 2026-10-17). Jetzt zieht das Seil bis an die Fläche und löst
-      sich bei Kontakt, der Aufprall frisst aber den Großteil des Tempos
-      (gemessen: 25 → 4 m/s). Alternative „Zip-Launch“: Seil löst sich kurz
-      vor dem Treffpunkt automatisch, man fliegt mit vollem Tempo weiter
-      (Spider-Man-Gefühl). Beides als Option bauen und am Handy vergleichen?
-- [x] **Swipe-Start:** → überall (Entscheidung 2026-10-17). Muss der Wisch auf dem Spieler beginnen (wie beim
-      Pokéball) oder überall (jetzt)? Überall ist toleranter, auf dem Spieler
-      ist eindeutiger.
-- [x] **Tippen = Seil lösen:** → bleibt vorerst (Entscheidung 2026-10-17). Mit Auto-Lösen bei Kontakt noch nötig? Ohne
-      Tippen-Geste gäbe es weniger Fehlbedienung.
+## Offene Entscheidungen
 
-## 1. Spielgefühl (höchste Priorität)
+- [ ] **Wurf während eines Zugs:** Seil-Übergabe (altes Seil hält, bis der neue
+      Haken greift – Spider-Man-Kette) oder wie jetzt sofort lösen?
+- [ ] **Höhlenmaßstab:** Vorschlag 40 m breit, 35 m hoch, Boden über weite
+      Strecken Abgrund. Größer/kleiner?
+- [ ] **Schwingen:** Kurze Pendelphase (Seil hält seine Länge ~0,3 s), bevor
+      das Einholen startet? Als Vorschau-Build A/B vergleichen.
+- [ ] **Rekorde mit verstellten Reglern (TUNE\*):** nicht speichern, oder
+      speichern und markieren?
 
-- [x] **Bodenreibung:** Landet man nach dem Lösen auf dem Boden, rutscht man
-      endlos weiter (keine Reibung). `floor_friction` als `@export` + Regler.
-- [x] **Tempo-Verlust beim Aufprall** verringern (Zip-Launch umgesetzt) (siehe Entscheidung oben):
-      z. B. Release-Abstand `auto_release_distance`, oder beim Kontakt den
-      Geschwindigkeitsanteil entlang der Fläche verstärken.
-- [x] **Zug-Kurve:** Statt konstantem `reel_speed` ein Zug, der anfangs
-      ruckartig startet und dann beschleunigt (Ease-In), plus Höchsttempo
-      des Zugs. Macht den Treffer spürbarer.
-- [x] **Seil durch Hindernisse:** (Lösen umgesetzt) Das Seil ist eine Linie ohne Kollision.
-      Wenn ein Hindernis zwischen Spieler und Anker kommt: Seil lösen (einfach)
-      oder um die Kante wickeln (aufwendig, später).
-- [x] **Flugbahn-Vorschau:** (gestrichelter Bogen für `aim_preview_speed` + Zielmarker) Die Ziellinie ist gerade, der Haken fliegt aber
-      im Bogen. Optionen: Bogen für ein „mittleres“ Wurftempo anzeigen, oder
-      Linie nur als Richtungspfeil (kurz) statt bis zur Wand.
-- [x] **Zielhilfe (optional):** (`aim_assist_angle`, Standard 0 = aus, Regler im TUNE) Leichtes Einrasten auf die nächste Wand-/
-      Deckenfläche in einem kleinen Kegel um die Wurfrichtung. Erst testen,
-      ob es nötig ist.
-- [x] **Fehlwurf-Feedback:** Fällt der Haken ins Leere, sichtbar einholen
-      (zurückfliegen) statt verschwinden.
-- [x] **Wurfstärke kalibrieren:** Im TUNE-Panel die Werte des letzten Wurfs
-      anzeigen (Fingertempo px/s, Hakentempo m/s). Damit lassen sich
-      `throw_speed_per_px`, `hook_min_speed`, `hook_max_speed` am echten Gerät
-      sauber einstellen.
-- [x] **Zeitlupe beim Zielen (Idee):** (`aim_time_scale`, Standard 1 = aus, Timer zählt Echtzeit) Solange der Finger zielt, läuft das
-      Spiel z. B. mit 30 % Tempo. Erleichtert Zielen im Flug; für Speedrun
-      ggf. abschaltbar.
+## 1. Bugs und Übersehenes (zuerst)
 
-## 2. Kamera
+- [ ] **Hook-Spam kostet Schwung:** Jeder neue Wurf löst das aktuelle Seil
+      sofort. Schnelles Nachwerfen bremst (2 s nach dem Start: 18 m statt 24 m,
+      Spitze 17 statt 53 m/s), das Seil flackert, es gibt keine Abklingzeit.
+      → Seil-Übergabe, Wurf-Puffer (Wisch während der Haken fliegt wird
+      gemerkt statt den Flug abzubrechen), kurze Sperre gegen Doppel-Wische.
+- [ ] **Tippen startet den Timer** (gemessen: nach einem Tipp läuft die Zeit,
+      ohne dass man sich bewegt). Nur ein Wurf soll den Lauf starten.
+- [ ] **Kurzer Wisch zählt als Tipp:** Unter 24 px (ca. 13 pt) und 0,25 s gilt ein
+      Wisch als Tipp und löst das Seil – mitten im Zug ärgerlich. Schwelle prüfen,
+      Tippen während des Zugs evtl. erst nach 0,15 s zulassen.
+- [ ] **TUNE während des Zielens startet neu:** Ein zweiter Finger (z. B. auf
+      TUNE) macht aus dem Zielen einen Zwei-Finger-Tipp → Neustart. Zweiter
+      Finger auf GUI darf nicht zählen; Neustart evtl. nur mit Halten (0,4 s).
+- [ ] **Stampfer drückt in den Boden:** Der vertikale Mover in Level 4 schiebt
+      den Spieler 0,4 m in den Boden (Gefahr, durchzufallen). Zerquetschen soll
+      wie Lava zum Checkpoint führen.
+- [ ] **Hintergrund/Tab-Wechsel:** Kommt die App zurück, kann ein riesiger
+      Frame-Schritt den Timer springen lassen. Bei Fokusverlust pausieren,
+      Delta begrenzen.
+- [ ] **Ruckeln bei 120 Hz und schwankender Bildrate:** Physik läuft mit 60 Hz,
+      Kamera und Seil werden in `_physics_process` bewegt, Physik-Interpolation
+      ist aus → sichtbares Ruckeln auf ProMotion-iPhones und bei Einbrüchen.
+      Physik-Interpolation einschalten, Kamera im Render-Frame glätten.
+- [ ] **Zip-Launch in die Decke:** Wer nach oben zippt, prallt an die Decke und
+      verliert den Großteil des Tempos (gemessen 38 → 24 m/s). Tempo entlang
+      der Fläche umlenken statt vernichten.
+- [ ] **Tempo-Grenze:** Der Zip-Boost kommt nach der Begrenzung, kurz
+      53 statt 50 m/s. Vereinheitlichen.
+- [ ] **Wind-Sound knackt:** Der Wind wird beim Unterschreiten der Schwelle hart
+      gestoppt/gestartet. Ein- und ausblenden.
+- [ ] **Rekorde/Geister veralten:** Ändert sich ein Level im Generator, bleiben
+      alte Bestzeiten und Geister (passen nicht mehr zur Geometrie). Rekorde an
+      eine Level-Version koppeln.
+- [ ] **Kein Weg zurück ins Menü** außer über den Ziel-Bildschirm → Pause-Menü.
 
-- [x] **Sichtfeld im Hochformat:** (horizontales FOV 65°, Blick etwas höher) Seitlich sieht man wenig. `base_fov`
-      höher setzen oder Kamera auf „Breite halten“ (`keep_aspect`) umstellen,
-      am Handy vergleichen.
-- [x] **Look-Ahead zum Haken:** Kamera schaut leicht Richtung Anker, solange
-      man gezogen wird.
-- [x] **Kamera-Roll** beim seitlichen Schwingen (aus M1).
-- [x] **Kurzer Kamera-Ruck / Screenshake** beim Einhaken und beim Aufprall.
+## 2. Die Höhle: groß, hoch, leer
 
-## 3. Steuerung und Bedienung
+- [ ] **Neuer Level-Baukasten „Kaverne“:** statt Kasten-Tunnel weite Hallen
+      (Richtwert 40 × 35 m) mit unregelmäßigen Wänden aus versetzten,
+      gedrehten Felsblöcken. Seed-basiert im Generator, damit Level
+      reproduzierbar bleiben.
+- [ ] **Leere als Gestaltungsmittel:** Boden größtenteils Abgrund (Nebel nach
+      unten, kein sichtbarer Grund), wenige, klare Haken-Ziele: Stalaktiten,
+      überhängende Felsnasen, frei hängende Felsinseln, Säulen aus der Tiefe.
+- [ ] **Maßstab spürbar machen:** Spieler klein im Bild (Kamera weiter weg,
+      höher), ferne Silhouetten, schwebender Staub, Lichtkegel von oben,
+      leuchtende Kristalle als Orientierung statt Fackel-Reihe.
+- [ ] **Licht und Tiefe:** Wenige große Lichtquellen + Nebel mit Höhenverlauf;
+      dunkle Tiefe unten, hellere Decke. Farbkontrast Nähe/Ferne.
+- [ ] **Physik an den Maßstab anpassen:** größere Reichweite
+      (`max_rope_length` ~70 m), schnellerer Haken, Wurfwinkel evtl. aus dem
+      Wischwinkel (steil/flach), Kamera-FOV und Abstand.
+- [ ] **Level 1–5 als Kavernen neu bauen**, Bot-Test anpassen (Abgrund statt
+      Lava, Medaillen neu).
+- [ ] **Performance prüfen:** mehr/größere Geometrie, Nebel; Ziel bleibt 60 fps.
 
-- [x] **Hinweistext ausblenden** nach dem ersten erfolgreichen Wurf; im Ziel
-      wieder einblenden.
-- [x] **Neustart nach dem Ziel:** Großer „Nochmal“-Hinweis statt nur
-      Zwei-Finger-Tipp.
-- [x] **Tuning-Werte teilen:** (Button „Copy“, im Browser getestet) Button „Werte kopieren“ im TUNE-Panel (Text in
-      die Zwischenablage), damit getunte Werte ohne Screenshot zu mir kommen.
-      Prüfen, ob iOS Safari das aus Godot heraus erlaubt; sonst Werte als
-      Text im Panel anzeigen.
-- [x] **Safe Area prüfen:** (Statusleiste jetzt `black`, HUD mit Mindestabständen bzw. OS-Safe-Area) Als Home-Bildschirm-App (`black-translucent`)
-      liegt der Inhalt unter Uhr/Dynamic Island. Timer und TUNE ggf. nach
-      unten versetzen bzw. `DisplayServer.get_display_safe_area()` nutzen.
+## 3. Spielgefühl: flüssig und befriedigend
 
-## 4. Level und Speedrun
+- [ ] **Seil-Übergabe / Kettenwürfe** (siehe Entscheidung): der Moment, in dem
+      der neue Haken greift und das alte Seil loslässt, ist der Kern des Flows.
+- [ ] **Treffer-Gefühl:** Hit-Stop (40–60 ms Mini-Freeze) beim Einhaken,
+      kurzer FOV-Kick beim Zip-Launch, Seil spannt sich sichtbar (zittert kurz).
+- [ ] **Tempo sichtbar machen:** Speed-Lines am Bildrand ab hohem Tempo,
+      Wind-Partikel, stärkerer Tempo-Sound (Tonhöhe).
+- [ ] **Schwingen** (siehe Entscheidung): Pendelphase vor dem Einholen,
+      damit es nicht nur geradlinige Zips gibt.
+- [ ] **Landungen erhalten Schwung:** Rollen/Rutschen statt harter Bremsung;
+      Wand-Abprall (Wall-Kick) beim Auftreffen mit Tempo.
+- [ ] **Flow-Anzeige:** Kette von Treffern ohne Bodenberührung zählen
+      (z. B. „x5“), dezent im HUD – belohnt flüssiges Spielen.
+- [ ] **Zielhilfe für Stalaktiten** in der großen Höhle (jetzt aus) testen.
+- [ ] **Musik:** dezente Loop, die mit dem Tempo intensiver wird.
 
-- [x] **Testlevel fürs Hochformat umbauen** (Tunnel jetzt 14 m hoch) (abhängig von der
-      Level-Richtungs-Entscheidung).
-- [x] **Bestzeit dauerhaft speichern** (`user://`, IndexedDB im Browser).
-- [x] **Medaillen-Zeiten** (Bronze/Silber/Gold) pro Level, Anzeige im Ziel.
-- [x] **Countdown bzw. Startsignal** („GO!“ beim ersten Wurf, der Timer startet genau dann) und klarer Start-Moment für den Timer.
-- [x] **Neue Level-Bausteine:** (Eis = `no_hook`, Movers, Lava, Abkürzung in Level 5) nicht greifbare Flächen (z. B. Eis, anders
-      gefärbt), bewegliche Hindernisse, Abgründe/Lava als Reset-Zonen,
-      Abkürzungen für Speedrunner.
-- [x] **Checkpoints** für längere Level.
-- [x] **3–5 Level + Level-Auswahl** (M4): 5 Level.
-- [x] **Ghost der Bestzeit** (M6).
+## 4. Speedrun
 
-## 5. Optik und Lesbarkeit
+- [ ] **Zwischenzeiten:** an Checkpoints „−0,4 s“/„+1,2 s“ gegenüber der
+      Bestzeit (grün/rot) – stärkster Antrieb für Wiederholungen.
+- [ ] **Geist-Delta** im HUD (Abstand zum Geist in Metern/Sekunden).
+- [ ] **Sofort-Neustart** ohne Ladezeit und mit einem Griff (siehe Bug zum
+      Zwei-Finger-Tipp).
 
-- [x] **Licht:** (Fackeln alle 24 m, Lava-Licht, helleres Umgebungslicht, Risse im Boden) Die Höhle ist zu dunkel, Wände sind schwer zu erkennen.
-      Fackeln/Kristalle als Punktlichter, Umgebungslicht anheben, Nebel
-      anpassen. Wichtig fürs Zielen, deshalb früh angehen.
-- [x] **Greifbare Flächen erkennbar machen** (Eis blau leuchtend) (Farbe/Textur), sobald es
-      nicht greifbare Flächen gibt.
-- [x] **Pixel-Look feinjustieren:** (war bilinear → jetzt SubViewport mit Nearest, `stretch_shrink` 2) prüfen, ob das Hochskalieren im Web
-      unscharf (bilinear) oder pixelig (nearest) ist; ggf. SubViewport mit
-      Nearest-Filter.
-- [x] **Einfaches Spielermodell, Haken-Modell, Seil mit Textur.** (Seil als dünne Röhre)
-- [x] **Partikel:** Funken beim Einhaken, Staub beim Aufprall, Speed-Trail.
+## 5. Technik
 
-## 6. Sound (M6)
+- [ ] **Bildrate auf dem iPhone messen** (Debug-Anzeige in TUNE → Misc).
+- [ ] **Bot-Test erweitern:** prüft auch Spam-Verhalten, Timer-Start und
+      Zerquetschen (Regressionen der Bugs oben).
+- [ ] **Onboarding-Level:** kurzer Tutorial-Abschnitt (Werfen, Zip, Eis).
 
-- [x] Wurf, Einhaken, Seil-Zug, Aufprall, Wind abhängig vom Tempo. (synthetisiert: `tools/gen_sounds.py`)
-- [x] iOS: Audio startet erst nach der ersten Berührung (Browser-Regel),
-      beim ersten Touch aktivieren. (Godot setzt den AudioContext bei Eingaben fort)
+## Später
 
-## 7. Technik und Arbeitsablauf
-
-- [x] **Debug-Anzeige** (im TUNE-Panel ein-/ausschaltbar, Tab Misc → `shown`): FPS, Tempo,
-      Zustand des Hakens, letztes Fingertempo.
-- [x] **Performance am Gerät messen:** Ziel 60 fps auf dem iPhone. Werkzeuge
-      da: FPS in der Debug-Anzeige; Auto-Qualität vergröbert die Pixel
-      (`stretch_shrink`), wenn die Bildrate 3 s unter `min_fps` liegt; Schatten aus.
-      **Offen:** echte Messung auf deinem iPhone (Debug-Anzeige einschalten).
-- [x] **Ladezeit:** (eigener Ladebildschirm mit Splash und Fortschrittsbalken;
-      geprüft: Pages liefert `index.wasm` gzip-komprimiert aus, ~10 MB statt 39 MB) Die Engine (`index.wasm`) ist ~39 MB (komprimiert ca.
-      10 MB). Eigener Ladebildschirm mit Fortschritt; prüfen, ob GitHub Pages
-      komprimiert ausliefert.
-- [x] **Automatische Tests in CI:** Die Headless-Simulationen (Wurf trifft
-      Decke, Flick-Messung bei 60 fps, Tuning speichern/laden) ins Repo
-      (`tests/`) und vor dem Deploy laufen lassen. Ein kaputter Build kommt
-      dann nicht mehr aufs Handy.
-- [x] **Vorschau-Builds für Branches:** Experimente (z. B. Zip-Launch vs.
-      Aufprall) parallel unter eigener URL testen, ohne `main` zu ändern.
-- [x] **Godot-Version** bei Updates an drei Stellen gleich halten
-      (`pages.yml`, `ci.yml`, `CLAUDE.md`, README) – CI prüft das.
-
-## 8. Später: iOS-App (M5)
-
-- [ ] Export nach `docs/ios-export.md` (braucht Mac + Xcode). Vorbereitet:
-      iOS-Export-Preset in `export_presets.cfg` (Bundle-ID und Team-ID noch
-      eintragen).
-- [x] Haptisches Feedback beim Einhaken (`Input.vibrate_handheld`; nativ und
-      in Android-Browsern, iOS Safari hat keine Vibration).
-- [ ] TestFlight, Game Center (Bestenliste). Braucht Apple-Developer-Account
-      und Mac – nicht aus der Cloud-Umgebung machbar.
+- [ ] iOS-App, TestFlight, Game Center (braucht Mac + Apple-Developer-Account).

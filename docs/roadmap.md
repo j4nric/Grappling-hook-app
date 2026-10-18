@@ -1,6 +1,8 @@
 # Roadmap
 
-Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md`.
+Detaillierte, priorisierte Aufgabenliste: `docs/next-steps.md` (Runde 2).
+Runde 1 (2026-10-17, PRs #1–#12): Tests/CI, Vorschau-Builds, Zip-Launch, Wurf-Feedback,
+Kamera, HUD, 5 Level, Speedrun, Optik, Sound, Debug/Auto-Qualität.
 
 ## M0 – Grauer Tunnel (erledigt mit diesem Gerüst)
 - [x] Projekt, Autoload, Hauptszene
