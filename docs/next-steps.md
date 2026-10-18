@@ -65,12 +65,17 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 4. Darstellung: lebendige Höhle
 
-- [ ] **Wasserfälle (M):** fließender Shader an Wänden, Gischt-Partikel am Fuß,
+- [x] **Wasserfälle (M):** (umgesetzt: in knapp der Hälfte der Hallen ohne Lava
+      und Deckenöffnung, `shaders/waterfall.gdshader`, Nebel am Fuß,
+      `amb_water`) fließender Shader an Wänden, Gischt-Partikel am Fuß,
       Rauschen als 3D-Geräusch (`tools/gen_sounds.py`), Deko mit eigenem Zufall.
-- [ ] **Teilchen in der Luft (S):** Staub und Glühwürmchen um die Kamera, je Halle
+- [x] **Teilchen in der Luft (S):** (umgesetzt: `Effects.air_for()`; dazu Pollen
+      unter offener Decke) Staub und Glühwürmchen um die Kamera, je Halle
       anders (Lava: Glut, Eis: Schneeflocken, dunkle Halle: Glühwürmchen).
-- [ ] **Lava, die fließt (M):** Lava-Shader mit Strömung und Pulsieren, Glutblasen.
-- [ ] **Ausgang ins Tageslicht (S):** das Ziel als Höhlenausgang – helles Licht,
+- [x] **Lava, die fließt (M):** (umgesetzt: unterteilte Fläche mit langsamer
+      Dünung im Shader, pulsierendes Glühen, aufsteigende Glut) Lava-Shader mit Strömung und Pulsieren, Glutblasen.
+- [x] **Ausgang ins Tageslicht (S):** (umgesetzt: Bogen mit Himmel-Shader hinter
+      dem Ziel, Lichtstrahlen, warmes Licht) das Ziel als Höhlenausgang – helles Licht,
       Lichtstrahlen, Himmel; die Ziel-Kamerafahrt zeigt ihn.
 
 ## 5. Motivation und Fortschritt

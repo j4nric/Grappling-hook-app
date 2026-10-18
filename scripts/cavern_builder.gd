@@ -42,7 +42,13 @@ const SOUNDS := {
 	"updraft": preload("res://assets/sounds/amb_updraft.wav"),
 	"crystal": preload("res://assets/sounds/amb_crystal.wav"),
 	"drip": preload("res://assets/sounds/drip.wav"),
+	"water": preload("res://assets/sounds/amb_water.wav"),
 }
+const WATERFALL_SHADER := preload("res://shaders/waterfall.gdshader")
+const SKY_SHADER := preload("res://shaders/sky.gdshader")
+const NOISE_TEXTURE := preload("res://assets/textures/lava_noise.png")
+## Chance that a hall (not lava, not open) has a waterfall down a wall.
+const WATERFALL_CHANCE := 0.45
 ## Water drips per hall, falling from the ceiling.
 const DRIPS_PER_HALL := 2
 const NO_HOOK_GROUP := "no_hook"
@@ -657,13 +663,47 @@ func _gate(seg: Dictionary, z: float) -> void:
 func _lava(seg: Dictionary, z0: float, z1: float) -> void:
 	var length := z0 - z1
 	var mid := (z0 + z1) / 2.0
+	# A subdivided plane: the shader swells it slowly.
 	var mesh := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(float(seg.width) + 10.0, 1.0, length + 1.0)
-	box.material = MATERIALS.lava
-	mesh.mesh = box
-	mesh.position = Vector3(0, LAVA_Y, mid)
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(float(seg.width) + 10.0, length + 1.0)
+	plane.subdivide_width = int(plane.size.x / 4.0)
+	plane.subdivide_depth = int(plane.size.y / 4.0)
+	plane.material = MATERIALS.lava
+	mesh.mesh = plane
+	mesh.position = Vector3(0, LAVA_Y + 0.5, mid)
 	_add(mesh, "Geometry/Lava%d" % _hall)
+	# Embers rising from the lava.
+	var embers := CPUParticles3D.new()
+	embers.amount = 36
+	embers.lifetime = 4.0
+	embers.preprocess = 4.0
+	embers.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	embers.emission_box_extents = Vector3(float(seg.width) / 2.0, 0.5, length / 2.0)
+	embers.direction = Vector3.UP
+	embers.spread = 25.0
+	embers.gravity = Vector3(0, 1.5, 0)
+	embers.initial_velocity_min = 1.5
+	embers.initial_velocity_max = 4.0
+	embers.scale_amount_min = 0.6
+	embers.scale_amount_max = 1.4
+	var fade := Gradient.new()
+	fade.set_color(0, Color(1.0, 0.8, 0.3, 1.0))
+	fade.set_color(1, Color(1.0, 0.2, 0.05, 0.0))
+	embers.color_ramp = fade
+	var ember_material := StandardMaterial3D.new()
+	ember_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ember_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ember_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	ember_material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	ember_material.vertex_color_use_as_albedo = true
+	var ember := QuadMesh.new()
+	ember.size = Vector2(0.35, 0.35)
+	ember.material = ember_material
+	embers.mesh = ember
+	embers.position = Vector3(0, LAVA_Y + 1.0, mid)
+	_limit_range(embers, PROP_VISIBLE_RANGE)
+	_add(embers, "Props/Embers")
 	var area := Area3D.new()
 	var shape := CollisionShape3D.new()
 	var bshape := BoxShape3D.new()
@@ -711,6 +751,8 @@ func _finish(seg: Dictionary, z: float) -> void:
 	_ledge(Vector3(0, LEDGE_Y, z - 6.0), Vector3(14.0, 4.0, 16.0))
 	_box("rock_dark", Vector3(0, (DEPTH_Y + float(seg.ceiling)) / 2.0, z - 17.0),
 			Vector3(float(seg.width) + 20.0, float(seg.ceiling) - DEPTH_Y + 20.0, 6.0), Vector3.ZERO)
+	# Just in front of the back wall (its face is at z - 14).
+	_daylight(seg, z - 13.4)
 	var area := Area3D.new()
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
@@ -732,6 +774,50 @@ func _finish(seg: Dictionary, z: float) -> void:
 	light.omni_range = 20.0
 	light.position = Vector3(0, LEDGE_Y + 6.0, z + 2.0)
 	marker.add_child(light)
+
+
+## The way out: daylight through an arch in the back wall behind the finish
+## (a sky shader on a quad, a warm light pouring in, beams of light).
+func _daylight(seg: Dictionary, z: float) -> void:
+	var c: float = seg.ceiling
+	var arch := Vector2(minf(float(seg.width) * 0.45, 26.0), minf(c - 4.0, 24.0))
+	var sky_material := ShaderMaterial.new()
+	sky_material.shader = SKY_SHADER
+	sky_material.set_shader_parameter("noise", NOISE_TEXTURE)
+	var quad := QuadMesh.new()
+	quad.size = arch
+	quad.material = sky_material
+	var sky := MeshInstance3D.new()
+	sky.name = "Sky"
+	sky.mesh = quad
+	sky.position = Vector3(0, LEDGE_Y + 2.0 + arch.y / 2.0, z)
+	var exit := Node3D.new()
+	exit.add_child(sky)
+	# Beams falling in through the opening.
+	for i in 3:
+		var beam := MeshInstance3D.new()
+		var beam_mesh := QuadMesh.new()
+		beam_mesh.size = Vector2(arch.x * 0.25, 30.0)
+		var beam_material := StandardMaterial3D.new()
+		beam_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		beam_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		beam_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		beam_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+		beam_material.albedo_texture = preload("res://assets/textures/light_shaft.png")
+		beam_material.albedo_color = Color(1.0, 0.92, 0.7, 0.35)
+		beam_mesh.material = beam_material
+		beam.mesh = beam_mesh
+		beam.position = Vector3((i - 1) * arch.x * 0.3, LEDGE_Y + arch.y * 0.6, z + 12.0)
+		beam.basis = Basis(Vector3.RIGHT, -0.9)
+		exit.add_child(beam)
+	var light := OmniLight3D.new()
+	light.light_color = Color(1.0, 0.9, 0.7)
+	light.light_energy = 4.0
+	light.omni_range = 45.0
+	light.position = Vector3(0, LEDGE_Y + arch.y * 0.6, z + 6.0)
+	_limit_range(exit, HALL_VISIBLE_RANGE)
+	_add(exit, "Props/Daylight")
+	_add(light, "Lights/Daylight")
 
 
 # --- Pieces ----------------------------------------------------------------------
@@ -842,6 +928,8 @@ func _decorate(seg: Dictionary, z0: float, z1: float) -> void:
 				_crystal(Vector3(side * w * 0.12, c + 0.6, z), Vector3.DOWN, 2.2, rng)
 				side = -side
 				z -= 26.0
+	if not seg.open and seg.floor != "lava":
+		_waterfall(seg, z0, z1)
 	# The way on: an amber beacon at the exit of the hall.
 	var beacon_y := c - 1.0 if not seg.open else (float(seg.floater_height) if float(seg.floater_height) >= 0.0 else c - 4.0) + 7.0
 	_beacon(Vector3(0, beacon_y, z1 + 3.0), seg.open)
@@ -852,6 +940,68 @@ func _decorate(seg: Dictionary, z0: float, z1: float) -> void:
 			var size := rng.randf_range(0.8, 2.2)
 			var at := Vector3(rng.randf_range(-w / 2.0 + 2.0, w / 2.0 - 2.0), LEDGE_Y - size * 0.25, rng.randf_range(z1 + 2.0, z0 - 2.0))
 			_model("boulder", "rock", Transform3D(Basis(Vector3.UP, rng.randf_range(0, TAU)).scaled_local(Vector3(size, size * 0.7, size)), at))
+
+
+## Now and then a waterfall pours down a wall from the ceiling into the depth
+## (or onto the floor, with mist): a scrolling shader on a quad, no collision,
+## and its rushing sound. Own random numbers.
+func _waterfall(seg: Dictionary, z0: float, z1: float) -> void:
+	var rng := _deco_rng(61)
+	if rng.randf() > WATERFALL_CHANCE:
+		return
+	var w: float = seg.width
+	var c: float = seg.ceiling
+	var side := -1.0 if rng.randf() < 0.5 else 1.0
+	var z := rng.randf_range(z1 + (z0 - z1) * 0.25, z0 - (z0 - z1) * 0.25)
+	var width := rng.randf_range(7.0, 11.0)
+	var bottom := LEDGE_Y if seg.floor == "ground" else DEPTH_Y + 20.0
+	var height := c - bottom
+	var material := ShaderMaterial.new()
+	material.shader = WATERFALL_SHADER
+	material.set_shader_parameter("noise", NOISE_TEXTURE)
+	material.set_shader_parameter("height", height)
+	material.set_shader_parameter("speed", rng.randf_range(0.7, 1.1))
+	var sheet := QuadMesh.new()
+	sheet.size = Vector2(width, height)
+	sheet.material = material
+	var fall := MeshInstance3D.new()
+	fall.mesh = sheet
+	# Facing into the hall, a little off the rough wall.
+	fall.basis = Basis(Vector3.UP, -side * PI / 2.0)
+	fall.position = Vector3(side * (w / 2.0 - 1.2), (c + bottom) / 2.0, z)
+	_limit_range(fall, HALL_VISIBLE_RANGE)
+	_add(fall, "Props/Waterfall")
+	var mist := CPUParticles3D.new()
+	mist.amount = 24
+	mist.lifetime = 2.5
+	mist.preprocess = 2.5
+	mist.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	mist.emission_box_extents = Vector3(1.0, 0.5, width / 2.0)
+	mist.direction = Vector3(-side, 0.6, 0)
+	mist.spread = 35.0
+	mist.gravity = Vector3(0, 0.4, 0)
+	mist.initial_velocity_min = 1.0
+	mist.initial_velocity_max = 3.0
+	mist.scale_amount_min = 2.0
+	mist.scale_amount_max = 4.0
+	var fade := Gradient.new()
+	fade.set_color(0, Color(0.85, 0.92, 1.0, 0.35))
+	fade.set_color(1, Color(0.85, 0.92, 1.0, 0.0))
+	mist.color_ramp = fade
+	var mist_material := StandardMaterial3D.new()
+	mist_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mist_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mist_material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	mist_material.vertex_color_use_as_albedo = true
+	mist_material.albedo_texture = preload("res://assets/textures/dust.png")
+	var puff := QuadMesh.new()
+	puff.size = Vector2(1.0, 1.0)
+	puff.material = mist_material
+	mist.mesh = puff
+	mist.position = Vector3(side * (w / 2.0 - 2.0), bottom + 1.0, z)
+	_limit_range(mist, PROP_VISIBLE_RANGE)
+	_add(mist, "Props/Mist")
+	_ambient("water", Vector3(side * (w / 2.0 - 2.0), c * 0.5, z), 55.0, -3.0)
 
 
 ## Random numbers for decoration only: seeded from the cave and the hall, so

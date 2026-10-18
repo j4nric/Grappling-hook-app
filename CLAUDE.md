@@ -125,7 +125,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/sparkline.gd` | `Sparkline`: Kurve der Zielzeiten eines Levels (Statistik), Gold = Bestzeit bis dahin |
 | `scripts/records.gd` | `Records`: Bestzeit, Zwischenzeiten, TUNE*-Markierung und Ghost pro Level-Version (`Records.id()` = Schlüssel + Layout-Hash) in `user://` |
 | `scripts/settings.gd` | `Settings`: Geist und Ton an/aus (Pause-Menü), in `user://settings.cfg` |
-| `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur |
+| `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur; Teilchen in der Luft je Halle (`air_for()`: Staub, Glut, Schnee, Glühwürmchen, Pollen) |
 | `scripts/music.gd` | Musik: drei synchrone Spuren (`AudioStreamSynchronized`), Puls und Arpeggio nach Tempo und Flow; Spuren von `tools/gen_music.py` (QOA-komprimiert, nahtlos) |
 | `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo; Bus „Cave“ mit Reverb nach Größe der Halle (`Level.hall_at()`) |
 | `assets/sounds/*.wav` | Synthetisierte Sounds mit eingebackenem Höhlen-Hall, erzeugt von `tools/gen_sounds.py` (numpy); `amb_*` sind Schleifen |
@@ -155,6 +155,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/safe_area.gd` | `SafeArea.margins()`: Ränder für Notch/Home-Indikator in Viewport-Einheiten |
 | `tools/gen_textures.py` | Malt die Texturen (`assets/textures/`) und schreibt die Materialbibliothek (`assets/materials/`) |
 | `scenes/props/` | Wiederverwendbare Deko: Lichtkegel, leuchtender Kristall |
+| `shaders/` | `lava` (Strömung, Dünung, Pulsieren), `waterfall` (Wasserfälle an Wänden, Deko ohne Kollision), `sky` (Tageslicht im Ausgang hinter dem Ziel), `speed_lines` |
 | `scripts/flicker.gd` | Flackerndes Licht (Fackeln, Lava); `fade` setzt `LightLod` |
 | `scripts/light_lod.gd` | `LightLod`: nur die nächsten `max_lights` Lichter an (Compatibility-Renderer: max. 8 pro Objekt), weich ein-/ausblenden |
 | `scripts/time_scale.gd` | `TimeScale`: Zeitlupe beim Zielen und Hit-Stop teilen sich `Engine.time_scale` |

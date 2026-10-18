@@ -230,6 +230,13 @@ def main():
     drip = np.sin(2 * np.pi * np.cumsum(f) / RATE) * np.exp(-tt * 22)
     save("drip", drip, 0.5, room=0.6)
 
+    # Water: a waterfall's steady rush with a slow surge (seamless loop).
+    d = 4.3
+    n = len(t(d))
+    roar = lowpass(amb.uniform(-1, 1, n), 1800) * 0.7 + lowpass(amb.uniform(-1, 1, n), 300) * 1.6
+    roar *= 0.8 + 0.2 * np.sin(2 * np.pi * 0.47 * t(d))
+    save_loop("amb_water", roar, 0.55)
+
 
 if __name__ == "__main__":
     main()
