@@ -102,7 +102,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `aim_changed`, `aim_cancelled`, `throw_requested` (Swipe + Flick-Tempo), `release_requested`, `restart_requested` |
 | `scripts/player.gd` | Schwerkraft, Hakenwurf (Flugbahn), Seilzug als Geschwindigkeit, Ziel-Vorschau |
 | `scripts/grapple_rope.gd` | Zeichnet eine Linie (Seil, Ziellinie) per ImmediateMesh |
-| `scripts/camera_rig.gd` | Verfolgerkamera: Lag, Look-Ahead (beim Zug Richtung Anker), Tempo-FOV (horizontal), Roll, Shake bei `hook_attached`/`landed` |
+| `scripts/camera_rig.gd` | Verfolgerkamera: Lag, Look-Ahead (beim Zug Richtung Anker), Tempo-FOV (horizontal), Roll, Shake, Wand-Kollision; unter der Decke tiefer und nach oben blickend (`ceiling_near`), Ziel-Umkreisung (`start_orbit`) |
 | `scripts/game.gd` | Level laden, Timer, Ziel, Checkpoints (Lava/Absturz → letzter Checkpoint, Timer läuft weiter), Neustart, HUD |
 | `scripts/safe_area.gd` | `SafeArea.margins()`: Ränder für Notch/Home-Indikator in Viewport-Einheiten |
 | `tools/gen_textures.py` | Malt die Texturen (`assets/textures/`) und schreibt die Materialbibliothek (`assets/materials/`) |
@@ -176,8 +176,8 @@ frontale Crashs nicht. Boden + bewegtes Hindernis von oben = `crushed` → Check
 `deflected(impact_speed)`, `crushed`.
 
 **Zeit:** `Engine.time_scale` nie direkt setzen, sondern über `TimeScale`
-(`scripts/time_scale.gd`): Zielen-Zeitlupe (`set_aim`) und Hit-Stop (`hit_stop`)
-multiplizieren sich. Der Lauf-Timer zählt beim Zielen Echtzeit, beim Hit-Stop
+(`scripts/time_scale.gd`): Zielen-Zeitlupe (`set_aim`), Hit-Stop (`hit_stop`) und
+Zeitlupe der Ziel-Einstellung (`set_cinema`) multiplizieren sich. Der Lauf-Timer zählt beim Zielen Echtzeit, beim Hit-Stop
 Spielzeit (`TimeScale.timer_delta()`); `game.gd` ruft `TimeScale.update()`.
 
 **Juice:** `effects.gd` (Funken, Staub, Hit-Stop, Wind-Streifen), `camera_rig.gd`

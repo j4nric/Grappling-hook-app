@@ -1,12 +1,15 @@
 class_name TimeScale
 extends RefCounted
-## Engine.time_scale has two users: slow motion while aiming and the hit-stop
-## when a hook bites. Both go through here so neither undoes the other.
+## Engine.time_scale has three users: slow motion while aiming, the hit-stop
+## when a hook bites and the slow motion of the finish shot. All go through
+## here so none undoes another.
 ## The run timer counts game time without the hit-stop (a juice effect must
 ## not cost the player time) but with real time during aim slow motion.
 
 static var _aim := 1.0
 static var _stop := 1.0
+## Slow motion for a shot (the finish), separate from the run timer.
+static var _cinema := 1.0
 ## Real seconds the hit-stop still lasts.
 static var _stop_left := 0.0
 ## Scales in effect for the current frame's delta. Godot computes a frame's
@@ -18,6 +21,12 @@ static var _frame_aim := 1.0
 
 static func set_aim(scale: float) -> void:
 	_aim = scale
+	_apply()
+
+
+## Slow motion of a camera shot (1 = off). The run timer is stopped by then.
+static func set_cinema(scale: float) -> void:
+	_cinema = scale
 	_apply()
 
 
@@ -51,6 +60,7 @@ static func is_hit_stopped() -> bool:
 static func reset() -> void:
 	_aim = 1.0
 	_stop = 1.0
+	_cinema = 1.0
 	_stop_left = 0.0
 	_apply()
 	_frame_scale = Engine.time_scale
@@ -64,4 +74,4 @@ static func timer_delta(delta: float) -> float:
 
 
 static func _apply() -> void:
-	Engine.time_scale = _aim * _stop
+	Engine.time_scale = _aim * _stop * _cinema
