@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/sfx.gd" id="9_sfx"]
 [ext_resource type="Script" path="res://scripts/debug_overlay.gd" id="10_debug"]
 [ext_resource type="Script" path="res://scripts/pause_menu.gd" id="11_pause"]
+[ext_resource type="Script" path="res://scripts/speed_lines.gd" id="12_lines"]
 
 [sub_resource type="Environment" id="env"]
 background_mode = 1
@@ -87,6 +88,17 @@ render_target_update_mode = 4
 
 [node name="ViewCamera" type="Camera3D" parent="World/PixelView/SubViewport"]
 current = true
+
+[node name="SpeedLines" type="ColorRect" parent="World" node_paths=PackedStringArray("player", "pixel_view")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("12_lines")
+player = NodePath("../../Player")
+pixel_view = NodePath("../PixelView")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
@@ -172,6 +184,25 @@ theme_override_font_sizes/font_size = 88
 text = "GO!"
 horizontal_alignment = 1
 
+[node name="FlowLabel" type="Label" parent="HUD/Safe"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_top = 70.0
+offset_right = 120.0
+offset_bottom = 130.0
+grow_horizontal = 2
+pivot_offset = Vector2(120, 30)
+theme_override_colors/font_color = Color(1, 0.82, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0.1, 0.05, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 44
+text = "x2"
+horizontal_alignment = 1
+
 [node name="FinishPanel" type="PanelContainer" parent="HUD/Safe"]
 visible = false
 layout_mode = 1
@@ -212,6 +243,12 @@ horizontal_alignment = 1
 [node name="Best" type="Label" parent="HUD/Safe/FinishPanel/Lines"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+
+[node name="Flow" type="Label" parent="HUD/Safe/FinishPanel/Lines"]
+modulate = Color(1, 0.82, 0.2, 0.9)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
 
 [node name="Target" type="Label" parent="HUD/Safe/FinishPanel/Lines"]

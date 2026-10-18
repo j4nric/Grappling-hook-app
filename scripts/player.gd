@@ -134,6 +134,12 @@ const WALL_KICK_MIN_GLANCE := 0.5
 ## Let go when level geometry gets between player and anchor.
 @export var release_when_blocked := true
 
+@export_group("Look")
+## The rope twangs when the hook bites: wave height (m), 0 = off ...
+@export var rope_pluck := 0.5
+## ... and how fast it dies down (1/s).
+@export var rope_pluck_decay := 9.0
+
 # --- State ---------------------------------------------------------------------
 var hook_state := HookState.IDLE
 ## Anchor point of the attached rope.
@@ -240,7 +246,7 @@ func _process(delta: float) -> void:
 	else:
 		_flight_visual.update_retract(delta, origin)
 	if _attached:
-		_rope_visual.show_at(origin, anchor)
+		_rope_visual.show_at(origin, anchor, delta)
 	else:
 		_rope_visual.update_retract(delta, origin)
 
@@ -400,6 +406,7 @@ func attach(point: Vector3, normal: Vector3, body: Object = null) -> void:
 	_attached_time = 0.0
 	_update_state()
 	velocity += global_position.direction_to(anchor) * pull_impulse
+	_rope_visual.pluck(rope_pluck, rope_pluck_decay)
 	hook_attached.emit(point, normal)
 
 
@@ -503,7 +510,7 @@ func _hook_origin() -> Vector3:
 
 
 func _on_aim_changed(swipe: Vector2) -> void:
-	Engine.time_scale = aim_time_scale
+	TimeScale.set_aim(aim_time_scale)
 	if not _is_valid_swipe(swipe):
 		_hide_aim()
 		return
@@ -517,7 +524,7 @@ func _on_aim_changed(swipe: Vector2) -> void:
 
 func _on_aim_cancelled() -> void:
 	_hide_aim()
-	Engine.time_scale = 1.0
+	TimeScale.set_aim(1.0)
 
 
 func _hide_aim() -> void:
@@ -529,7 +536,7 @@ func _hide_aim() -> void:
 ## While a hook flies, the swipe is buffered instead.
 func throw_hook(swipe: Vector2, flick_velocity: Vector2) -> void:
 	_hide_aim()
-	Engine.time_scale = 1.0
+	TimeScale.set_aim(1.0)
 	if not _is_valid_swipe(swipe):
 		return
 	if _flying:
@@ -598,7 +605,7 @@ func reset_to(position_3d: Vector3) -> void:
 	_rope_visual.hide()
 	_flight_visual.hide()
 	_hide_aim()
-	Engine.time_scale = 1.0
+	TimeScale.reset()
 	global_position = position_3d
 	velocity = Vector3.ZERO
 	# A teleport, not a movement: no interpolation from the old position.

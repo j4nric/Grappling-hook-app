@@ -118,6 +118,14 @@ def main():
     loop[:fade] = w[:fade] * ramp + w[n:n + fade] * (1 - ramp)
     save("wind", loop, 0.7)
 
+    # New sounds go last: the shared random generator keeps the older ones
+    # identical when this script runs again.
+
+    # Scrape: gritty slide along rock (wall or ceiling deflection).
+    d = 0.35
+    grit = lowpass(noise(d), 2500) * (0.5 + 0.5 * (rng.uniform(0, 1, len(t(d))) > 0.7))
+    save("scrape", lowpass(grit, 1800) * env(len(t(d)), 0.005, curve=1.5), 0.55)
+
 
 if __name__ == "__main__":
     main()

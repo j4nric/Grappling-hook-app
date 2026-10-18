@@ -19,6 +19,10 @@ extends Node3D
 @export var fov_per_speed := 0.4
 @export var max_fov := 90.0
 @export var fov_lerp_speed := 4.0
+## Extra FOV (degrees) for a moment at the zip launch: the punch of the launch.
+@export var zip_fov_kick := 12.0
+## How fast that kick fades (1/s).
+@export var fov_kick_decay := 5.0
 
 @export_group("Hook")
 ## How far the view turns toward the anchor while the rope pulls (0..1).
@@ -45,6 +49,10 @@ var _look_target := Vector3.ZERO
 var _roll := 0.0
 ## 0..1; the shake grows with its square.
 var _trauma := 0.0
+## Current extra FOV from a zip launch (degrees).
+var _fov_kick := 0.0
+## FOV from speed alone, without the kick.
+var _fov_base := 65.0
 
 @onready var camera: Camera3D = $Camera3D
 
@@ -56,6 +64,7 @@ func _ready() -> void:
 	if view_camera:
 		view_camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	camera.fov = base_fov
+	_fov_base = base_fov
 	if target:
 		global_position = target.global_position + offset
 		_look_target = target.global_position + look_ahead
@@ -63,6 +72,10 @@ func _ready() -> void:
 			target.hook_attached.connect(func(_p: Vector3, _n: Vector3) -> void: add_trauma(hook_shake))
 		if target.has_signal("landed"):
 			target.landed.connect(_on_landed)
+		if target.has_signal("rope_released"):
+			target.rope_released.connect(func(reason: String) -> void:
+				if reason == "zip":
+					_fov_kick = zip_fov_kick)
 
 
 func add_trauma(amount: float) -> void:
@@ -101,7 +114,9 @@ func _process(delta: float) -> void:
 	camera.look_at(_look_target + shake, Vector3.UP.rotated(Vector3.FORWARD, deg_to_rad(_roll)))
 
 	var target_fov := clampf(base_fov + velocity.length() * fov_per_speed, base_fov, max_fov)
-	camera.fov = lerpf(camera.fov, target_fov, 1.0 - exp(-fov_lerp_speed * delta))
+	_fov_kick *= exp(-fov_kick_decay * delta)
+	_fov_base = lerpf(_fov_base, target_fov, 1.0 - exp(-fov_lerp_speed * delta))
+	camera.fov = minf(_fov_base + _fov_kick, max_fov + zip_fov_kick)
 
 	if view_camera:
 		view_camera.global_transform = camera.global_transform

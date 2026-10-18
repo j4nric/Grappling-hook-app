@@ -34,8 +34,14 @@ var _pointer_down := false
 var _aiming := false
 var _start_pos := Vector2.ZERO
 var _start_time := 0.0
-## Recent pointer samples as (x, y, time) for the flick velocity.
+## A release this many frames after the last movement still counts as part
+## of the flick.
+const HITCH_FRAMES := 2
+
+## Recent pointer samples as (x, y, time) for the flick velocity ...
 var _samples: Array[Vector3] = []
+## ... and the frame each one arrived in.
+var _sample_frames: Array[int] = []
 ## Touch indices of the current gesture. Never assume the first finger is
 ## index 0: iOS Safari reports large arbitrary touch identifiers.
 var _touches := {}
@@ -129,6 +135,7 @@ func _pointer_pressed(pos: Vector2) -> void:
 	_start_pos = pos
 	_start_time = _now()
 	_samples.clear()
+	_sample_frames.clear()
 	_add_sample(pos)
 
 
@@ -168,8 +175,12 @@ func _cancel_aim() -> void:
 func _add_sample(pos: Vector2) -> void:
 	var now := _now()
 	_samples.append(Vector3(pos.x, pos.y, now))
-	while _samples.size() > 2 and now - _samples[0].z > FLICK_WINDOW:
+	_sample_frames.append(Engine.get_process_frames())
+	# Two windows: the flick may be measured up to the last movement instead
+	# of the release (see _flick_velocity()).
+	while _samples.size() > 2 and now - _samples[0].z > FLICK_WINDOW * 2.0:
 		_samples.pop_front()
+		_sample_frames.pop_front()
 
 
 ## Finger velocity (px/s) over the last FLICK_WINDOW. A finger that stopped
@@ -177,12 +188,20 @@ func _add_sample(pos: Vector2) -> void:
 func _flick_velocity() -> Vector2:
 	if _samples.size() < 2:
 		return Vector2.ZERO
-	var first := _samples[0]
-	var last := _samples[-1]
+	var end := _samples.size() - 1
+	# The release usually repeats the last position. Arriving within
+	# HITCH_FRAMES frames, the gap is a frame hitch (or a slow browser), not a
+	# resting finger: measure up to the last movement.
+	var prev := _samples[end - 1]
+	if Vector2(prev.x, prev.y) == Vector2(_samples[end].x, _samples[end].y) \
+			and _sample_frames[end] - _sample_frames[end - 1] <= HITCH_FRAMES:
+		end -= 1
+	var last := _samples[end]
+	var first := last
 	# Ignore samples older than the window (finger rested before the flick).
-	for s in _samples:
-		if last.z - s.z <= FLICK_WINDOW:
-			first = s
+	for i in end + 1:
+		if last.z - _samples[i].z <= FLICK_WINDOW:
+			first = _samples[i]
 			break
 	var dt := maxf(last.z - first.z, 1.0 / 60.0)
 	return Vector2(last.x - first.x, last.y - first.y) / dt

@@ -71,6 +71,15 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 - [x] **Stampfer unsichtbar für Kollisionen:** Ein schiebender `AnimatableBody3D`
       taucht nicht in den Slide-Kollisionen auf, nur in `is_on_ceiling()` →
       Erkennung per `test_move` nach oben.
+- [x] **Ruckler beim Loslassen schwächte den Wurf:** Kam das Loslassen einen
+      langen Frame nach der letzten Bewegung (Ruckler, langsamer Browser), galt
+      der Finger als „stehen geblieben“ → Haken mit Mindesttempo, Fehlwurf.
+      → Loslassen bis 2 Frames nach der letzten Bewegung zählt zum Flick.
+- [x] **Zeitlupe und Hit-Stop teilen sich `Engine.time_scale`** → `TimeScale`
+      verwaltet beide; der Timer zählt den Hit-Stop nicht.
+- [ ] **Kamera taucht in Wände ein:** Beim Schwingen nah an der Wand oder an
+      Hindernissen steht die Kamera hinter der Geometrie (Bild dunkel oder voller
+      Lava). Kamera-Kollision (Strahl vom Spieler zur Kamera) – mit den Kavernen.
 - [ ] **Bot wirft nie während des Zugs:** Ein Ketten-Bot würde zeigen, welche
       Zeiten mit Kettenwürfen möglich sind (Medaillen-Kalibrierung).
 
@@ -99,15 +108,15 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 
 - [x] **Seil-Übergabe / Kettenwürfe** (siehe Entscheidung): der Moment, in dem
       der neue Haken greift und das alte Seil loslässt, ist der Kern des Flows.
-- [ ] **Treffer-Gefühl:** Hit-Stop (40–60 ms Mini-Freeze) beim Einhaken,
+- [x] **Treffer-Gefühl:** (Hit-Stop 50 ms ab 12 m/s, FOV-Kick 12°, Seil-Zittern) Hit-Stop (40–60 ms Mini-Freeze) beim Einhaken,
       kurzer FOV-Kick beim Zip-Launch, Seil spannt sich sichtbar (zittert kurz).
-- [ ] **Tempo sichtbar machen:** Speed-Lines am Bildrand ab hohem Tempo,
+- [x] **Tempo sichtbar machen:** (Speed-Lines ab 28 m/s, Wind-Streifen, Wind-Tonhöhe) Speed-Lines am Bildrand ab hohem Tempo,
       Wind-Partikel, stärkerer Tempo-Sound (Tonhöhe).
 - [ ] **Schwingen** (siehe Entscheidung): Pendelphase vor dem Einholen,
       damit es nicht nur geradlinige Zips gibt.
 - [x] **Landungen erhalten Schwung:** (`landing_roll`, `slide_friction`, Wall-Kick) Rollen/Rutschen statt harter Bremsung;
       Wand-Abprall (Wall-Kick) beim Auftreffen mit Tempo.
-- [ ] **Flow-Anzeige:** Kette von Treffern ohne Bodenberührung zählen
+- [x] **Flow-Anzeige:** (ab x2, Haken-Ton steigt mit der Kette, „Longest flow“ im Ziel) Kette von Treffern ohne Bodenberührung zählen
       (z. B. „x5“), dezent im HUD – belohnt flüssiges Spielen.
 - [ ] **Zielhilfe für Stalaktiten** in der großen Höhle (jetzt aus) testen.
 - [ ] **Musik:** dezente Loop, die mit dem Tempo intensiver wird.

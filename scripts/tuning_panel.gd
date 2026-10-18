@@ -52,6 +52,7 @@ const PARAMS := [
 	["Player", "flyby_release_distance", 0.0, 15.0, 0.5, "Rope"],
 	["Player", "swing_time", 0.0, 1.0, 0.05, "Rope"],
 	["Player", "contact_release_grace", 0.0, 1.0, 0.05, "Rope"],
+	["Player", "rope_pluck", 0.0, 2.0, 0.05, "Rope"],
 	["Player", "gravity", 5.0, 60.0, 0.5, "Move"],
 	["Player", "max_speed", 10.0, 120.0, 1.0, "Move"],
 	["Player", "floor_friction", 0.0, 100.0, 1.0, "Move"],
@@ -71,12 +72,16 @@ const PARAMS := [
 	["CameraRig", "roll_per_speed", 0.0, 5.0, 0.1, "Camera"],
 	["CameraRig", "max_roll", 0.0, 45.0, 1.0, "Camera"],
 	["CameraRig", "shake_strength", 0.0, 2.0, 0.05, "Camera"],
+	["CameraRig", "zip_fov_kick", 0.0, 30.0, 1.0, "Camera"],
 	["World/PixelView", "stretch_shrink", 1.0, 6.0, 1.0, "Camera"],
 	["Sfx", "volume", 0.0, 1.0, 0.05, "Misc"],
 	["Debug", "shown", 0.0, 1.0, 1.0, "Misc"],
 	["Debug", "auto_quality", 0.0, 1.0, 1.0, "Misc"],
 	["Debug", "min_fps", 20.0, 60.0, 1.0, "Misc"],
 	["Effects", "haptics", 0.0, 1.0, 1.0, "Misc"],
+	["Effects", "hit_stop_time", 0.0, 0.2, 0.01, "Misc"],
+	["Effects", "streak_speed", 5.0, 60.0, 1.0, "Misc"],
+	["World/SpeedLines", "start_speed", 5.0, 60.0, 1.0, "Misc"],
 ]
 
 const FONT_SIZE := 26

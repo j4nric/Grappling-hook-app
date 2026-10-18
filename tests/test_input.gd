@@ -27,6 +27,22 @@ func run() -> void:
 		check(_throws[-1][1].length() < 1.0, "flick then hold gives no flick speed")
 	check(_throws.size() == 3, "three swipes, three throws (%d)" % _throws.size())
 
+	# A frame hitch between the last movement and the release (a long frame,
+	# a slow browser) must not eat the flick.
+	touch(4714, start, true)
+	await get_tree().process_frame
+	var pos := start
+	for i in 6:
+		pos += Vector2(0, -45)
+		drag(4714, pos)
+		await get_tree().process_frame
+	InputRouter._clock += 0.15
+	touch(4714, pos, false)
+	await get_tree().process_frame
+	if _throws.size() > 3:
+		check(_throws[-1][1].length() > 2000.0, "flick survives a frame hitch at the release (%.0f px/s)" % _throws[-1][1].length())
+	check(_throws.size() == 4, "the hitched swipe throws")
+
 	# A tap right after the hook bites is ignored, a later tap lets go.
 	var p := player()
 	main.restart()

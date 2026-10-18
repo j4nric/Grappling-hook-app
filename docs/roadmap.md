@@ -74,4 +74,5 @@ Kamera, HUD, 5 Level, Speedrun, Optik, Sound, Debug/Auto-Qualität.
 | 2026-10-18 | `slide_friction` / `slide_speed` | neu: 6 / 8 m/s | Landungen rutschen weiter statt hart zu bremsen |
 | 2026-10-18 | `landing_roll` | neu: 0,3 | 30 % der Fallgeschwindigkeit werden Vorwärtstempo |
 | 2026-10-18 | `deflect_keep` / `deflect_min_speed` | neu: 1,0 / 8 m/s | Zip in die Decke: 38 → 24 m/s vorher, jetzt bleibt das Tempo entlang der Decke |
+| 2026-10-18 | Juice | neu | `hit_stop_time` 0,05 s bei 0,05× ab 12 m/s, `zip_fov_kick` 12°, `rope_pluck` 0,5 m, Speed-Lines ab 28 m/s, Wind-Streifen ab 22 m/s |
 | 2026-10-18 | `wall_bounce` / `wall_kick_up` | neu: 0,2 / 4 m/s | Wall-Kick nur bei streifenden Treffern; 0,35 und frontaler Abprall warfen den Bot zurück |
