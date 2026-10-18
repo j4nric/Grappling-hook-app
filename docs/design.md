@@ -69,6 +69,7 @@ Abgrund im Nebel, Felswände aus versetzten, gedrehten Blöcken, Stalaktiten,
 Säulen aus der Tiefe, schwebende Felsinseln, Wand-Vorsprünge, leuchtende
 Kristalle und Lichtkegel als Orientierung, Felsvorsprünge für Start,
 Checkpoints und Ziel.
+0. **Tutorial** – kurze Hallen mit Hinweisen: Werfen, Kettenwurf, Eis, Tor, Lösen
 1. **First Swing** – Boden-Halle zum Eingewöhnen, dann erste Abgründe
 2. **Lava Deep** – Lavasee tief unten, Inseln und Säulen
 3. **Ice Ceiling** – Eis-Decken, nur Stalaktiten, Säulen und Vorsprünge halten

@@ -23,6 +23,9 @@ signal killed
 @export var layout_seed := 1
 ## Falling below this height: back to the last checkpoint.
 @export var kill_y := -30.0
+## Tutorial hints: [z, text] pairs; a hint shows once the player is past
+## its z (forward is -Z) until the next one.
+@export var hints: Array = []
 
 var _built := false
 
@@ -54,6 +57,15 @@ func _ready() -> void:
 ## one version of a level).
 func version() -> String:
 	return "%08x" % (hash(level_name + var_to_str(segments) + str(layout_seed)) & 0xffffffff)
+
+
+## The hint for a position, "" if none.
+func hint_at(z: float) -> String:
+	var text := ""
+	for hint in hints:
+		if z <= float(hint[0]):
+			text = hint[1]
+	return text
 
 
 func start_position() -> Vector3:

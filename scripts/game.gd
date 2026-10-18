@@ -157,6 +157,8 @@ func _process(delta: float) -> void:
 	if player.global_position.y < level.kill_y:
 		_on_killed()
 	time_label.text = "%.2f" % _elapsed
+	if not level.hints.is_empty() and not _finished and hint_label.text != level.hint_at(player.global_position.z):
+		_update_hud()
 	var size := get_viewport().get_visible_rect().size
 	var landscape := size.x > size.y
 	if landscape != _landscape:
@@ -369,6 +371,8 @@ func _update_hud() -> void:
 		hint_label.text = ""
 	elif _landscape and _touch:
 		hint_label.text = "Hold your phone upright (portrait)"
+	elif not level.hints.is_empty():
+		hint_label.text = level.hint_at(player.global_position.z)
 	elif _hint_dismissed:
 		hint_label.text = ""
 	elif _touch:

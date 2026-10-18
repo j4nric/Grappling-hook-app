@@ -5,7 +5,7 @@ extends "res://tests/test_case.gd"
 
 func run() -> void:
 	levels = Levels.LIST
-	level_index = 1  # Lava Deep: lava below halls 2-4, checkpoint at hall 3
+	level_index = level_named("level_02")  # Lava Deep: lava below halls 2-4, checkpoint at hall 3
 	await load_main()
 	var p := player()
 	await wait_frames(5)
@@ -29,7 +29,7 @@ func run() -> void:
 	check(absf(p.global_position.z) < 1.0, "restart goes back to the level start")
 
 	# Ice (no_hook) does not hold the hook, rock does: Ice Ceiling.
-	main.load_level(2)
+	main.load_level(level_named("level_03"))
 	await wait_frames(5)
 	var ice: Array[Node] = main.level.get_node("Geometry").find_children("Ice*", "StaticBody3D", false, false)
 	check(not ice.is_empty(), "the ice level has ice")
@@ -41,7 +41,7 @@ func run() -> void:
 	check(not p.can_stick({"collider": rock, "normal": Vector3.UP}), "floors do not hold the hook")
 
 	# Movers: the anchor rides along.
-	main.load_level(3)
+	main.load_level(level_named("level_04"))
 	await wait_frames(5)
 	var mover: Node3D = main.level.get_node("Movers").get_child(0)
 	p.global_position = mover.global_position + Vector3(0, -6, 6)

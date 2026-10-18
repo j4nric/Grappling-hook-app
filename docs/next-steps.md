@@ -143,8 +143,8 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       Wand-Abprall (Wall-Kick) beim Auftreffen mit Tempo.
 - [x] **Flow-Anzeige:** (ab x2, Haken-Ton steigt mit der Kette, „Longest flow“ im Ziel) Kette von Treffern ohne Bodenberührung zählen
       (z. B. „x5“), dezent im HUD – belohnt flüssiges Spielen.
-- [ ] **Zielhilfe für Stalaktiten** in der großen Höhle (jetzt aus) testen.
-- [ ] **Musik:** dezente Loop, die mit dem Tempo intensiver wird.
+- [x] **Zielhilfe für Stalaktiten** (durch die Wurfwinkel-Hilfe ersetzt; der Kegel-Assist bleibt als Regler, Standard aus) in der großen Höhle (jetzt aus) testen.
+- [x] **Musik:** dezente Loop, die mit dem Tempo intensiver wird. (`tools/gen_music.py`: drei synchrone Spuren – Fläche/Bass/Tropfen, Puls, Arpeggio – A-Moll, 96 BPM, 20 s; Puls ab 6 m/s, Arpeggio ab 26 m/s oder ab Flow x4)
 
 ## 3b. Grafik und Atmosphäre
 
@@ -175,9 +175,9 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 ## 5. Technik
 
 - [ ] **Bildrate auf dem iPhone messen** (Debug-Anzeige in TUNE → Misc).
-- [ ] **Bot-Test erweitern:** prüft auch Spam-Verhalten, Timer-Start und
+- [x] **Bot-Test erweitern:** (Spam: `test_chain`, Timer-Start: `test_input`, Zerquetschen: `test_movement`) prüft auch Spam-Verhalten, Timer-Start und
       Zerquetschen (Regressionen der Bugs oben).
-- [ ] **Onboarding-Level:** kurzer Tutorial-Abschnitt (Werfen, Zip, Eis).
+- [x] **Onboarding-Level:** („Tutorial“ als erstes Level, Hinweise je nach Position: Werfen, Kette, Eis, Tor, Lösen/Neustart) kurzer Tutorial-Abschnitt (Werfen, Zip, Eis).
 
 ## Später
 
