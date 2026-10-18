@@ -14,8 +14,13 @@ Reihenfolge = Umsetzungsreihenfolge, ein PR pro Themengebiet.
       Schalter „Gold“ im Pause-Menü; ein Test verlangt für jede Level-Version
       einen passenden Geist) Bot-Läufe als mitgelieferter Geist, abgespielt im Tempo
       der Gold-Zeit: zeigt eine Linie, die Gold schafft.
-- [ ] **Mehr Level mit den neuen Bausteinen (M):** Kurven, Abkürzungen, Pilze.
-- [ ] **Abkürzungen im Generator häufiger (S).**
+- [x] **Mehr Level mit den neuen Bausteinen (M):** (umgesetzt: „Mushroom Grotto“ –
+      Sprungpilze über Lava, im Dunkeln und auf Böden, gewunden; „Shortcut Run“ –
+      zwei Felsriegel mit Röhre, Tempo-Ringe. Beide mit Medaillen und Gold-Geist.
+      Gelernt: nach einer Abkürzungs-Halle nicht stark verengen, sonst versperrt
+      die Schräge in die schmale Halle den Umweg) Kurven, Abkürzungen, Pilze.
+- [x] **Abkürzungen im Generator häufiger (S):** (umgesetzt: Gewicht 0,5 → 0,9;
+      die Halle danach höchstens 16 m schmaler und 6 m versetzt)
 
 ## Auf dem Gerät (nur mit dem iPhone möglich)
 
