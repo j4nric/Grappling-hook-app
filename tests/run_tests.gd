@@ -40,6 +40,7 @@ func _run() -> void:
 	for file in names:
 		_clear_saved_state()
 		print("  ", file)
+		var started := Time.get_ticks_msec()
 		var errors_before := _errors.count
 		var script: GDScript = load("res://tests/" + file)
 		if script == null or not script.can_instantiate():
@@ -50,6 +51,7 @@ func _run() -> void:
 		root.add_child(test)
 		await test.run()
 		failed += test.failures.size()
+		print("    (%.1f s)" % ((Time.get_ticks_msec() - started) / 1000.0))
 		var new_errors := _errors.count - errors_before
 		if new_errors > 0:
 			print("    FAIL: %d script error(s)" % new_errors)
