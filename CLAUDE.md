@@ -172,6 +172,8 @@ die nötige Geschwindigkeit nach innen → Pendeln.
 **Ende des Zugs**, in dieser Reihenfolge (Pendelphase `swing_time` vorher, Standard 0):
 - **Zip-Launch:** näher als `zip_release_distance` am Anker und in Bewegung auf ihn
   zu → Seil löst sich, der Spieler fliegt mit vollem Tempo + `zip_boost` weiter.
+- **Seilende:** Hat die Rolle das Seil bis `min_rope_length` eingeholt
+  (`rope_end_release` an), löst es wie ein Zip-Launch – kein Hängenbleiben.
 - **Vorbeiflug:** am Anker vorbei (näher als `flyby_release_distance`, Bewegung
   weg vom Anker) → wie Zip-Launch, statt zurückzuschwingen.
 - Nach `contact_release_grace`: Berührung von Wand oder Decke (`release_on_contact`) → Seil löst sich.
@@ -230,7 +232,10 @@ Teleports (`reset_to`) rufen `reset_physics_interpolation()`.
   bekommen einen Test in `tests/test_*.gd` (erbt von `test_case.gd`, Helfer für
   Touch/Swipe und Warten). Mechanik-Tests spielen in festen Tunneln
   (`tests/levels/tunnel_*.tscn`: Decke y=9, Ziel z=−200, Lava/Checkpoint in Tunnel 2),
-  Tests der echten Level setzen `levels = Levels.LIST`. Der Bot (`tests/bot.gd`) wirft
+  Tests der echten Level setzen `levels = Levels.LIST`. Mechanik-Tests in den
+  Tunneln laufen mit einem festen Tuning (`TEST_TUNING` in `test_case.gd`), damit
+  neue Standardwerte vom Handy sie nicht brechen; Level- und Bot-Tests nutzen die
+  Standardwerte. Der Bot (`tests/bot.gd`) wirft
   auch während eines Zugs (Kette) und variiert nach jedem Tod die Richtung.
   `--fixed-fps 60` ist wichtig: `InputRouter` misst das Fingertempo über die
   Frame-Zeit.

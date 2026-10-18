@@ -25,9 +25,8 @@ func run() -> void:
 	main.restart()
 	await wait_frames(5)
 	p.velocity = Vector3(15, 0, 0)
-	await wait_frames(30)
-	var lean := minf(15.0 * rig.roll_per_speed, rig.max_roll)
-	check(rig._roll > lean * 0.6, "moving right banks the view (%.1f of %.1f deg)" % [rig._roll, lean])
+	await wait_frames(10)
+	check(rig._roll > 3.0, "moving right banks the view (%.1f deg)" % rig._roll)
 	check(rig._roll <= rig.max_roll + 0.01, "roll stays within its limit")
 
 	# Backed up against the back wall (z = 10): the camera stays in front of

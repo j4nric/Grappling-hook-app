@@ -5,8 +5,8 @@
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "Updraft"
-gold_time = 10.4
-silver_time = 14.7
-bronze_time = 24.5
+gold_time = 9.0
+silver_time = 12.7
+bronze_time = 21.2
 layout_seed = 606
 segments = [{"length": 40.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.3, "crystals": 2, "shafts": 1}, {"length": 70.0, "width": 44.0, "ceiling": 34.0, "updrafts": 3, "stalactites": 0.25, "islands": 1, "crystals": 2, "shafts": 2}, {"length": 60.0, "width": 40.0, "ceiling": 30.0, "checkpoint": true, "brittle": 0.65, "stalactites": 0.7, "crystals": 2, "shafts": 1}, {"length": 70.0, "width": 44.0, "ceiling": 32.0, "rings": 4, "pillars": 1, "stalactites": 0.3, "crystals": 3, "shafts": 1}, {"length": 60.0, "width": 38.0, "ceiling": 28.0, "checkpoint": true, "dark": true, "stalactites": 0.45, "crystals": 4}, {"length": 40.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.25, "crystals": 1}]
