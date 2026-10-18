@@ -22,8 +22,10 @@ func _ready() -> void:
 	_panel = PanelContainer.new()
 	_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0.03, 0.03, 0.05, 0.92)
+	bg.bg_color = Color(0.03, 0.03, 0.05, 0.98)
 	bg.set_content_margin_all(40.0)
+	# Room for the TUNE and pause buttons above the title.
+	bg.content_margin_top = 90.0
 	_panel.add_theme_stylebox_override("panel", bg)
 	_panel.add_to_group(InputRouter.BLOCKING_GUI_GROUP)
 	add_child(_panel)
@@ -37,6 +39,15 @@ func _ready() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 52)
 	root.add_child(title)
+	var hint := install_hint()
+	if hint != "":
+		var install := Label.new()
+		install.text = hint
+		install.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		install.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		install.add_theme_font_size_override("font_size", 24)
+		install.modulate = Color(1, 1, 1, 0.7)
+		root.add_child(install)
 	# Scrolls when the levels do not fit (small phones, landscape).
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -63,6 +74,18 @@ func _ready() -> void:
 	_stats_button.pressed.connect(_toggle_stats)
 	root.add_child(_stats_button)
 	visible = false
+
+
+## In Safari on iPhone/iPad, until the game runs from the home screen: how
+## to install it (fullscreen, offline). Empty everywhere else.
+static func install_hint() -> String:
+	if not OS.has_feature("web"):
+		return ""
+	var installed = JavaScriptBridge.eval("navigator.standalone === true || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches", true)
+	var ios = JavaScriptBridge.eval("/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent))", true)
+	if installed or not ios:
+		return ""
+	return "Tip: Share  >  Add to Home Screen\nplays fullscreen and offline"
 
 
 ## entries: one Dictionary per level with "name" and optional "detail".

@@ -64,6 +64,15 @@ Musik nach Tempo, Tutorial.
 - [x] Prozedurale Höhlen (Daily Cave, Random Cave)
 - [x] Ghost der Bestzeit
 
+## M8 – Lebendige Höhle (Runde 3)
+- [x] Licht-LOD und Sichtweiten (Leistung im Browser)
+- [x] Gelenkfigur mit Posen, Schal, Seil als Verlet-Kette
+- [x] Aufwind, brüchige Stalaktiten, Tempo-Ringe, dunkle Hallen, Level „Updraft“
+- [x] Kamera-Regie (Decke, Ziel-Einstellung, Respawn-Blende)
+- [x] Raumklang (Höhlen-Hall, 3D-Geräusche)
+- [x] Replay der Bestzeit, Statistik
+- [x] Installierbare Web-App, offline spielbar
+
 ## Tuning-Log
 
 | Datum | Wert | vorher → nachher | Grund |
@@ -97,3 +106,7 @@ Musik nach Tempo, Tutorial.
 | 2026-10-18 | `flight_rope_slack` | neu: 1,03 | Seil hängt beim fliegenden Haken leicht durch (1,1 hing bei 30 m fast 6 m durch) |
 | 2026-10-18 | Eis-Emission | 0,8 → 0,3 | große Eisdecken überstrahlten zu weißen Flächen |
 | 2026-10-18 | `wall_bounce` / `wall_kick_up` | neu: 0,2 / 4 m/s | Wall-Kick nur bei streifenden Treffern; 0,35 und frontaler Abprall warfen den Bot zurück |
+| 2026-10-18 | Kamera `ceiling_near` / `ceiling_look_up` | neu: 7 m / 4 m | unter der Decke senkt sich die Kamera und blickt nach oben |
+| 2026-10-18 | Aufwind `lift` / `max_rise` | neu: 46 / 20 m/s | trägt aus dem Stand nach oben, ohne den Haken zu ersetzen |
+| 2026-10-18 | Brüchig `hold_time` | neu: 0,8 s | hält einen Zug, zwingt zur Kette |
+| 2026-10-18 | Tempo-Ring `boost_speed` | neu: 44 m/s | knapp unter `max_speed` (50) |

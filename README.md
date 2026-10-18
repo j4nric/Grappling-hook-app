@@ -11,7 +11,10 @@ Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
 **https://j4nric.github.io/Grappling-hook-app/**
 
 - Link in Safari öffnen, Handy hochkant halten. Für Vollbild: Teilen →
-  „Zum Home-Bildschirm“, dann über das Icon starten.
+  „Zum Home-Bildschirm“, dann über das Icon starten. Installiert läuft das
+  Spiel auch offline (eigener Service Worker, `web/sw.js`); online kommt jeder
+  neue Build sofort an. Achtung: Die installierte App hat eigene Bestzeiten,
+  getrennt von Safari.
 - Rechts oben steht `build <commit>`. Daran erkennst du, welche Version läuft.
   Ein neuer Build ist ca. 3–5 Minuten nach dem Push online (Status im Tab
   „Actions“). Zeigt das Spiel noch den alten Hash: Seite neu laden.
@@ -35,11 +38,16 @@ Vorschau: Jeder offene Pull Request ist zusätzlich unter
 `https://j4nric.github.io/Grappling-hook-app/preview/pr-<Nummer>/` spielbar
 (Übersicht: `/preview/`). So lassen sich Experimente testen, ohne `main` zu ändern.
 
-Inhalt: Tutorial und 5 Höhlen-Level (weite Hallen über einem Abgrund: Lava,
-Eis-Decken, fahrende Blöcke, Eis-Tore), dazu **Daily Cave** (jeden Tag eine neue,
-für alle gleiche Höhle) und **Random Cave** (bei jeder Wahl neu). Medaillen,
-Bestzeiten, Zwischenzeiten an Checkpoints, Geist der Bestzeit mit Abstand im
-HUD, Flow-Zähler für Haken in Folge, Musik, die mit dem Tempo anzieht.
+Inhalt: Tutorial und 6 Höhlen-Level (weite Hallen über einem Abgrund: Lava,
+Eis-Decken, fahrende Blöcke, Eis-Tore, Aufwinde, brüchige Stalaktiten,
+Tempo-Ringe, dunkle Hallen), dazu **Daily Cave** (jeden Tag eine neue, für alle
+gleiche Höhle) und **Random Cave** (bei jeder Wahl neu). Medaillen, Bestzeiten,
+Zwischenzeiten an Checkpoints, Geist der Bestzeit mit Abstand im HUD, **Replay**
+der Bestzeit im Ziel, **Stats** im Level-Menü (Läufe, Meter, Haken, Flow,
+Spielzeit), Flow-Zähler für Haken in Folge, Musik, die mit dem Tempo anzieht,
+Höhlen-Hall und Geräusche an ihren Orten (Lava, Aufwind, Kristalle, Tropfen).
+Gespielt wird mit einer Gelenkfigur mit Schal; das Seil hängt durch und
+schlängelt sich zurück.
 Pause (**II**): Medaillenziele, Geist und Ton an/aus.
 TUNE-Tabs: Throw, Rope, Move, Camera, Misc (Lautstärken, Debug-Anzeige mit FPS,
 Auto-Qualität, Vibration, Hit-Stop, Speed-Lines). Rekorde mit veränderten Werten
