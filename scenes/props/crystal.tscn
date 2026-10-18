@@ -1,0 +1,35 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/crystal.tres" id="1_mat"]
+[ext_resource type="Script" path="res://scripts/flicker.gd" id="2_flicker"]
+
+[sub_resource type="CylinderMesh" id="mesh_prism"]
+material = ExtResource("1_mat")
+top_radius = 0.0
+bottom_radius = 0.45
+height = 2.4
+radial_segments = 5
+rings = 1
+
+[node name="Crystal" type="Node3D"]
+
+[node name="Prism0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("mesh_prism")
+
+[node name="Prism1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.6, -0.35, 0, 0.35, 0.6, 0, 0, 0, 0.7, 0.45, 0.6, 0.15)
+mesh = SubResource("mesh_prism")
+
+[node name="Prism2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.55, 0.3, 0.1, -0.3, 0.55, 0, -0.1, 0, 0.6, -0.4, 0.55, -0.2)
+mesh = SubResource("mesh_prism")
+
+[node name="Glow" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+light_color = Color(0.45, 0.8, 1, 1)
+light_energy = 2.0
+omni_range = 14.0
+script = ExtResource("2_flicker")
+amount = 0.08
+speed = 1.5

@@ -77,9 +77,13 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       → Loslassen bis 2 Frames nach der letzten Bewegung zählt zum Flick.
 - [x] **Zeitlupe und Hit-Stop teilen sich `Engine.time_scale`** → `TimeScale`
       verwaltet beide; der Timer zählt den Hit-Stop nicht.
-- [ ] **Kamera taucht in Wände ein:** Beim Schwingen nah an der Wand oder an
-      Hindernissen steht die Kamera hinter der Geometrie (Bild dunkel oder voller
-      Lava). Kamera-Kollision (Strahl vom Spieler zur Kamera) – mit den Kavernen.
+- [x] **Kamera taucht in Wände ein:** Beim Schwingen nah an der Wand oder an
+      Hindernissen stand die Kamera hinter der Geometrie (Bild dunkel oder voller
+      Lava). → Kamera-Kollision: erst Höhe, dann Abstand begrenzen (sonst rutscht
+      sie unter der Decke in den Spieler), sofort rein, weich wieder raus.
+- [x] **Texturen auf dem iPhone:** Godot hätte 3D-Texturen fürs Web als
+      Desktop-VRAM-Format (S3TC) komprimiert, das iPhone-Browser nicht können →
+      Texturen verlustfrei importiert (klein, 128 px).
 - [ ] **Bot wirft nie während des Zugs:** Ein Ketten-Bot würde zeigen, welche
       Zeiten mit Kettenwürfen möglich sind (Medaillen-Kalibrierung).
 
@@ -120,6 +124,21 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       (z. B. „x5“), dezent im HUD – belohnt flüssiges Spielen.
 - [ ] **Zielhilfe für Stalaktiten** in der großen Höhle (jetzt aus) testen.
 - [ ] **Musik:** dezente Loop, die mit dem Tempo intensiver wird.
+
+## 3b. Grafik und Atmosphäre
+
+- [x] **Prozedurale Texturen** (`tools/gen_textures.py`, nahtlos, 128 px):
+      Fels (Schichten, Risse, Normal-Map), Metall (Platten, Nieten, Rost), Eis
+      (Kristallzellen, leuchtende Kanten), Kristall (Facetten, Leuchten),
+      Lava-Rauschen, Staubkorn, Lichtkegel, Vignette.
+- [x] **Materialbibliothek** (`assets/materials/`): Welt-Triplanar, damit
+      Kacheln über alle Blöcke weiterlaufen; Lava als Shader (zwei Rausch-Lagen
+      gegeneinander, glühende Risse).
+- [x] **Atmosphäre:** flackernde Fackeln und Lava-Licht, Vignette, schwebender
+      Staub, weiche Tempo-Spur statt Kästen.
+- [x] **Props für die Kavernen:** Lichtkegel (`scenes/props/light_shaft.tscn`),
+      leuchtender Kristall (`scenes/props/crystal.tscn`).
+- [ ] **Lichtkegel, Kristalle, Silhouetten in den Leveln** (mit den Kavernen).
 
 ## 4. Speedrun
 

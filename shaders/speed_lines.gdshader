@@ -30,5 +30,5 @@ void fragment() {
 	float body = smoothstep(head - len, head, r) * step(r, head);
 	float thin = step(across, 0.12);
 	float edge = smoothstep(0.22, 0.45, r);
-	COLOR = vec4(tint.rgb, tint.a * on * body * thin * edge * intensity * 0.4);
+	COLOR = vec4(tint.rgb, tint.a * on * body * thin * edge * intensity * 0.28);
 }

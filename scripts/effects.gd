@@ -1,7 +1,7 @@
 extends Node3D
 ## Visual juice driven by player signals: sparks where the hook bites, a short
 ## hit-stop, dust on hard landings and wall scrapes, a burst at the zip launch,
-## a trail and wind streaks at high speed.
+## a trail and wind streaks at high speed, and floating dust motes.
 
 @export var player: CharacterBody3D
 ## Speed (m/s) above which the speed trail shows.
@@ -20,6 +20,10 @@ extends Node3D
 ## a calm first throw from the floor stays fluid.
 @export var hit_stop_min_speed := 12.0
 
+@export_group("Dust")
+## Floating dust motes around the player: scale and stillness of the cave.
+@export var dust_amount := 60
+
 @export_group("Wind")
 ## Speed (m/s) at which wind streaks start, and where they are densest.
 @export var streak_speed := 22.0
@@ -31,16 +35,19 @@ var _burst: CPUParticles3D
 var _trail: CPUParticles3D
 var _streaks: CPUParticles3D
 var _streak_material: StandardMaterial3D
+var _motes: CPUParticles3D
 
 
 func _ready() -> void:
 	_sparks = _make_burst(Color(1.0, 0.85, 0.3), 18, 7.0, 0.35)
 	_dust = _make_burst(Color(0.6, 0.55, 0.5), 14, 3.0, 0.5)
 	_burst = _make_burst(Color(0.9, 0.95, 1.0), 12, 5.0, 0.3)
-	_trail = _make_particles(Color(0.9, 0.9, 1.0, 0.8), 24, 0.35)
+	_trail = _make_particles(Color(0.8, 0.9, 1.0, 0.6), 24, 0.35)
 	_trail.emitting = false
 	_trail.initial_velocity_max = 0.5
+	_soften(_trail)
 	_streaks = _make_streaks()
+	_motes = _make_motes()
 	player.hook_attached.connect(func(point: Vector3, normal: Vector3) -> void:
 		_emit(_sparks, point, normal)
 		if player.velocity.length() >= hit_stop_min_speed:
@@ -59,6 +66,7 @@ func _ready() -> void:
 
 func _physics_process(_delta: float) -> void:
 	var speed := player.velocity.length()
+	_motes.global_position = player.global_position + Vector3(0, 2, -6)
 	_trail.global_position = player.global_position
 	_trail.emitting = speed > trail_speed
 	# Streaks spawn in a box ahead of the player and drift backwards along the
@@ -70,6 +78,57 @@ func _physics_process(_delta: float) -> void:
 		_streaks.direction = -dir
 		var strength := clampf((speed - streak_speed) / (streak_full_speed - streak_speed), 0.15, 1.0)
 		_streak_material.albedo_color.a = 0.4 * strength
+
+
+## Soft glowing dots instead of boxes.
+func _soften(p: CPUParticles3D) -> void:
+	var mat: StandardMaterial3D = (p.mesh as BoxMesh).material
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	mat.albedo_texture = preload("res://assets/textures/dust.png")
+	var quad := QuadMesh.new()
+	quad.size = Vector2(0.35, 0.35)
+	quad.material = mat
+	p.mesh = quad
+
+
+func _make_motes() -> CPUParticles3D:
+	var p := CPUParticles3D.new()
+	p.amount = dust_amount
+	p.lifetime = 6.0
+	p.preprocess = 6.0
+	p.local_coords = false
+	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	p.emission_box_extents = Vector3(10, 7, 14)
+	p.direction = Vector3(0.3, 0.2, 0.1)
+	p.spread = 180.0
+	p.initial_velocity_min = 0.05
+	p.initial_velocity_max = 0.3
+	p.gravity = Vector3(0, -0.02, 0)
+	p.scale_amount_min = 0.5
+	p.scale_amount_max = 1.2
+	# Fade in and out instead of popping.
+	var fade := Gradient.new()
+	fade.set_color(0, Color(1, 1, 1, 0))
+	fade.set_color(1, Color(1, 1, 1, 0))
+	fade.add_point(0.25, Color(1, 1, 1, 1))
+	fade.add_point(0.75, Color(1, 1, 1, 1))
+	p.color_ramp = fade
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	mat.vertex_color_use_as_albedo = true
+	mat.albedo_color = Color(1.0, 0.85, 0.6, 0.5)
+	mat.albedo_texture = preload("res://assets/textures/dust.png")
+	var mesh := QuadMesh.new()
+	mesh.size = Vector2(0.12, 0.12)
+	mesh.material = mat
+	p.mesh = mesh
+	add_child(p)
+	return p
 
 
 func _make_streaks() -> CPUParticles3D:

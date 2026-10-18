@@ -12,6 +12,12 @@ extends Node3D
 @export var follow_speed := 6.0
 @export var look_ahead := Vector3(0.0, 2.5, -8.0)
 
+## The camera never goes behind walls: it moves in front of whatever is
+## between it and the player, keeping this gap (m).
+@export var collision_margin := 0.5
+## How fast it backs out again once the wall is gone (1/s); moving in is instant.
+@export var collision_return_speed := 4.0
+
 @export_group("Field of view")
 ## The FOV is horizontal, so the tunnel width stays visible in portrait.
 @export var keep_width := true
@@ -53,6 +59,12 @@ var _trauma := 0.0
 var _fov_kick := 0.0
 ## FOV from speed alone, without the kick.
 var _fov_base := 65.0
+## Camera position without collision (smoothed follow).
+var _follow := Vector3.ZERO
+## Camera offset from the player after wall clipping (smoothed outward).
+var _clip_offset := Vector3.ZERO
+## True while clipped or still backing out to the free position.
+var _returning := false
 
 @onready var camera: Camera3D = $Camera3D
 
@@ -67,6 +79,7 @@ func _ready() -> void:
 	_fov_base = base_fov
 	if target:
 		global_position = target.global_position + offset
+		_follow = global_position
 		_look_target = target.global_position + look_ahead
 		if target.has_signal("hook_attached"):
 			target.hook_attached.connect(func(_p: Vector3, _n: Vector3) -> void: add_trauma(hook_shake))
@@ -94,7 +107,8 @@ func _process(delta: float) -> void:
 
 	var target_position := target.get_global_transform_interpolated().origin
 	var desired := target_position + offset
-	global_position = global_position.lerp(desired, 1.0 - exp(-follow_speed * delta))
+	_follow = _follow.lerp(desired, 1.0 - exp(-follow_speed * delta))
+	global_position = _avoid_walls(target_position, _follow, delta)
 
 	var look := target_position + look_ahead
 	if _is_pulled():
@@ -122,6 +136,51 @@ func _process(delta: float) -> void:
 		view_camera.global_transform = camera.global_transform
 		view_camera.fov = camera.fov
 		view_camera.keep_aspect = camera.keep_aspect
+
+
+## Moves the camera in front of geometry between the player and it. Height
+## and distance are clipped one after the other: under a low ceiling the
+## camera drops down but stays behind the player instead of sliding into
+## the player along the diagonal.
+func _avoid_walls(target_position: Vector3, wanted: Vector3, delta: float) -> Vector3:
+	if not is_inside_tree():
+		return wanted
+	var above := _clip(target_position, Vector3(target_position.x, wanted.y, target_position.z))
+	var clipped := _clip(above, Vector3(wanted.x, above.y, wanted.z))
+	var free_offset := wanted - target_position
+	var offset_now := clipped - target_position
+	var k := 1.0 - exp(-collision_return_speed * delta)
+	if not offset_now.is_equal_approx(free_offset):
+		# Blocked: in at once (never see through the wall), out smoothly.
+		if not _returning or offset_now.length() < _clip_offset.length():
+			_clip_offset = offset_now
+		else:
+			_clip_offset = _clip_offset.lerp(offset_now, k)
+		_returning = true
+	elif _returning:
+		_clip_offset = _clip_offset.lerp(free_offset, k)
+		if _clip_offset.distance_to(free_offset) < 0.05 or free_offset.length() < _clip_offset.length():
+			_returning = false
+	if not _returning:
+		return wanted
+	return target_position + _clip_offset
+
+
+## The point on the way from `from` to `to` that keeps collision_margin from
+## the first obstacle (or `to` itself).
+func _clip(from: Vector3, to: Vector3) -> Vector3:
+	var span := to - from
+	var length := span.length()
+	if length < 0.01:
+		return to
+	var dir := span / length
+	var query := PhysicsRayQueryParameters3D.create(from, to + dir * collision_margin)
+	if target is CollisionObject3D:
+		query.exclude = [(target as CollisionObject3D).get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return to
+	return from + dir * clampf(from.distance_to(hit.position) - collision_margin, 0.0, length)
 
 
 func _is_pulled() -> bool:

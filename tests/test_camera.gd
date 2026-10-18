@@ -28,3 +28,14 @@ func run() -> void:
 	await wait_frames(10)
 	check(rig._roll > 3.0, "moving right banks the view (%.1f deg)" % rig._roll)
 	check(rig._roll <= rig.max_roll + 0.01, "roll stays within its limit")
+
+	# Backed up against the back wall (z = 10): the camera stays in front of
+	# it instead of showing the rock from behind.
+	main.restart()
+	p.global_position = main.level.start_position() + Vector3(0, 0, 8.5)
+	p.reset_physics_interpolation()
+	await wait_frames(30)
+	check(rig.global_position.z < 10.0, "camera stays in front of the back wall (z %.1f)" % rig.global_position.z)
+	main.restart()
+	await wait_frames(90)
+	check(absf(rig.global_position.z - (p.global_position.z + rig.offset.z)) < 0.5, "camera backs out to its offset again")
