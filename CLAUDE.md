@@ -47,7 +47,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   Bronze 2×; ohne `BOT_FULL` hört der Test beim ersten Lauf innerhalb Bronze auf).
   Der Bot ist chaotisch, aber reproduzierbar: `Bot.reset()` setzt den globalen
   Zufall (brüchige Stalaktiten wackeln mit `randf` am Kollisionskörper) und
-  `TimeScale` zurück – gleicher Start, gleiche Zeit.
+  `TimeScale` zurück, `Bot.prepare()` schaltet den Hit-Stop ab (sein
+  Physik-Takt hängt vom Zeitrest früherer Zeitlupen ab) – gleicher Start,
+  gleiche Zeit. Der Bot sieht Eis-Tore und steuert auf den Schlitz zu.
 - **Prozedurale Höhlen** (`CaveGenerator`) nutzen denselben Baukasten; Rekorde gelten
   pro Art und Seed (`Records.key()`). `tests/test_procedural.gd` lässt den Bot mehrere
   Seeds spielen und gibt Bot-Zeit und Schätzung aus (Kalibrierung von `RUN_SPEED`).
@@ -172,6 +174,11 @@ Swipe-Vektor und das Fingertempo der letzten 0,1 s (`FLICK_WINDOW`).
   Flächen in der Gruppe `no_hook` (Eis), Treffer näher als `min_hook_distance` und
   Flüge über `max_rope_length` hinaus lassen ihn fallen. Auf beweglichen Körpern
   fährt der Anker mit.
+- **Perfekter Kettenwurf:** Greift der neue Haken, solange das alte Seil höchstens
+  `perfect_chain_window` m vor dem Lösen ist (Zip oder Seilende, auf den Anker
+  zu), oder bis `perfect_after_zip` s nach einem Zip, gibt es
+  `perfect_chain_boost` m/s in Flugrichtung und das Signal `perfect_chain`
+  (goldene Funken, „PERFECT“, Ton).
 - **Kettenwürfe:** Ein Wurf während eines Zugs lässt das Seil weiter ziehen, bis
   der neue Haken greift (Übergabe, `rope_released("chain")`). Ein Wisch, während
   ein Haken fliegt, wird gepuffert (`throw_buffer_time`); ein zweiter Wisch innerhalb
@@ -214,7 +221,7 @@ frontale Crashs nicht. Boden + bewegtes Hindernis von oben = `crushed` → Check
 **Signale** von `player.gd` für Kamera, Sound und Effekte: `hook_thrown`,
 `hook_attached(point, normal)`, `hook_missed`, `rope_released(reason)`
 (`zip`, `contact`, `blocked`, `tap`, `chain`, `broke`, `reset`), `landed(impact_speed)`,
-`deflected(impact_speed)`, `crushed`.
+`deflected(impact_speed)`, `crushed`, `perfect_chain`.
 **Sturz:** Lava, Absturz unter `kill_y` oder Zerquetschen → `game.gd` ruft
 `player.fall()`: keine Physik, kein Input, die Figur fliegt schlaff weiter
 (`PlayerFigure.go_limp()`), nach `fall_show_time` Respawn per `reset_to()`.

@@ -147,3 +147,5 @@ Musik nach Tempo, Tutorial.
 | 2026-10-18 | Emission | Farbe weiß → schwarz; Eis 0,3 → 0,8, Kristall 0,9 → 1,6 | Godot addiert Farbe und Textur: alles Leuchtende war fast weiß |
 | 2026-10-18 | Level | alle nach Hallen-Vorlagen: 50–90 m breit (vorher 30–46), Decke 28–46 m (vorher 20–34), neues Level „Skyway“ | Entscheidung: Wide Cave als Vorlage für alle Level |
 | 2026-10-18 | Medaillen, Zufallshöhlen-Bronze 1,65 → 2,1× | neu kalibriert (beste von 5 Bot-Starts) | breitere Level, Bot in sehr großen Hallen langsamer |
+| 2026-10-18 | `perfect_chain_boost` / `_window` / `perfect_after_zip` | neu: 5 m/s, 6 m, 0,2 s | Perfekter Kettenwurf: Timing belohnen (Runde 6) |
+| 2026-10-18 | Medaillen | Tutorial 8,2/11,6/19,4, First Swing 5,8/8,2/13,7, Ice Ceiling 8,6/12,1/20,2, Movers 7,0/9,9/16,6, Wide Cave 13,0/18,3/30,5, Gates 19,5/27,5/45,8, Skyway 11,4/16,0/26,7 | neu gemessen: Bot reproduzierbar, sieht Tor-Schlitze, bekommt den Perfekt-Schub |

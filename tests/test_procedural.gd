@@ -48,6 +48,7 @@ func run() -> void:
 	check(main.level_index == random_index and main.level_list[random_index] != first, "New cave after the finish")
 
 	# The bot gets through several seeds.
+	Bot.prepare(main)
 	for seed_value in SEEDS:
 		var single: Array[String] = [Levels.cave_path("random", seed_value)]
 		main.level_list = single

@@ -16,7 +16,7 @@ const TEXT := Color(1, 1, 1, 0.85)
 const FONT_SIZE := 18
 ## Every kind of sketch this draws (TuningInfo picks one per slider).
 const KINDS := ["throw", "reach", "reach_min", "reach_assist", "yaw", "timeline", "slowmo", "assist",
-		"pull", "zip", "zip_boost", "zip_min", "flyby", "rope_pluck", "rope_slack", "fall", "speed_cap",
+		"pull", "zip", "zip_boost", "zip_min", "perfect", "flyby", "rope_pluck", "rope_slack", "fall", "speed_cap",
 		"ground", "landing", "deflect", "wallkick", "camera_follow", "camera_offset", "camera_anchor",
 		"camera_wall", "camera_ceiling", "fov", "fov_kick", "roll", "shake", "pixels", "volume", "toggle",
 		"fps", "streaks", "cave_section", "cave_top", "cave_side"]
@@ -157,6 +157,7 @@ func _draw() -> void:
 		"assist": _draw_assist()
 		"pull": _draw_pull()
 		"zip", "zip_boost", "zip_min": _draw_zip()
+		"perfect": _draw_perfect()
 		"flyby": _draw_flyby()
 		"rope_pluck": _draw_rope_pluck()
 		"rope_slack": _draw_rope_slack()
@@ -474,6 +475,53 @@ func _draw_zip() -> void:
 		_caption("released with +%.1f m/s" % boost)
 	else:
 		_caption("lets go %.1f m before the anchor%s" % [zip, " (off: pulled into the rock)" if zip <= 0.0 else ""])
+
+
+## Perfect chain: the next hook flies while the rope pulls; it bites inside
+## the gold zone just before the release (perfect, boost) or too early.
+func _draw_perfect() -> void:
+	_view(Vector2(-4, -6), 90.0, 26.0)
+	_ceiling(18.0)
+	var a := Vector2(32, 17)
+	var b := Vector2(70, 17)
+	var start := Vector2(0, 2)
+	var release_at := maxf(_v("Player/zip_release_distance", 2.5), _v("Player/min_rope_length", 0.5))
+	var window := _v("Player/perfect_chain_window", 6.0)
+	var boost := _v("Player/perfect_chain_boost", 5.0)
+	var dir := (a - start).normalized()
+	var release := a - dir * release_at
+	var zone := a - dir * (release_at + window)
+	# Gold zone on the way in: a bite there is perfect.
+	_line(zone, release, ROPE, 7.0)
+	_circle(a, release_at, FAINT)
+	# Two tries per loop: well timed (in the zone), then too early.
+	var t := _phase(4.4)
+	var good := t < 0.5
+	var u := fmod(t, 0.5) / 0.5
+	var bite := zone.lerp(release, 0.5) if good else start.lerp(zone, 0.45)
+	var reach := 0.55
+	var p: Vector2
+	var fly := Vector2.ZERO
+	if u < reach:
+		p = start.lerp(bite, u / reach)
+		_line(p, a, ROPE)
+		# The new hook flies toward b and arrives at the bite moment.
+		var throw_at := maxf(0.0, reach - 0.25)
+		if u > throw_at:
+			_dashed(p, p.lerp(b, (u - throw_at) / 0.25), HOOK, 1.5)
+	else:
+		var speed := 30.0 + (boost if good else 0.0)
+		var lift := (b - bite).normalized()
+		p = bite + lift * speed * (u - reach) * 0.6
+		fly = lift
+		_line(p, b, ROPE)
+	_hook(a)
+	_hook(b)
+	_player(p)
+	if fly != Vector2.ZERO:
+		_arrow(p, p + fly * (6.0 + (boost * 1.2 if good else 0.0)), ROPE if good else FAINT)
+		_text(_to(p) + Vector2(-30, -24), "PERFECT +%.1f m/s" % boost if good else "too early", ROPE if good else TEXT)
+	_caption("gold zone: last %.1f m before the rope lets go" % window)
 
 
 ## Swinging past the anchor: released inside the circle instead of swinging back.

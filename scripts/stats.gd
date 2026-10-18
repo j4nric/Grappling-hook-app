@@ -6,7 +6,7 @@ class_name Stats
 const PATH := "user://stats.cfg"
 const TOTAL := "total"
 ## Summed fields; "best_flow" keeps the maximum instead.
-const SUMS := ["runs", "finishes", "meters", "hooks", "play_time"]
+const SUMS := ["runs", "finishes", "meters", "hooks", "perfects", "play_time"]
 ## Finish times per level for the curve in the stats screen: the newest
 ## HISTORY_SIZE of one level version (a changed level starts a new curve).
 const HISTORY_PATH := "user://history.cfg"
@@ -52,6 +52,8 @@ static func of(level_group: String) -> Dictionary:
 static func describe(values: Dictionary) -> String:
 	var parts := ["%d runs (%d finished)" % [values.runs, values.finishes], distance(values.meters),
 			"%d hooks" % values.hooks]
+	if values.get("perfects", 0) > 0:
+		parts.append("%d perfect" % values.perfects)
 	if values.best_flow >= 2:
 		parts.append("flow x%d" % values.best_flow)
 	parts.append(duration(values.play_time))

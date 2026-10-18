@@ -5,7 +5,8 @@ extends Node
 ## The sounds run through the bus "Cave", whose reverb follows the hall the
 ## player is in: big halls ring longer than narrow passages (the wind stays dry).
 
-const SOUNDS := ["throw", "hook", "miss", "zip", "land", "scrape", "lava", "checkpoint", "go", "finish", "crack", "ring"]
+const SOUNDS := ["throw", "hook", "miss", "zip", "land", "scrape", "lava", "checkpoint", "go", "finish", "crack", "ring",
+		"perfect"]
 
 @export var player: CharacterBody3D
 @export var game: Node
@@ -70,6 +71,7 @@ func _ready() -> void:
 	player.deflected.connect(func(speed: float) -> void: play("scrape", clampf(speed / 30.0, 0.3, 1.0)))
 	player.crushed.connect(play.bind("land"))
 	player.hook_missed.connect(play.bind("miss"))
+	player.perfect_chain.connect(play.bind("perfect"))
 	player.rope_released.connect(func(reason: String) -> void:
 		if reason == "zip":
 			play("zip")

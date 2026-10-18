@@ -28,7 +28,10 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 2. Spielgefühl: Können belohnen
 
-- [ ] **Perfekter Kettenwurf (M):** Greift der neue Haken, während man kurz vor
+- [x] **Perfekter Kettenwurf (M):** (umgesetzt: Signal `perfect_chain`, 3 Regler im
+      Tab Rope mit Skizze, Zähler im Ziel und in der Statistik. Der Bot kam dabei
+      in Gates nicht mehr durch – er wählte Anker hinter dem Eis-Tor; jetzt
+      sieht er den Schlitz wie ein Spieler. Medaillen neu gemessen.) Greift der neue Haken, während man kurz vor
       dem Zip am alten Anker ist (`perfect_chain_window`), gibt es einen
       Tempo-Schub (`perfect_chain_boost`), goldene Funken, ein „PERFECT“ im HUD
       und einen hellen Ton. Belohnt Timing statt Zufall. Regler im TUNE-Panel

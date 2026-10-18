@@ -32,7 +32,7 @@ const TEST_TUNING := {
 		"pull_impulse": 6.0, "reel_speed": 8.0, "reel_acceleration": 30.0, "reel_max_speed": 30.0,
 		"min_rope_length": 0.5, "rope_end_release": 1.0, "tension_boost": 6.0, "zip_release_distance": 2.5,
 		"zip_boost": 3.0, "flyby_release_distance": 6.0, "contact_release_grace": 0.15, "rope_pluck": 0.5,
-		"flight_rope_slack": 1.03},
+		"flight_rope_slack": 1.03, "perfect_chain_boost": 0.0},
 	"CameraRig": {"base_fov": 65.0, "fov_per_speed": 0.4, "max_fov": 90.0, "offset": Vector3(0, 3.5, 10),
 		"anchor_look_weight": 0.3, "roll_per_speed": 1.2, "max_roll": 12.0, "shake_strength": 0.35},
 }

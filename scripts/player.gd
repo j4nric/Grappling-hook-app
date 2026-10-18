@@ -23,6 +23,8 @@ signal landed(impact_speed: float)
 signal deflected(impact_speed: float)
 ## Squeezed between the floor and a moving obstacle.
 signal crushed
+## A chain throw bit at the right moment and gave a speed boost.
+signal perfect_chain
 
 ## IDLE: nothing out. FLYING: only a thrown hook in the air. ATTACHED: a rope
 ## pulls (a second hook may be in the air, see is_hook_flying()).
@@ -143,6 +145,15 @@ const WALL_KICK_MIN_GLANCE := 0.5
 ## Let go when level geometry gets between player and anchor.
 @export var release_when_blocked := true
 
+@export_group("Perfect chain")
+## A chain throw is perfect when its hook bites while the old rope is this
+## close (m) to letting go (zip or rope end) ...
+@export var perfect_chain_window := 6.0
+## ... or this soon (s) after a zip launch.
+@export var perfect_after_zip := 0.2
+## Speed (m/s) a perfect chain adds in flight direction. 0 = off.
+@export var perfect_chain_boost := 5.0
+
 @export_group("Look")
 ## The rope twangs when the hook bites: wave height (m), 0 = off ...
 @export var rope_pluck := 2.0
@@ -178,6 +189,8 @@ var _since_throw := INF
 ## Buffered throw: [swipe, flick] and how long it stays valid.
 var _buffered: Array = []
 var _buffer_left := 0.0
+## Seconds since the last zip launch (perfect chain timing).
+var _since_zip := INF
 var _rope_visual: RopeVisual
 var _flight_visual: RopeVisual
 ## Last throw, shown in the tuning panel to calibrate the throw strength.
@@ -229,6 +242,7 @@ func _physics_process(delta: float) -> void:
 		return
 	velocity.y -= gravity * delta
 	_since_throw += delta
+	_since_zip += delta
 	_buffer_left -= delta
 
 	if _flying:
@@ -417,10 +431,26 @@ func _is_at_rope_end() -> bool:
 
 
 func _zip_launch() -> void:
-	var speed := velocity.length()
-	if speed > 0.001:
-		velocity = (velocity + velocity / speed * zip_boost).limit_length(max_speed)
+	_boost(zip_boost)
+	_since_zip = 0.0
 	release("zip")
+
+
+## Adds speed (m/s) in the flight direction.
+func _boost(amount: float) -> void:
+	var speed := velocity.length()
+	if speed > 0.001 and amount != 0.0:
+		velocity = (velocity + velocity / speed * amount).limit_length(max_speed)
+
+
+## A new hook bites at the right moment: just before the old rope would let
+## go (moving toward its anchor), or just after a zip launch.
+func _is_perfect_timing() -> bool:
+	if _attached:
+		var release_at := maxf(zip_release_distance, min_rope_length if rope_end_release >= 0.5 else 0.0)
+		return global_position.distance_to(anchor) <= release_at + perfect_chain_window \
+				and velocity.dot(global_position.direction_to(anchor)) > 0.0
+	return _since_zip <= perfect_after_zip
 
 
 ## True when level geometry lies between the player and the anchor.
@@ -445,6 +475,7 @@ static func can_stick(hit: Dictionary) -> bool:
 ## Sticks the hook at point and starts the pull. On a moving body the anchor
 ## moves along. An already attached rope hands over to the new one.
 func attach(point: Vector3, normal: Vector3, body: Object = null) -> void:
+	var perfect := perfect_chain_boost > 0.0 and _is_perfect_timing()
 	if _attached:
 		_rope_visual.retract(anchor, hook_retract_time * 0.5)
 		rope_released.emit("chain")
@@ -470,6 +501,10 @@ func attach(point: Vector3, normal: Vector3, body: Object = null) -> void:
 	velocity += global_position.direction_to(anchor) * pull_impulse
 	_rope_visual.pluck(rope_pluck, rope_pluck_decay)
 	hook_attached.emit(point, normal)
+	if perfect:
+		_boost(perfect_chain_boost)
+		_since_zip = INF
+		perfect_chain.emit()
 
 
 func _on_anchor_broken(body: Brittle) -> void:
@@ -736,6 +771,7 @@ func fall() -> void:
 
 func reset_to(position_3d: Vector3) -> void:
 	fallen = false
+	_since_zip = INF
 	_attached = false
 	_flying = false
 	_anchor_body = null

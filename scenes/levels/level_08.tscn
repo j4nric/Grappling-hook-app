@@ -5,8 +5,8 @@
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "Skyway"
-gold_time = 17.2
-silver_time = 24.3
-bronze_time = 40.6
+gold_time = 11.4
+silver_time = 16.0
+bronze_time = 26.7
 layout_seed = 808
 segments = [{"template": "start"}, {"template": "skyway", "length": 80.0}, {"template": "sprint", "length": 60.0, "checkpoint": true}, {"template": "skyway", "length": 90.0, "floater_spacing": 18.0, "floater_size": 3.0}, {"template": "cathedral", "length": 70.0, "checkpoint": true, "open": true, "floater_spacing": 14.0, "islands": 1}, {"template": "start"}]

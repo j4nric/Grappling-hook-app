@@ -179,6 +179,14 @@ def main():
     chime = tone(sweep, d, ((1, 1), (2, 0.4), (3, 0.15))) * env(len(t(d)), 0.002, curve=2.5)
     save("ring", chime, 0.5, room=0.3)
 
+    # Perfect chain: quick bright double chime with a shimmer on top.
+    d = 0.12
+    first = tone(1318, d, ((1, 1), (2, 0.35), (4, 0.1))) * env(len(t(d)), 0.002, curve=2.0)
+    d2 = 0.45
+    second = tone(1976, d2, ((1, 1), (2, 0.3), (3, 0.12))) * env(len(t(d2)), 0.002, curve=3.0)
+    shimmer = tone(3951, d2, ((1, 1),)) * env(len(t(d2)), 0.01, curve=5.0) * 0.25
+    save("perfect", np.concatenate([first, second + shimmer]), 0.55, room=0.3)
+
     # --- Ambience, played at places in the cave (AudioStreamPlayer3D). Own
     # generator, so the sounds above stay as they are.
     amb = np.random.default_rng(55)

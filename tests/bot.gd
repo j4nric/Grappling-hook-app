@@ -4,7 +4,7 @@ extends RefCounted
 ## strong flick - when no hook is out, and also near the end of a pull (chain
 ## throw: the rope hands over when the new hook bites).
 ## With nothing reachable ahead (stuck on a ledge, or falling) it takes any
-## anchor.
+## anchor. Only anchors the rope can reach in a straight line count.
 
 ## Flick strengths: strong (long, flat arc) and medium (shorter, drops more).
 const HOOK_SPEEDS := [65.0, 42.0]
@@ -17,9 +17,13 @@ const CHAIN_DISTANCE := 7.0
 ## After each respawn the bot leans toward another direction (degrees of
 ## yaw), so it does not repeat the same fatal line forever.
 const BIASES := [0.0, 25.0, -25.0, 45.0, -45.0]
+## Gates closer ahead than this (m) pull the choice toward their slit, this
+## much per meter off to the side.
+const SLIT_LOOKAHEAD := 50.0
+const SLIT_PULL := 0.6
 
 ## Runs are reproducible: the same level and variant always give the same
-## time, whatever ran before (see reset()).
+## time, whatever ran before (see reset() and prepare()).
 const BASE_SEED := 4242
 
 static var _attempt := 0
@@ -36,6 +40,14 @@ static func reset(variant := 0) -> void:
 	# Random shakes (brittle stalactites move their collider) start alike.
 	seed(BASE_SEED + variant)
 	TimeScale.reset()
+
+
+## Once per loaded main scene: no hit-stop. During a hit-stop the engine runs
+## a physics tick only every few frames, and on which frame depends on the
+## time left over from earlier slow motion (the finish shot): bot runs would
+## depend on what ran before. The run timer does not count the hit-stop.
+static func prepare(main: Node) -> void:
+	main.get_node("Effects").hit_stop_time = 0.0
 
 
 ## Every start variant (BOT_FULL=1) or stop at the first run within bronze.
@@ -63,6 +75,8 @@ static func step(p: CharacterBody3D) -> bool:
 	var fallback := Vector3.ZERO
 	# A chain throw must reach clearly past the current anchor.
 	var needed: float = MIN_PROGRESS + (p.global_position.z - p.anchor.z + 4.0 if chaining else 0.0)
+	# An ice gate ahead: like a player who sees the slit, steer toward it.
+	var slit_x: Variant = _slit_ahead(p)
 	for speed: float in HOOK_SPEEDS:
 		# The medium flick only when the strong one finds nothing ahead.
 		if best_score > -INF:
@@ -74,10 +88,16 @@ static func step(p: CharacterBody3D) -> bool:
 			if not path.hit:
 				continue
 			var end: Vector3 = path.points[-1]
+			# The hook may arc through a gap, but the rope pulls in a straight
+			# line: an anchor behind rock (or an ice gate) only drags into it.
+			if not _rope_clear(p, end):
+				continue
 			var progress: float = p.global_position.z - end.z
 			# Low anchors drag toward the depth: avoid them.
 			var drop := maxf(0.0, p.global_position.y - end.y)
 			var score := progress - absf(yaw_deg - bias) * 0.05 - drop * 0.5
+			if slit_x != null:
+				score -= absf(end.x - float(slit_x)) * SLIT_PULL
 			if score > fallback_score:
 				fallback_score = score
 				fallback = Vector3(swipe.x, swipe.y, speed)
@@ -94,3 +114,28 @@ static func step(p: CharacterBody3D) -> bool:
 	var best_swipe := Vector2(best.x, best.y)
 	InputRouter.throw_requested.emit(best_swipe, best_swipe.normalized() * best.z / p.throw_speed_per_px)
 	return true
+
+
+## True when nothing lies between the player and an anchor (as the rope sees
+## it, see Player._is_rope_blocked()).
+static func _rope_clear(p: CharacterBody3D, anchor: Vector3) -> bool:
+	var query := PhysicsRayQueryParameters3D.create(p._hook_origin(), anchor)
+	query.exclude = [p.get_rid()]
+	var hit := p.get_world_3d().direct_space_state.intersect_ray(query)
+	return hit.is_empty() or hit.position.distance_to(anchor) <= 0.3
+
+
+## x of the slit of the next ice gate ahead (within SLIT_LOOKAHEAD), or null.
+## Gates sit in the middle of their hall (CavernBuilder._gate()).
+static func _slit_ahead(p: CharacterBody3D) -> Variant:
+	var level: Level = p.get_parent().get("level")
+	if level == null:
+		return null
+	var z0 := 0.0
+	for raw: Dictionary in level.segments:
+		var hall := CavernBuilder.full_segment(raw)
+		var gate_z: float = z0 - float(hall.length) / 2.0
+		z0 -= float(hall.length)
+		if (hall.gate as Array).size() == 2 and gate_z < p.global_position.z and p.global_position.z - gate_z < SLIT_LOOKAHEAD:
+			return float(hall.gate[0])
+	return null
