@@ -29,6 +29,7 @@ signal level_loaded(level: Level)
 @onready var tuning := $Tuning
 @onready var camera_rig := $CameraRig
 @onready var fade: ColorRect = $World/Fade
+@onready var environment: Environment = $WorldEnvironment.environment
 @onready var ghost := $Ghost
 
 ## Finish shot: slow motion this strong for this long (real seconds).
@@ -36,6 +37,10 @@ const FINISH_SLOWMO := 0.3
 const FINISH_SLOWMO_TIME := 1.2
 ## Respawn and restart: the picture comes back from black this fast (s).
 const RESPAWN_FADE := 0.35
+## Ambient light in dark halls, as a share of the normal ambient light.
+const DARK_AMBIENT := 0.25
+## How fast the light changes when entering or leaving a dark hall (1/s).
+const DARK_FADE := 2.0
 
 ## Split time shows this long after a checkpoint (s).
 const SPLIT_SHOW_TIME := 2.5
@@ -51,6 +56,9 @@ var _elapsed := 0.0
 var _running := false
 var _finished := false
 var _best := INF
+## 0 = normal light, 1 = in a dark hall (head lamp on).
+var darkness := 0.0
+var _base_ambient := 1.0
 ## Record id of the loaded level version (Records.id()).
 var _record_id := ""
 ## Times at the checkpoints of this run and of the best run.
@@ -75,6 +83,7 @@ func _ready() -> void:
 	# viewport only draws the HUD.
 	get_viewport().disable_3d = true
 	Settings.load_settings()
+	_base_ambient = environment.ambient_light_energy
 	player.hook_attached.connect(_on_hook_attached)
 	player.crushed.connect(_on_killed)
 	# The flow breaks on landing, a miss, or bumping into rock with the rope on.
@@ -129,6 +138,7 @@ func load_level(index: int, new_cave := false) -> void:
 	level.finished.connect(_on_finished)
 	level.checkpoint_reached.connect(_on_checkpoint)
 	level.killed.connect(_on_killed)
+	level.ring_passed.connect(func() -> void: $CameraRig.kick_fov())
 	_record_id = Records.id(level_list[index], level)
 	_best = Records.best_time(_record_id)
 	restart()
@@ -165,6 +175,7 @@ func _process(delta: float) -> void:
 	TimeScale.update(delta)
 	if player.global_position.y < level.kill_y:
 		_on_killed()
+	_update_darkness(delta)
 	time_label.text = "%.2f" % _elapsed
 	if not level.hints.is_empty() and not _finished and hint_label.text != level.hint_at(player.global_position.z):
 		_update_hud()
@@ -187,6 +198,7 @@ func restart() -> void:
 	best_flow = 0
 	_set_flow(0)
 	ghost.reset(Records.load_ghost(_record_id))
+	level.reset_dynamic()
 	_splits.clear()
 	_best_splits = Records.best_splits(_record_id)
 	_reached.clear()
@@ -311,6 +323,16 @@ func _finish_shot() -> void:
 	TimeScale.set_cinema(FINISH_SLOWMO)
 	get_tree().create_timer(FINISH_SLOWMO_TIME, true, false, true).timeout.connect(
 			func() -> void: TimeScale.set_cinema(1.0))
+
+
+## Dark halls: the ambient light dims and the head lamp comes on.
+func _update_darkness(delta: float) -> void:
+	var target := 1.0 if level.is_dark_at(player.global_position.z) else 0.0
+	darkness = move_toward(darkness, target, DARK_FADE * delta)
+	environment.ambient_light_energy = _base_ambient * lerpf(1.0, DARK_AMBIENT, darkness)
+	var lamp: SpotLight3D = player.figure.lamp
+	lamp.visible = darkness > 0.01
+	lamp.light_energy = 3.0 * darkness
 
 
 func _update_ghost_delta() -> void:

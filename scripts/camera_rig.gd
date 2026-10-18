@@ -104,7 +104,12 @@ func _ready() -> void:
 		if target.has_signal("rope_released"):
 			target.rope_released.connect(func(reason: String) -> void:
 				if reason == "zip":
-					_fov_kick = zip_fov_kick)
+					kick_fov())
+
+
+## The FOV punch of a zip launch or a speed ring.
+func kick_fov() -> void:
+	_fov_kick = zip_fov_kick
 
 
 func add_trauma(amount: float) -> void:

@@ -237,6 +237,8 @@ MATERIALS = {
     "rock": dict(albedo="rock_albedo", normal="rock_normal", tint=(0.85, 0.8, 0.75), scale=0.18),
     "rock_dark": dict(albedo="rock_albedo", normal="rock_normal", tint=(0.5, 0.5, 0.56), scale=0.18),
     "rock_floor": dict(albedo="rock_albedo", normal="rock_normal", tint=(0.72, 0.66, 0.6), scale=0.3),
+    # Brittle stalactites: pale sandstone, clearly not solid rock (and not lava).
+    "brittle": dict(albedo="rock_albedo", normal="rock_normal", tint=(1.25, 1.15, 0.95), scale=0.4),
     "obstacle": dict(albedo="rock_albedo", normal="rock_normal", tint=(0.95, 0.62, 0.5), scale=0.35),
     "metal": dict(albedo="metal_albedo", normal="metal_normal", tint=(1.0, 0.9, 0.8), scale=0.25,
                   metallic=0.6, roughness=0.5),

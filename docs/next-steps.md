@@ -47,14 +47,19 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 
 ## 4. Neue Hallen-Mechaniken
 
-- [ ] **Aufwind-Schächte:** Luftsäulen aus der Tiefe tragen den Spieler nach
+- [x] **Aufwind-Schächte:** Luftsäulen aus der Tiefe tragen den Spieler nach
       oben (sichtbare Partikel, Windgeräusch).
-- [ ] **Brechende Stalaktiten:** halten den Haken kurz, dann brechen sie und
+- [x] **Brechende Stalaktiten:** halten den Haken kurz, dann brechen sie und
       fallen – zwingen zur Kette.
-- [ ] **Tempo-Ringe:** optionale Ringe, die beim Durchfliegen Schub geben
+- [x] **Tempo-Ringe:** optionale Ringe, die beim Durchfliegen Schub geben
       (Abkürzungen für Speedrunner).
-- [ ] **Dunkle Hallen:** nur Kristalle und eine Kopflampe am Spieler.
-- [ ] Generator, Baukasten, Bot und ein neues Level „Updraft“ dafür.
+- [x] **Dunkle Hallen:** nur Kristalle und eine Kopflampe am Spieler.
+- [x] Generator, Baukasten, Bot und ein neues Level „Updraft“ dafür.
+- [x] **Neu entdeckt:** Ein zusätzlicher Zufallswurf im Baukasten verschiebt alle
+      Höhlen (und damit Rekorde und Medaillen). Neue Elemente würfeln nur, wo sie
+      vorkommen; bestehende Level bleiben bitgleich.
+- [x] **Neu entdeckt:** Rötliche Brüchig-Steine sahen im Dunkeln wie Lava aus →
+      eigenes helles Sandstein-Material.
 
 ## 5. Kamera-Regie
 
