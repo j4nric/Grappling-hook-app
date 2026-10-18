@@ -92,7 +92,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/mover.gd` | Bewegliches Hindernis (AnimatableBody3D, Haken fährt mit) |
 | `scripts/cavern_builder.gd` | `CavernBuilder`: baut Hallen, Decke, Wände, Stalaktiten, Säulen, Inseln, Tore, Lava, Checkpoints, Ziel aus `segments` |
 | `scripts/level.gd` | `Level`: Name, Medaillen, `segments`, `layout_seed`, `kill_y`, `hints` (Tutorial-Hinweise nach Position); Signale `finished`, `checkpoint_reached`, `killed` |
-| `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Seil, Haken-Kugel und Ziellinie |
+| `scenes/player.tscn` | CharacterBody3D (Kapsel) mit Figur, Seil, Haken und Ziellinie |
+| `scripts/player_figure.gd` | `PlayerFigure`: Gelenkfigur (Meshes an Gelenk-Pivots), Posen aus dem Zustand (Seilarm zum Anker, Beine im Fahrtwind, Salto beim Zip, Hocke bei Landung), Kopflampe, Schal; `player.gd` ruft `update_pose()` |
+| `scripts/verlet_band.gd` | `VerletBand`: Schal als Verlet-Kette, als Band gezeichnet |
 | `scripts/input_router.gd` | Autoload: Maus/Touch → Signale `aim_changed`, `aim_cancelled`, `throw_requested` (Swipe + Flick-Tempo), `release_requested`, `restart_requested` |
 | `scripts/player.gd` | Schwerkraft, Hakenwurf (Flugbahn), Seilzug als Geschwindigkeit, Ziel-Vorschau |
 | `scripts/grapple_rope.gd` | Zeichnet eine Linie (Seil, Ziellinie) per ImmediateMesh |
@@ -129,8 +131,9 @@ Swipe-Vektor und das Fingertempo der letzten 0,1 s (`FLICK_WINDOW`).
 - **Kettenwürfe:** Ein Wurf während eines Zugs lässt das Seil weiter ziehen, bis
   der neue Haken greift (Übergabe, `rope_released("chain")`). Ein Wisch, während
   ein Haken fliegt, wird gepuffert (`throw_buffer_time`); ein zweiter Wisch innerhalb
-  `throw_cooldown` gilt als versehentlich. Seil-Grafik: `RopeVisual` (Seil am Anker
-  und Haken im Flug).
+  `throw_cooldown` gilt als versehentlich. Seil-Grafik: `RopeVisual` – Verlet-Kette
+  von der Hand der Figur zum Haken (gestrafft beim Zug, `flight_rope_slack` Durchhang
+  im Flug, schlängelt beim Zurückholen); rein optisch, die Physik zieht vom Körper.
 - Zielen: gestrichelter Bogen = `predict_hook_path()` für `aim_preview_speed`
   (gleiche Physik wie der echte Flug), Kugel = Treffpunkt. `aim_assist_angle`
   sucht im Kegel nach einer greifbaren Fläche (0 = aus). `aim_time_scale`

@@ -93,4 +93,6 @@ Musik nach Tempo, Tutorial.
 | 2026-10-18 | Kamera `offset` / `look_ahead` | (0; 2,5; 7) → (0; 3,5; 10) / (0; 2,5; −8) → (0; 3; −12) | Spieler kleiner im Bild, Maßstab spürbar |
 | 2026-10-18 | `min_throw_reach` / `min_throw_pitch` | neu: 14 m / 5° | Wurfwinkel-Hilfe unter der Decke und bei Eis |
 | 2026-10-18 | Medaillen | neu kalibriert | Kavernen, beste von 3 Bot-Starts, Gold ≈ 0,85×, Silber ≈ 1,2×, Bronze ≈ 2× (Bot-Streuung) |
+| 2026-10-18 | `flight_rope_slack` | neu: 1,03 | Seil hängt beim fliegenden Haken leicht durch (1,1 hing bei 30 m fast 6 m durch) |
+| 2026-10-18 | Eis-Emission | 0,8 → 0,3 | große Eisdecken überstrahlten zu weißen Flächen |
 | 2026-10-18 | `wall_bounce` / `wall_kick_up` | neu: 0,2 / 4 m/s | Wall-Kick nur bei streifenden Treffern; 0,35 und frontaler Abprall warfen den Bot zurück |

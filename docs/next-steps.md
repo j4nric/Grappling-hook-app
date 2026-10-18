@@ -37,11 +37,11 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 
 ## 3. Figur und Seil (Schwunggefühl sichtbar machen)
 
-- [ ] **Gelenkfigur statt Kapsel:** Rumpf, Kopf, Arme, Beine, Rucksack; Posen
+- [x] **Gelenkfigur statt Kapsel:** Rumpf, Kopf, Arme, Beine, Rucksack; Posen
       nach Zustand: Arm greift zum Anker, Beine schwingen nach, Salto beim
       Zip, Hocke bei der Landung, Ziel-Haltung beim Zielen.
-- [ ] **Schal als Verlet-Band:** zeigt Tempo und Richtung, flattert im Wind.
-- [ ] **Seil als Verlet-Kette:** hängt beim Flug des Hakens durch, strafft sich
+- [x] **Schal als Verlet-Band:** zeigt Tempo und Richtung, flattert im Wind.
+- [x] **Seil als Verlet-Kette:** hängt beim Flug des Hakens durch, strafft sich
       beim Einhaken, schlängelt nach dem Lösen zurück.
 
 ## 4. Neue Hallen-Mechaniken

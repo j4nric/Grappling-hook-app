@@ -54,6 +54,7 @@ const PARAMS := [
 	["Player", "swing_time", 0.0, 1.0, 0.05, "Rope"],
 	["Player", "contact_release_grace", 0.0, 1.0, 0.05, "Rope"],
 	["Player", "rope_pluck", 0.0, 2.0, 0.05, "Rope"],
+	["Player", "flight_rope_slack", 1.0, 1.3, 0.01, "Rope"],
 	["Player", "gravity", 5.0, 60.0, 0.5, "Move"],
 	["Player", "max_speed", 10.0, 120.0, 1.0, "Move"],
 	["Player", "floor_friction", 0.0, 100.0, 1.0, "Move"],

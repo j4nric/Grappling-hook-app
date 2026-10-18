@@ -144,6 +144,8 @@ const WALL_KICK_MIN_GLANCE := 0.5
 @export var rope_pluck := 0.5
 ## ... and how fast it dies down (1/s).
 @export var rope_pluck_decay := 9.0
+## Rope length per straight distance while the hook flies (> 1: it sags).
+@export var flight_rope_slack := 1.03
 
 # --- State ---------------------------------------------------------------------
 var hook_state := HookState.IDLE
@@ -181,6 +183,10 @@ var last_throw_speed := 0.0
 @onready var flight_hook: Node3D = $FlightHook
 @onready var aim_line := $AimLine
 @onready var aim_marker: Node3D = $AimMarker
+@onready var figure: PlayerFigure = $Figure
+
+## Direction of the current aim (for the figure's pose), null when not aiming.
+var _aim_direction = null
 
 
 func _ready() -> void:
@@ -190,6 +196,10 @@ func _ready() -> void:
 	InputRouter.release_requested.connect(release)
 	_rope_visual = RopeVisual.new(rope, hook)
 	_flight_visual = RopeVisual.new(flight_rope, flight_hook)
+	rope_released.connect(func(reason: String) -> void:
+		if reason == "zip":
+			figure.start_flip())
+	landed.connect(func(speed: float) -> void: figure.land((speed - 4.0) / 20.0))
 	aim_marker.top_level = true
 	aim_marker.visible = false
 	# Placed by hand every rendered frame.
@@ -245,9 +255,19 @@ func _physics_process(delta: float) -> void:
 ## interpolated body position, so rope and hook stay smooth at 120 Hz and
 ## when the frame rate drops.
 func _process(delta: float) -> void:
-	var origin := get_global_transform_interpolated().origin + HOOK_OFFSET
+	var body := get_global_transform_interpolated().origin
+	var flight := _flight_prev.lerp(flight_position, Engine.get_physics_interpolation_fraction())
+	var target = null
+	if _attached:
+		target = anchor
+	elif _flying:
+		target = flight
+	figure.update_pose(delta, body, {"velocity": velocity, "on_floor": is_on_floor(),
+			"target": target, "aim": _aim_direction})
+	# The rope starts in the rope hand.
+	var origin := figure.hand_position()
 	if _flying:
-		_flight_visual.show_at(origin, _flight_prev.lerp(flight_position, Engine.get_physics_interpolation_fraction()))
+		_flight_visual.show_at(origin, flight, delta, flight_rope_slack)
 	else:
 		_flight_visual.update_retract(delta, origin)
 	if _attached:
@@ -541,7 +561,9 @@ func _on_aim_changed(swipe: Vector2) -> void:
 	if not _is_valid_swipe(swipe):
 		_hide_aim()
 		return
-	var path := predict_hook_path(_throw_direction(swipe, aim_preview_speed), aim_preview_speed)
+	var direction := _throw_direction(swipe, aim_preview_speed)
+	_aim_direction = direction
+	var path := predict_hook_path(direction, aim_preview_speed)
 	var points: PackedVector3Array = path.points
 	aim_line.update_points(points, true)
 	aim_line.visible = true
@@ -555,6 +577,7 @@ func _on_aim_cancelled() -> void:
 
 
 func _hide_aim() -> void:
+	_aim_direction = null
 	aim_line.visible = false
 	aim_marker.visible = false
 
@@ -637,3 +660,5 @@ func reset_to(position_3d: Vector3) -> void:
 	velocity = Vector3.ZERO
 	# A teleport, not a movement: no interpolation from the old position.
 	reset_physics_interpolation()
+	if figure:
+		figure.snap(position_3d)
