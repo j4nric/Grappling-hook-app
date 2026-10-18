@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://scripts/pause_menu.gd" id="11_pause"]
 [ext_resource type="Script" path="res://scripts/speed_lines.gd" id="12_lines"]
 [ext_resource type="Script" path="res://scripts/music.gd" id="14_music"]
+[ext_resource type="Script" path="res://scripts/light_lod.gd" id="15_lod"]
 [ext_resource type="Texture2D" path="res://assets/textures/vignette.png" id="13_vignette"]
 
 [sub_resource type="Environment" id="env"]
@@ -67,6 +68,10 @@ game = NodePath("..")
 script = ExtResource("14_music")
 player = NodePath("../Player")
 game = NodePath("..")
+
+[node name="LightLod" type="Node" parent="." node_paths=PackedStringArray("camera")]
+script = ExtResource("15_lod")
+camera = NodePath("../CameraRig")
 
 [node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("target", "view_camera")]
 script = ExtResource("4_camera")
