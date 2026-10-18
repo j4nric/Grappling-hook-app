@@ -46,10 +46,15 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 - Level-Design-Regeln (gelernt beim Bauen): Übergänge zu niedrigeren/schmaleren
   Hallen sind schräg (sonst prallt man ab); Decken haben einen Deckel (keine Taschen
   zum Steckenbleiben); Boden-Hallen sind massiv bis in die Tiefe; Tore sind Eis mit
-  senkrechtem Schlitz und Felsinsel dahinter; in Eis-Hallen garantiert
+  senkrechtem Schlitz bis zur Decke und Felsinsel dahinter; in Eis-Hallen garantiert
   `anchor_spacing` greifbare Stalaktiten. Neue Elemente im Baukasten dürfen den
   Zufallsstrom nur dort nutzen, wo sie vorkommen – sonst ändern sich alle
-  bestehenden Höhlen (Rekorde, Medaillen).
+  bestehenden Höhlen (Rekorde, Medaillen). Decke und Wände sind nur optisch
+  rau (`_shape`), ihre Kollision ist flach (`_solid`, `CEILING_ROUGHNESS`),
+  damit man an keiner Kante hängen bleibt (`tests/test_flow.gd`). Wenig
+  Hindernisse = besserer Flow: Stalaktiten sind kurz (`STALACTITE_MAX`), die
+  ganze Decke hält den Haken. Arbeitslevel für das Grund-Design ist
+  „Wide Cave“ (`level_07`, erster Eintrag in `Levels.LIST`).
 - Tuning-Werte sind `@export`-Variablen und werden im Inspector verändert, nicht
   im Code verstreut. Neue Stellschrauben ebenfalls als `@export` anlegen.
 - Gameplay-Input läuft **ausschließlich** über das Autoload `InputRouter`

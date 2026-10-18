@@ -118,7 +118,26 @@ Bestzeiten aus Safari sind dort nicht zu sehen (iOS trennt das, nicht änderbar)
 - [ ] **Bildrate auf dem iPhone messen** (TUNE → Misc → Debug-Anzeige).
 - [ ] **Neue Standardwerte erspielen** und per **Copy** schicken.
 
-## Ideen für Runde 4 (aus Runde 3 gelernt)
+## Runde 4 – Feedback vom Handy (2026-10-18)
+
+- [x] **Zu viele Hindernisse:** Stalaktiten halbiert und auf höchstens 8 m
+      gekürzt (vorher 13 m), Felsvorsprünge halbiert, eine Säule weniger pro
+      Halle, Generator entsprechend. Bot-Zeiten sanken deutlich (First Swing
+      11,4 → 7,7 s, Lava Deep 17,2 → 11,4 s, Ice Ceiling 19,7 → 9,9 s),
+      Medaillen neu kalibriert.
+- [x] **Kanten in der Decke:** Decke und Wände sind nur noch optisch rau; die
+      Kollision ist flach (Unterkante exakt auf Deckenhöhe, Eis bleibt Eis).
+      Gleiten an der Decke behält das Tempo (`tests/test_flow.gd`).
+- [x] **Neu entdeckt:** Auf der glatten Decke gleitet man bis vor den
+      Eis-Sturz über dem Tor-Schlitz und bleibt dort hängen (Bot schaffte
+      „Gates“ nicht mehr) → Tor-Schlitz reicht jetzt bis zur Decke.
+- [x] **Breites Arbeitslevel „Wide Cave“:** Hallen 80–90 m breit, Decke bis
+      36 m, kaum Hindernisse; erster Eintrag im Level-Menü. Hier wird das
+      Grund-Design der Level weiterentwickelt.
+- [ ] **Einstellungen verständlich:** Klarname, Beschreibung und kleine
+      animierte Grafik für jeden TUNE-Regler.
+
+## Ideen für Runde 5 (aus Runde 3 gelernt)
 
 - [ ] **Hall je Halle:** große Hallen mehr Nachhall als enge Gänge (zwei
       Varianten je Sound backen, nach Hallengröße wählen).

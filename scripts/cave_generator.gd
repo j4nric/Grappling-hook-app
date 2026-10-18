@@ -55,23 +55,23 @@ static func segments(seed_value: int) -> Array:
 			"length": snappedf(rng.randf_range(50.0, 75.0), 1.0),
 			"width": snappedf(rng.randf_range(34.0, 46.0), 1.0),
 			"ceiling": snappedf(rng.randf_range(24.0, 32.0), 1.0),
-			"stalactites": snappedf(rng.randf_range(0.5, 0.9), 0.05),
-			"outcrops": snappedf(rng.randf_range(0.2, 0.5), 0.05),
+			"stalactites": snappedf(rng.randf_range(0.25, 0.45), 0.05),
+			"outcrops": snappedf(rng.randf_range(0.1, 0.25), 0.05),
 			"crystals": rng.randi_range(2, 3),
 			"shafts": rng.randi_range(0, 2),
 			"checkpoint": i % 2 == 1,
 		}
 		match kind:
 			"islands":
-				hall.islands = rng.randi_range(2, 3)
+				hall.islands = rng.randi_range(1, 2)
 			"pillars":
-				hall.pillars = rng.randi_range(3, 4)
+				hall.pillars = rng.randi_range(2, 2)
 			"lava":
 				hall.floor = "lava"
 				hall.islands = 1
 			"ice":
 				hall.ice = snappedf(rng.randf_range(0.7, 1.0), 0.05)
-				hall.outcrops = 0.5
+				hall.outcrops = 0.3
 				hall.pillars = 1
 			"gate":
 				hall.gate = [snappedf(rng.randf_range(-10.0, 10.0), 0.5), snappedf(rng.randf_range(14.0, 16.0), 0.5)]
@@ -87,14 +87,14 @@ static func segments(seed_value: int) -> Array:
 				hall.ceiling = maxf(float(hall.ceiling), 30.0)
 			"brittle":
 				hall.brittle = snappedf(rng.randf_range(0.5, 0.7), 0.05)
-				hall.stalactites = snappedf(rng.randf_range(1.0, 1.3), 0.05)
+				hall.stalactites = snappedf(rng.randf_range(0.6, 0.8), 0.05)
 			"rings":
 				hall.rings = rng.randi_range(3, 4)
 				hall.islands = 1
 			"dark":
 				hall.dark = true
 				hall.crystals = 4
-				hall.stalactites = 0.9
+				hall.stalactites = 0.5
 		halls.append(hall)
 	halls.append(_ground_hall(rng))
 	return halls
@@ -111,7 +111,7 @@ static func estimate_time(halls: Array) -> float:
 
 static func _ground_hall(rng: RandomNumberGenerator) -> Dictionary:
 	return {"kind": "ground", "length": 40.0, "width": 34.0, "ceiling": 26.0, "floor": "ground",
-			"stalactites": 0.6, "crystals": 2, "shafts": rng.randi_range(0, 1)}
+			"stalactites": 0.3, "crystals": 2, "shafts": rng.randi_range(0, 1)}
 
 
 ## Weighted pick; not the same kind twice in a row, no gate right at the start.

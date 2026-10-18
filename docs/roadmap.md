@@ -110,3 +110,6 @@ Musik nach Tempo, Tutorial.
 | 2026-10-18 | Aufwind `lift` / `max_rise` | neu: 46 / 20 m/s | trägt aus dem Stand nach oben, ohne den Haken zu ersetzen |
 | 2026-10-18 | Brüchig `hold_time` | neu: 0,8 s | hält einen Zug, zwingt zur Kette |
 | 2026-10-18 | Tempo-Ring `boost_speed` | neu: 44 m/s | knapp unter `max_speed` (50) |
+| 2026-10-18 | Hindernisse | Stalaktiten ×0,5 und ≤ 8 m (vorher 13 m), Vorsprünge ×0,5, Säulen −1 | Feedback: zu viele Hindernisse, Flow leidet |
+| 2026-10-18 | Decke/Wände | Kollision flach, Optik ±0,4 m rau | Feedback: Hängenbleiben an Deckenkanten |
+| 2026-10-18 | Medaillen | neu kalibriert | Bot-Zeiten nach glatter Decke und weniger Hindernissen (Gold 0,85×, Silber 1,2×, Bronze 2×) |
