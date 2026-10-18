@@ -9,7 +9,10 @@ Reihenfolge = Umsetzungsreihenfolge, ein PR pro Themengebiet.
 - [x] **Bot in frischer Hauptszene (S):** (umgesetzt: `bot_run()` in
       `tests/test_case.gd` lädt für jeden Bot-Lauf die Hauptszene neu; ein
       Test spielt denselben Start zweimal und vergleicht die Zeit)
-- [ ] **Gold-Geist (M):** Bot-Läufe als mitgelieferter Geist, abgespielt im Tempo
+- [x] **Gold-Geist (M):** (umgesetzt: bester Bot-Lauf je Level als Lauf-Code in
+      `assets/ghosts/`, goldener Geist kommt genau zur Gold-Zeit ins Ziel,
+      Schalter „Gold“ im Pause-Menü; ein Test verlangt für jede Level-Version
+      einen passenden Geist) Bot-Läufe als mitgelieferter Geist, abgespielt im Tempo
       der Gold-Zeit: zeigt eine Linie, die Gold schafft.
 - [ ] **Mehr Level mit den neuen Bausteinen (M):** Kurven, Abkürzungen, Pilze.
 - [ ] **Abkürzungen im Generator häufiger (S).**

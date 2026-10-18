@@ -37,6 +37,8 @@ signal level_loaded(level: Level)
 @onready var environment: Environment = $WorldEnvironment.environment
 @onready var ghost := $Ghost
 @onready var rival := $Rival
+## A bot run at the pace of the gold time (GoldGhosts).
+@onready var gold_ghost := $GoldGhost
 ## Run codes and the rival ghost (pause menu), and the stats screen with the
 ## medal summary and the backup (level menu).
 @onready var sharing: Sharing = $Sharing
@@ -222,6 +224,7 @@ func _process(delta: float) -> void:
 		ghost.update_run(_elapsed, player.global_position,
 				player.anchor if player.hook_state == player.HookState.ATTACHED else Ghost.NO_ANCHOR)
 		rival.update_run(_elapsed, player.global_position)
+		gold_ghost.update_run(_elapsed, player.global_position)
 		_update_ghost_delta()
 		_count_stats(minf(TimeScale.timer_delta(delta), max_timer_step))
 	TimeScale.update(delta)
@@ -256,6 +259,10 @@ func restart() -> void:
 	_set_flow(0)
 	ghost.reset(Records.load_ghost(_record_id))
 	rival.reset(Records.load_rival(_record_id).get("run", {}))
+	var gold: Dictionary = {} if _edited else GoldGhosts.load_for(level_list[level_index], level)
+	gold_ghost.reset(gold.get("run", {}))
+	# Arrives at the finish exactly at the gold time.
+	gold_ghost.pace = float(gold.get("time", level.gold_time)) / level.gold_time
 	level.reset_dynamic()
 	_splits.clear()
 	_best_splits = Records.best_splits(_record_id)
@@ -441,6 +448,7 @@ func start_replay() -> void:
 	TimeScale.set_cinema(1.0)
 	ghost.visible = false
 	rival.visible = false
+	gold_ghost.visible = false
 	_blink(RESPAWN_FADE)
 	replay.start(run)
 	replay_label.visible = true

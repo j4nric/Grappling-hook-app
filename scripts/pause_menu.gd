@@ -22,6 +22,7 @@ var _panel: PanelContainer
 var _info: Label
 var _ghost_toggle: Button
 var _sound_toggle: Button
+var _gold_toggle: Button
 var _outfit_button: Button
 ## Unlocked outfit names, looked up when the menu opens.
 var _outfits: Array[String] = ["Classic"]
@@ -76,7 +77,8 @@ func _ready() -> void:
 	box.add_child(switches)
 	_ghost_toggle = _make_button("", _on_ghost_toggle)
 	_sound_toggle = _make_button("", _on_sound_toggle)
-	for toggle in [_ghost_toggle, _sound_toggle]:
+	_gold_toggle = _make_button("", _on_gold_toggle)
+	for toggle in [_ghost_toggle, _gold_toggle, _sound_toggle]:
 		toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		switches.add_child(toggle)
 	_outfit_button = _make_button("", next_outfit)
@@ -166,6 +168,12 @@ func _on_ghost_toggle() -> void:
 	_update_toggles()
 
 
+func _on_gold_toggle() -> void:
+	Settings.gold_ghost_enabled = not Settings.gold_ghost_enabled
+	Settings.save_settings()
+	_update_toggles()
+
+
 func _on_sound_toggle() -> void:
 	Settings.sound_enabled = not Settings.sound_enabled
 	Settings.save_settings()
@@ -174,6 +182,7 @@ func _on_sound_toggle() -> void:
 
 func _update_toggles() -> void:
 	_ghost_toggle.text = "Ghost: %s" % ("on" if Settings.ghost_enabled else "off")
+	_gold_toggle.text = "Gold: %s" % ("on" if Settings.gold_ghost_enabled else "off")
 	_sound_toggle.text = "Sound: %s" % ("on" if Settings.sound_enabled else "off")
 	_outfit_button.text = "Outfit: %s  (%d of %d)" % [Settings.outfit, _outfits.size(), Outfits.LIST.size()]
 

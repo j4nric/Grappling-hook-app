@@ -42,5 +42,6 @@ func run() -> void:
 	# The wind loop keeps playing, its volume follows the speed.
 	var sfx := main.get_node("Sfx")
 	main.restart()
-	await wait_frames(30)
-	check(sfx._wind.playing and sfx._wind.volume_db < -40.0, "wind plays silently at rest")
+	# The wind level glides down (wind_fade_speed): a second is plenty.
+	await wait_frames(60)
+	check(sfx._wind.playing and sfx._wind.volume_db < -40.0, "wind plays silently at rest (%s, %.1f dB, %.1f m/s)" % [sfx._wind.playing, sfx._wind.volume_db, p.velocity.length()])

@@ -137,6 +137,7 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/ambient_sound.gd` | `AmbientSound`: 3D-Geräusch im Level (Lava, Aufwind, Kristall als Schleife, Tropfen in Abständen), spielt nur in Hörweite; platziert von `CavernBuilder` |
 | `scripts/debug_overlay.gd` | Debug-Anzeige (FPS, Tempo, Haken, letzter Wurf) und Auto-Qualität |
 | `tools/gen_splash.py` | Erzeugt `assets/splash.png` (Ladebildschirm) |
+| `scripts/gold_ghosts.gd` | `GoldGhosts`: mitgelieferter Bot-Lauf je Level (`assets/ghosts/<key>.txt`, Lauf-Code, im Web-Export per `include_filter`), abgespielt im Tempo der Gold-Zeit (`GoldGhost` in `main.tscn`, `Ghost.pace`); nach Level-Änderungen neu aufnehmen: `RECORD_GHOSTS=1 BOT_FULL=1 TEST_FILTER=test_levels` (`test_gold_ghost` prüft die Version) |
 | `scripts/ghost.gd` | `Ghost`: zeichnet den Lauf auf (Position + Seil-Anker alle 0,05 s), spielt den besten Lauf als Geist ab, `time_at_z()` für das Geist-Delta im HUD |
 | `scripts/replay.gd` | `Replay`: spielt den besten Lauf im Ziel ab („Replay“): setzt den Spieler (`player.replaying`, `replay_step()`), Kamera, Figur und Seil folgen; Tippen beendet |
 | `scripts/stats.gd` | `Stats`: Läufe, Ziele, Meter, Haken, längster Flow, Spielzeit – gesamt und pro Level in `user://stats.cfg`; Zielzeiten-Verlauf (50 je Level-Version) in `user://history.cfg`; Anzeige im Level-Menü („Stats“) |

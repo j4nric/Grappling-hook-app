@@ -47,7 +47,7 @@ gewundene Hallen mit Abkürzung in „Winding Rift“;
 Arbeitslevel „Wide Cave“), dazu **Daily Cave** (jeden Tag eine neue, für alle
 gleiche Höhle) und **Random Cave** (bei jeder Wahl neu). Medaillen, Bestzeiten,
 Zwischenzeiten an Checkpoints, Geist der Bestzeit mit Abstand im HUD, **Replay**
-der Bestzeit im Ziel, **Stats** im Level-Menü (Läufe, Meter, Haken, Flow,
+der Bestzeit im Ziel, goldener **Gold-Geist** im Tempo der Gold-Zeit, **Stats** im Level-Menü (Läufe, Meter, Haken, Flow,
 Spielzeit, Kurve der Zielzeiten je Level), Flow-Zähler für Haken in Folge, Musik, die mit dem Tempo anzieht,
 Wasserfälle, Glut über fließender Lava, Schnee in Eis-Hallen, Glühwürmchen im
 Dunkeln, Tageslicht am Ausgang, Höhlen-Hall, der sich nach der Hallengröße richtet, und Geräusche an ihren Orten
