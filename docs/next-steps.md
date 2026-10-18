@@ -80,13 +80,16 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 5. Motivation und Fortschritt
 
-- [ ] **Fortschritt im Level-Menü (S):** Medaillen als farbige Marken je Level,
+- [x] **Fortschritt im Level-Menü (S):** (umgesetzt: farbige Medaillen-Marke vor
+      jedem Level, Zeile mit Gold/Silber/Bronze und Daily-Serie) Medaillen als farbige Marken je Level,
       Summe Gold/Silber/Bronze, Daily-Cave-Serie (Tage in Folge).
-- [ ] **Zwischenzeiten im Ziel (S):** Tabelle der Checkpoints mit Zeit und
+- [x] **Zwischenzeiten im Ziel (S):** (umgesetzt) Tabelle der Checkpoints mit Zeit und
       Abstand zur Bestzeit.
-- [ ] **Farben für die Figur (M):** Anzug- und Schalfarben, freigespielt durch
+- [x] **Farben für die Figur (M):** (umgesetzt: 6 Outfits in `Outfits.LIST`,
+      freigespielt durch Medaillen; Pause-Menü „Outfit“ zeigt, was das nächste braucht) Anzug- und Schalfarben, freigespielt durch
       Medaillen; Auswahl im Pause-Menü.
-- [ ] **Daten sichern (S):** Bestzeiten, Statistik und Tuning als Code
+- [x] **Daten sichern (S):** (umgesetzt: Stats-Bildschirm „Backup“/„Restore“, Code
+      `GCB1:`; Geister bleiben zurück; beim Einlesen nur einfache Werte) Bestzeiten, Statistik und Tuning als Code
       kopieren und woanders einfügen – z. B. von Safari in die App auf dem
       Home-Bildschirm (die haben getrennte Speicher).
 

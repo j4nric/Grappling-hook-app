@@ -12,6 +12,8 @@ signal levels_pressed
 signal share_requested
 ## Load run: the text the player pasted.
 signal run_code_entered(text: String)
+## Another outfit was picked (Settings.outfit holds its name).
+signal outfit_changed
 
 const FONT_SIZE := 34
 
@@ -20,6 +22,9 @@ var _panel: PanelContainer
 var _info: Label
 var _ghost_toggle: Button
 var _sound_toggle: Button
+var _outfit_button: Button
+## Unlocked outfit names, looked up when the menu opens.
+var _outfits: Array[String] = ["Classic"]
 var _status: Label
 var _awaiting_paste := false
 ## Pause state found when opening (the level menu may already pause).
@@ -74,6 +79,8 @@ func _ready() -> void:
 	for toggle in [_ghost_toggle, _sound_toggle]:
 		toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		switches.add_child(toggle)
+	_outfit_button = _make_button("", next_outfit)
+	box.add_child(_outfit_button)
 	var sharing := HBoxContainer.new()
 	sharing.add_theme_constant_override("separation", 16)
 	box.add_child(sharing)
@@ -125,6 +132,8 @@ func open() -> void:
 		return
 	_was_paused = get_tree().paused
 	_status.text = ""
+	_outfits = Outfits.unlocked_names(Outfits.best_medals())
+	_update_toggles()
 	_panel.visible = true
 	_button.visible = false
 	get_tree().paused = true
@@ -166,6 +175,23 @@ func _on_sound_toggle() -> void:
 func _update_toggles() -> void:
 	_ghost_toggle.text = "Ghost: %s" % ("on" if Settings.ghost_enabled else "off")
 	_sound_toggle.text = "Sound: %s" % ("on" if Settings.sound_enabled else "off")
+	_outfit_button.text = "Outfit: %s  (%d of %d)" % [Settings.outfit, _outfits.size(), Outfits.LIST.size()]
+
+
+## Next unlocked outfit; shows what the next locked one needs.
+func next_outfit() -> void:
+	var at := _outfits.find(Settings.outfit)
+	Settings.outfit = _outfits[(at + 1) % _outfits.size()]
+	Settings.save_settings()
+	_update_toggles()
+	outfit_changed.emit()
+	if _outfits.size() < Outfits.LIST.size():
+		var locked: Dictionary = Outfits.LIST[_outfits.size()]
+		for outfit: Dictionary in Outfits.LIST:
+			if outfit.name not in _outfits:
+				locked = outfit
+				break
+		show_status("Next outfit \"%s\": %s" % [locked.name, Outfits.requirement(locked)])
 
 
 func _on_restart() -> void:

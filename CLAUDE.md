@@ -118,13 +118,15 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scenes/levels/level_*.tscn` | Level als Layout (`segments`, `layout_seed`, Medaillen, Tutorial-`hints`); gebaut von `CavernBuilder` |
 | `scripts/cave_generator.gd` | `CaveGenerator`: prozedurale Höhle aus einem Seed (faire Hallenfolge, Medaillen aus Zeitschätzung); „Daily Cave“ (Seed = Datum) und „Random Cave“ |
 | `scripts/levels.gd` | `Levels`: feste Level (`LIST`) plus prozedurale Pfade `cave://daily/<seed>`, `cave://random/<seed>`; `Levels.instantiate(path)` |
-| `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel) |
+| `scripts/level_menu.gd` | Level-Auswahl (pausiert das Spiel): Medaillen-Marke je Level, Zeile mit Medaillen und Daily-Serie; Stats-Bildschirm mit Backup/Restore |
 | `scripts/pause_menu.gd` | Pause-Knopf und -Menü (Medaillenziele, Weiter/Neustart/Level, Geist/Ton, „Share run“/„Load run“), öffnet bei Fokusverlust |
 | `scripts/run_code.gd` | `RunCode`: Lauf als Text-Code `GC1:<Level>@<Version>:<ms>:<Daten>` (5-cm-Raster, Deflate, Base64; ~1–2 KB); ein geladener Code wird zum orangen Rivalen-Geist (`Rival` in `main.tscn`, `Records.save_rival()`) |
 | `scripts/clipboard.gd` | `Clipboard`: Kopieren/Einfügen; im Browser auf `button_down` scharf gestellt und im `touchend` ausgeführt (iOS), Einfügen per Browser-Dialog, Ergebnis per `take_paste()` |
 | `scripts/sparkline.gd` | `Sparkline`: Kurve der Zielzeiten eines Levels (Statistik), Gold = Bestzeit bis dahin |
 | `scripts/records.gd` | `Records`: Bestzeit, Zwischenzeiten, TUNE*-Markierung und Ghost pro Level-Version (`Records.id()` = Schlüssel + Layout-Hash) in `user://` |
-| `scripts/settings.gd` | `Settings`: Geist und Ton an/aus (Pause-Menü), in `user://settings.cfg` |
+| `scripts/settings.gd` | `Settings`: Geist und Ton an/aus, Outfit (Pause-Menü), in `user://settings.cfg` |
+| `scripts/outfits.gd` | `Outfits`: Farben der Figur (Jacke, Schal, Helm), freigespielt durch Medaillen (`needs`), `PlayerFigure.set_outfit()` |
+| `scripts/backup.gd` | `Backup`: Bestzeiten, Statistik, Verlauf, Einstellungen und Tuning als Code `GCB1:` (Stats-Bildschirm „Backup“/„Restore“); beim Einlesen nur einfache Werte |
 | `scripts/effects.gd` | Partikel: Funken beim Einhaken, Staub bei harter Landung, Zip-Burst, Tempo-Spur; Teilchen in der Luft je Halle (`air_for()`: Staub, Glut, Schnee, Glühwürmchen, Pollen) |
 | `scripts/music.gd` | Musik: drei synchrone Spuren (`AudioStreamSynchronized`), Puls und Arpeggio nach Tempo und Flow; Spuren von `tools/gen_music.py` (QOA-komprimiert, nahtlos) |
 | `scripts/sfx.gd` | Soundeffekte aus Player-/Game-/Level-Signalen, Wind nach Tempo; Bus „Cave“ mit Reverb nach Größe der Halle (`Level.hall_at()`) |

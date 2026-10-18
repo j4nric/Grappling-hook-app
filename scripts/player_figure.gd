@@ -49,6 +49,9 @@ var knee_l: Node3D
 var lamp: SpotLight3D
 
 var scarf: VerletBand
+## Materials that take the outfit's colors (set_outfit()).
+var _jacket: Array[StandardMaterial3D] = []
+var _helmet: Array[StandardMaterial3D] = []
 ## Somersault progress 0..1 (1 = none running).
 var flip := 1.0
 var _crouch := 0.0
@@ -64,6 +67,15 @@ func _ready() -> void:
 	scarf = VerletBand.new()
 	scarf.name = "Scarf"
 	add_child(scarf)
+
+
+## Colors of an outfit (Outfits.LIST entry): jacket, scarf, helmet.
+func set_outfit(outfit: Dictionary) -> void:
+	for material in _jacket:
+		material.albedo_color = outfit.jacket
+	for material in _helmet:
+		material.albedo_color = outfit.helmet
+	scarf.set_color(outfit.scarf)
 
 
 ## Starts the somersault of a zip launch.
@@ -320,6 +332,10 @@ func _part(parent: Node3D, kind: Variant, size: Vector3, at: Vector3, color: Col
 	material.albedo_color = color
 	material.roughness = 0.8
 	instance.material_override = material
+	if color == JACKET:
+		_jacket.append(material)
+	elif color == HELMET:
+		_helmet.append(material)
 	instance.position = at
 	parent.add_child(instance)
 	return instance

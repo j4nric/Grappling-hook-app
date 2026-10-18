@@ -5,7 +5,7 @@ extends SceneTree
 ## error happened. TEST_FILTER=chain runs only matching files.
 
 const SAVED_FILES := ["user://tuning_v2.cfg", "user://tuning_v3.cfg", "user://tuning_presets.cfg",
-		"user://records.cfg", "user://settings.cfg", "user://history.cfg", "user://cave_edits.cfg"]
+		"user://records.cfg", "user://settings.cfg", "user://history.cfg", "user://cave_edits.cfg", "user://stats.cfg"]
 
 
 ## Counts script errors (a broken test or game script must fail the run,
