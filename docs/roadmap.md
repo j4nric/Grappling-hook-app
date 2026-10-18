@@ -86,13 +86,13 @@ Musik nach Tempo, Tutorial.
 - [x] Tuning-Sätze A/B/C und Einfügen, Läufe als Code teilen (Rivalen-Geist), Zielzeiten-Kurve
 - [x] Sturz als Ragdoll, Nachhall je Halle, Leistungsmessung breiter Hallen
 
-## M11 – Können, Abwechslung, Fortschritt (Runde 6, geplant)
-- [ ] Perfekter Kettenwurf, Sprungpilze
-- [ ] Kurvige Höhlen, Abkürzungen, Level „Winding Rift“
-- [ ] Wasserfälle, Teilchen in der Luft, fließende Lava, Ausgang ins Tageslicht
-- [ ] Fortschritt im Menü, Zwischenzeiten, Figur-Farben, Daten sichern
-- [ ] Shader aufwärmen, Paketgröße, game.gd aufteilen
-- [ ] Siehe `next-steps.md`
+## M11 – Können, Abwechslung, Fortschritt (Runde 6)
+- [x] Bot reproduzierbar, Bot sieht Tor-Schlitze, Medaillen neu gemessen
+- [x] Perfekter Kettenwurf, Sprungpilze
+- [x] Kurvige Höhlen, Abkürzungen, Level „Winding Rift“, Generator mit Kurven
+- [x] Wasserfälle, Teilchen in der Luft je Halle, fließende Lava, Ausgang ins Tageslicht
+- [x] Medaillen und Daily-Serie im Menü, Zwischenzeiten, Outfits, Backup/Restore
+- [x] Shader aufwärmen, Engine aus dem Cache, game.gd aufgeteilt
 
 ## Tuning-Log
 

@@ -1,6 +1,6 @@
 # Nächste Schritte – Runde 6
 
-Stand: 2026-10-18. Runden 1–5 sind erledigt (PRs #1–#43, Zusammenfassung in
+Stand: 2026-10-18. Runden 1–6 sind erledigt (PRs #1–#51, Zusammenfassung in
 `roadmap.md`, Archiv unten). Runde 5 hat das Grund-Design der Level, die neue
 Optik, den Höhlen-Editor und das Teilen gebracht. Ziel dieser Runde: **mehr
 Können belohnen, die Höhle lebendiger und abwechslungsreicher machen, den
@@ -95,20 +95,38 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 6. Optimierung
 
-- [ ] **Shader aufwärmen (S):** Im Browser ruckelt der erste Funke, Zip-Burst
+- [x] **Shader aufwärmen (S):** (umgesetzt: `Effects.warm_up()` beim Start hinter
+      dem Schwarz: alle Effekte einmal, alle Level-Materialien und Shader einmal
+      gezeichnet, nach 4 Ticks wieder weg) Im Browser ruckelt der erste Funke, Zip-Burst
       oder Ring, weil Shader erst dann kompiliert werden. Beim Laden alle
       Effekt-Materialien einmal unsichtbar zeichnen.
-- [ ] **Ladezeit und Paketgröße (S):** Web-Paket messen, Texturen/Sounds/Musik
-      prüfen, Unnötiges ausschließen.
-- [ ] **game.gd aufteilen (M):** Die Datei ist auf ~700 Zeilen gewachsen; HUD und
-      Ziel-Bildschirm in eigene Scripts.
-- [ ] **Abschluss-Doku (S):** CLAUDE.md, README, roadmap, next-steps.
+- [x] **Ladezeit und Paketgröße (S):** (gemessen: Spielpaket 1,7 MB – Musik 0,5 MB,
+      Sounds, Texturen –, keine ungenutzten Dateien; die Engine `index.wasm` hat
+      39,5 MB und bestimmt die Ladezeit. Der Service Worker lädt die Engine jetzt
+      aus einem eigenen Cache, benannt nach ihrem Hash: ab dem zweiten Start
+      wartet nichts mehr auf das Netz, eine neue Godot-Version bringt einen neuen
+      Cache. Geprüft im Browser: zweiter Start und offline aus dem Cache.)
+      Web-Paket messen, Texturen/Sounds/Musik prüfen, Unnötiges ausschließen.
+- [x] **game.gd aufteilen (M):** (umgesetzt: 722 → 608 Zeilen; Lauf-Codes und
+      Rivale in `Sharing`, Stats-Bildschirm, Medaillen-Zeile und Backup in
+      `Progress` – eigene Knoten in `main.tscn`) Die Datei war auf ~700 Zeilen gewachsen.
+- [x] **Abschluss-Doku (S):** CLAUDE.md, README, roadmap, next-steps.
 
 ## Auf dem Gerät (nur mit dem iPhone möglich)
 
 - [ ] **Bildrate auf dem iPhone messen** (TUNE → Misc → Debug-Anzeige), vor allem
       in Wide Cave und Skyway.
 - [ ] **Perfekter Kettenwurf und Sprungpilze** anspielen: Schub zu stark/schwach?
+
+## Ideen für Runde 7
+
+- [ ] **Gold-Geist:** Bot-Läufe als mitgelieferter Geist in Medaillen-Tempo.
+- [ ] **Mehr Level mit den neuen Bausteinen** (Kurven, Abkürzungen, Pilze) –
+      nach deinem Feedback zu Winding Rift.
+- [ ] **Abkürzungen im Generator häufiger**, wenn sie sich bewähren.
+- [ ] **Bot und Physik-Engine:** die erste Fahrt nach dem Laden weicht ab
+      (Engine-Zustand); für exakte Wiederholbarkeit jeden Bot-Lauf in einer
+      frisch geladenen Hauptszene.
 
 ## Später
 

@@ -37,6 +37,10 @@ signal level_loaded(level: Level)
 @onready var environment: Environment = $WorldEnvironment.environment
 @onready var ghost := $Ghost
 @onready var rival := $Rival
+## Run codes and the rival ghost (pause menu), and the stats screen with the
+## medal summary and the backup (level menu).
+@onready var sharing: Sharing = $Sharing
+@onready var progress: Progress = $Progress
 @onready var replay: Replay = $Replay
 @onready var cave_editor: CaveEditor = $CaveEditor
 @onready var replay_label: Label = $HUD/Safe/ReplayLabel
@@ -119,19 +123,11 @@ func _ready() -> void:
 	InputRouter.release_requested.connect(_on_tap)
 	# From the menu, the random cave is a new one every time.
 	menu.level_chosen.connect(func(index: int) -> void: load_level(index, true))
-	menu.stats_requested.connect(func() -> void: menu.show_stats(stats_sections()))
-	menu.backup_requested.connect(func() -> void:
-		_flush_stats()
-		Clipboard.copy(Backup.code())
-		menu.show_backup_status("Backup copied: paste it with Restore on the other device."))
-	menu.backup_pasted.connect(func(text: String) -> void: menu.show_backup_status(restore_backup(text)))
 	replay.finished.connect(_on_replay_finished)
 	pause_menu.restart_pressed.connect(restart)
 	pause_menu.levels_pressed.connect(open_menu)
-	pause_menu.share_requested.connect(func() -> void: pause_menu.show_status(share_run()))
 	pause_menu.outfit_changed.connect(func() -> void: player.figure.set_outfit(Outfits.find(Settings.outfit)))
 	player.figure.set_outfit(Outfits.find(Settings.outfit))
-	pause_menu.run_code_entered.connect(func(text: String) -> void: pause_menu.show_status(load_run_code(text)))
 	version_label.text = "build %s" % ProjectSettings.get_setting("application/config/version", "dev")
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.03, 0.03, 0.05, 0.85)
@@ -146,6 +142,7 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_apply_safe_area)
 	_apply_safe_area()
 	load_level(maxi(start_level, 0))
+	$Effects.warm_up()
 	if start_level < 0:
 		open_menu()
 
@@ -210,7 +207,7 @@ func open_menu() -> void:
 		entries.append({"name": level_title, "detail": detail, "medal": medal})
 		scene.free()
 	menu.open(entries)
-	menu.set_summary(progress_text(counts))
+	menu.set_summary(progress.summary(counts))
 
 
 func _process(delta: float) -> void:
@@ -388,7 +385,7 @@ func _on_finished() -> void:
 		best_line += "  %s" % _signed(_elapsed - previous_best)
 	if tuned:
 		best_line += "  (TUNE*)"
-	var rival_time := _rival_time()
+	var rival_time := sharing.rival_time()
 	if rival_time < INF:
 		best_line += "\nRival %.2f s  %s" % [rival_time, _signed(_elapsed - rival_time)]
 	finish_panel.get_node("Lines/Best").text = best_line
@@ -483,104 +480,6 @@ func _notification(what: int) -> void:
 		_flush_stats()
 
 
-## The statistics screen of the level menu: total, then each level with
-## the curve of its finish times. Sections {"title", "text", "times"}.
-func stats_sections() -> Array:
-	_flush_stats()
-	var sections := [{"title": "TOTAL", "text": Stats.describe(Stats.of(Stats.TOTAL))}]
-	var seen := {}
-	for path in level_list:
-		var level_group := Stats.group(path)
-		if seen.has(level_group):
-			continue
-		seen[level_group] = true
-		var values := Stats.of(level_group)
-		if values.runs == 0:
-			continue
-		var title: String = {"daily": "Daily Caves", "random": "Random Caves"}.get(level_group, "")
-		var times := []
-		if title == "":
-			var scene: Level = Levels.instantiate(path)
-			title = scene.level_name
-			times = Stats.history(Records.id(path, scene))
-			scene.free()
-		sections.append({"title": title.to_upper(), "text": Stats.describe(values), "times": times})
-	if sections.size() == 1:
-		sections.append({"title": "", "text": "Play a level to start counting."})
-	return sections
-
-
-## Best run as a code for a friend (copied); returns the message to show.
-func share_run() -> String:
-	var run := Records.load_ghost(_record_id)
-	if _edited:
-		return "Edited caves cannot be shared (Reset cave in TUNE)."
-	if _best == INF or not Replay.can_play(run):
-		return "Finish the level first: your best run is shared."
-	Clipboard.copy(RunCode.encode(_record_id, _best, run))
-	return "Run copied (%.2f s): send it to a friend." % _best
-
-
-## A friend's run code: loads its level and makes the run the rival ghost.
-## Returns the message to show.
-func load_run_code(text: String) -> String:
-	var code := RunCode.decode(text)
-	if code.is_empty():
-		return "No run code found in the pasted text."
-	var path := _level_path(code.key)
-	var index := level_list.find(path)
-	var replaced := false
-	if index < 0 and path.begins_with(Levels.CAVE_PREFIX):
-		# Another daily or random cave: it takes the place of that kind.
-		for i in level_list.size():
-			if level_list[i].get_base_dir() == path.get_base_dir():
-				index = i
-				level_list[i] = path
-				replaced = true
-	if index < 0:
-		return "This run is from a level this game does not have."
-	if index != level_index or replaced:
-		load_level(index)
-	if _edited or Records.id(path, level) != code.id:
-		return "This run is from another version of %s." % level.level_name
-	Records.save_rival(_record_id, code.time, code.run)
-	restart()
-	return "Rival loaded: %.2f s. Race the orange ghost!" % code.time
-
-
-## Level path of a record key ("level_07", "daily_20261018").
-func _level_path(level_key: String) -> String:
-	for path in Levels.LIST:
-		if Records.key(path) == level_key:
-			return path
-	for kind in ["daily", "random"]:
-		var seed_text := level_key.trim_prefix(kind + "_")
-		if level_key.begins_with(kind + "_") and seed_text.is_valid_int():
-			return Levels.cave_path(kind, seed_text.to_int())
-	return ""
-
-
-func _rival_time() -> float:
-	if _edited:
-		return INF
-	return float(Records.load_rival(_record_id).get("time", INF))
-
-
-## Progress from a backup code: files written, settings and tuning loaded
-## again, the screens refreshed. Returns the message to show.
-func restore_backup(text: String) -> String:
-	var restored := Backup.restore(text)
-	if restored < 0:
-		return "No backup code found in the pasted text."
-	Settings.load_settings()
-	player.figure.set_outfit(Outfits.find(Settings.outfit))
-	tuning.reload_saved()
-	_best = Records.best_time(_record_id)
-	_update_hud()
-	menu.show_stats(stats_sections())
-	return "Restored %d saved file%s." % [restored, "" if restored == 1 else "s"]
-
-
 ## Checkpoint times of the run, each against the best run before it.
 static func splits_text(splits: Array, best_splits: Array) -> String:
 	var lines: PackedStringArray = []
@@ -590,18 +489,6 @@ static func splits_text(splits: Array, best_splits: Array) -> String:
 			line += "   %s" % _signed(float(splits[i]) - float(best_splits[i]))
 		lines.append(line)
 	return "\n".join(lines)
-
-
-## The line above the level list: medals over the fixed levels and the
-## daily streak. counts: levels per best medal (Records.Medal).
-func progress_text(counts: Array) -> String:
-	var parts: PackedStringArray = ["Gold %d" % counts[Records.Medal.GOLD], "Silver %d" % counts[Records.Medal.SILVER],
-			"Bronze %d" % counts[Records.Medal.BRONZE]]
-	var text := "%s   of %d levels" % ["  ".join(parts), Levels.LIST.size()]
-	var streak := Stats.daily_streak(CaveGenerator.daily_seed())
-	if streak > 0:
-		text += "\nDaily streak: %d day%s" % [streak, "" if streak == 1 else "s"]
-	return text
 
 
 ## Seconds ahead (-) or behind (+) the ghost at the same point of the level.
@@ -695,7 +582,7 @@ func _apply_safe_area() -> void:
 func _update_hud() -> void:
 	finish_panel.visible = _finished and not replay.is_playing()
 	var best_text := "%.2f s%s" % [_best, _tuned_mark(_record_id)] if _best < INF else "-"
-	var rival_time := _rival_time()
+	var rival_time := sharing.rival_time()
 	pause_menu.set_info("%s\nBest %s%s\nGold %.2f   Silver %.2f   Bronze %.2f" % [
 			level.level_name, best_text, "   Rival %.2f s" % rival_time if rival_time < INF else "",
 			level.gold_time, level.silver_time, level.bronze_time])

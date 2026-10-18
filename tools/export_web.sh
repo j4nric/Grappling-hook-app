@@ -31,6 +31,8 @@ grep -q "\"mainPack\":\"$pck\"" "$out/index.html"
 if [ -f "$src/web/sw.js" ]; then
   cp "$src"/web/manifest.webmanifest "$src"/web/sw.js "$src"/web/icon-*.png "$out/"
   files=$(cd "$out" && ls | grep -v '^sw\.js$' | sed 's/.*/"&"/' | paste -sd, -)
-  sed -i "s/__VERSION__/${version}/; s/__FILES__/[${files}]/" "$out/sw.js"
+  # The engine's own cache is named by its files: a new Godot version, a new cache.
+  engine=$(cd "$out" && cat index.wasm index.js | md5sum | cut -c1-12)
+  sed -i "s/__VERSION__/${version}/; s/__ENGINE__/${engine}/; s/__FILES__/[${files}]/" "$out/sw.js"
   grep -q 'rel="manifest"' "$out/index.html"
 fi
