@@ -523,6 +523,15 @@ func _process(_delta: float) -> void:
 	_flash(_paste, "%d set" % values.size(), "Paste")
 
 
+## The saved values again (after a backup was restored): defaults, then the
+## file, and the active tuning set.
+func reload_saved() -> void:
+	for p in PARAMS:
+		if p[5] != CAVE_TAB:
+			_sliders[_key(p)].value = _defaults[_key(p)]
+	_load()
+
+
 ## Every tuning value at its default, except the given ones (key -> value).
 func apply_values(values: Dictionary) -> void:
 	for p in PARAMS:

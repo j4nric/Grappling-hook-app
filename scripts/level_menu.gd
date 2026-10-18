@@ -6,6 +6,10 @@ extends CanvasLayer
 
 signal level_chosen(index: int)
 signal stats_requested
+## Stats screen "Backup": the game copies the code (armed on button_down).
+signal backup_requested
+## Stats screen "Restore": the text the player pasted.
+signal backup_pasted(text: String)
 
 const FONT_SIZE := 34
 
@@ -15,6 +19,10 @@ var _panel: PanelContainer
 var _stats_scroll: ScrollContainer
 var _stats_list: VBoxContainer
 var _stats_button: Button
+var _summary: Label
+var _backup_row: VBoxContainer
+var _backup_status: Label
+var _awaiting_paste := false
 
 
 func _ready() -> void:
@@ -49,6 +57,12 @@ func _ready() -> void:
 		install.add_theme_font_size_override("font_size", 24)
 		install.modulate = Color(1, 1, 1, 0.7)
 		root.add_child(install)
+	# Medals so far and the daily streak.
+	_summary = Label.new()
+	_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_summary.add_theme_font_size_override("font_size", 26)
+	_summary.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	root.add_child(_summary)
 	# Scrolls when the levels do not fit (small phones, landscape).
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -68,6 +82,33 @@ func _ready() -> void:
 	_stats_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_stats_list.add_theme_constant_override("separation", 8)
 	_stats_scroll.add_child(_stats_list)
+	# Backup / Restore on the stats screen: all progress as a code.
+	_backup_row = VBoxContainer.new()
+	var backup_buttons := HBoxContainer.new()
+	backup_buttons.add_theme_constant_override("separation", 16)
+	_backup_row.add_child(backup_buttons)
+	var backup := Button.new()
+	backup.text = "Backup"
+	backup.button_down.connect(func() -> void: backup_requested.emit())
+	var restore := Button.new()
+	restore.text = "Restore"
+	restore.button_down.connect(func() -> void:
+		Clipboard.request_paste("Paste a backup code:")
+		_awaiting_paste = true)
+	for button: Button in [backup, restore]:
+		button.custom_minimum_size = Vector2(0, 80)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.add_theme_font_size_override("font_size", 30)
+		backup_buttons.add_child(button)
+	_backup_status = Label.new()
+	_backup_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_backup_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_backup_status.add_theme_font_size_override("font_size", 22)
+	_backup_status.add_theme_color_override("font_color", Color(1.0, 0.65, 0.35))
+	_backup_status.text = "Backup copies best times, stats and tuning as a code: paste it into the game on another device or in the home screen app."
+	_backup_row.add_child(_backup_status)
+	_backup_row.visible = false
+	root.add_child(_backup_row)
 	_stats_button = Button.new()
 	_stats_button.custom_minimum_size = Vector2(0, 80)
 	_stats_button.add_theme_font_size_override("font_size", 30)
@@ -88,7 +129,13 @@ static func install_hint() -> String:
 	return "Tip: Share  >  Add to Home Screen\nplays fullscreen and offline"
 
 
-## entries: one Dictionary per level with "name" and optional "detail".
+## The line above the levels (medals, daily streak).
+func set_summary(text: String) -> void:
+	_summary.text = text
+
+
+## entries: one Dictionary per level with "name" and optional "detail" and
+## "medal" (Records.Medal: a colored mark in front, an empty ring without).
 func open(entries: Array) -> void:
 	for child in _list.get_children():
 		child.queue_free()
@@ -97,6 +144,8 @@ func open(entries: Array) -> void:
 		var detail: String = entries[i].get("detail", "")
 		button.text = "%d  %s%s" % [i + 1, entries[i].name, ("   " + detail) if detail != "" else ""]
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.icon = medal_icon(int(entries[i].get("medal", Records.Medal.NONE)))
+		button.add_theme_constant_override("h_separation", 16)
 		button.custom_minimum_size = Vector2(0, 96)
 		button.add_theme_font_size_override("font_size", FONT_SIZE)
 		button.pressed.connect(_choose.bind(i))
@@ -107,6 +156,23 @@ func open(entries: Array) -> void:
 	_show_list(true)
 	visible = true
 	get_tree().paused = true
+
+
+## A round mark in the medal's color (an empty ring for none).
+static func medal_icon(medal: int) -> ImageTexture:
+	var size := 36
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var color: Color = Records.medal_color(medal)
+	var r := size / 2.0
+	for y in size:
+		for x in size:
+			var d := Vector2(x + 0.5 - r, y + 0.5 - r).length()
+			var a := clampf(r - 1.0 - d, 0.0, 1.0)
+			if medal == Records.Medal.NONE:
+				# A thin ring.
+				a *= clampf(d - (r - 4.0), 0.0, 1.0) * 0.4
+			img.set_pixel(x, y, Color(color, a))
+	return ImageTexture.create_from_image(img)
 
 
 func close() -> void:
@@ -166,9 +232,25 @@ func _toggle_stats() -> void:
 		stats_requested.emit()
 
 
+func _process(_delta: float) -> void:
+	if not _awaiting_paste:
+		return
+	var text: Variant = Clipboard.take_paste()
+	if text == null:
+		return
+	_awaiting_paste = false
+	if text != "":
+		backup_pasted.emit(text)
+
+
+func show_backup_status(text: String) -> void:
+	_backup_status.text = text
+
+
 func _show_list(on: bool) -> void:
 	_scroll.visible = on
 	_stats_scroll.visible = not on
+	_backup_row.visible = not on
 	_stats_button.text = "Stats" if on else "Back"
 
 

@@ -96,3 +96,39 @@ static func history(record_id: String) -> Array:
 	if cfg.load(HISTORY_PATH) != OK or cfg.get_value("version", level_key, "") != record_id:
 		return []
 	return (cfg.get_value("finishes", level_key, []) as Array).map(func(entry: Array) -> float: return entry[1])
+
+
+## A day (UTC date as yyyymmdd) the daily cave was finished.
+static func add_daily_day(day: int) -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(PATH)
+	var days: Array = cfg.get_value("daily", "days", [])
+	if day not in days:
+		days.append(day)
+		days.sort()
+		# A year is plenty for a streak.
+		if days.size() > 366:
+			days = days.slice(days.size() - 366)
+	cfg.set_value("daily", "days", days)
+	cfg.save(PATH)
+
+
+## Days in a row the daily cave was finished, up to today (or yesterday:
+## today's may still come).
+static func daily_streak(today: int) -> int:
+	var cfg := ConfigFile.new()
+	cfg.load(PATH)
+	var days: Array = cfg.get_value("daily", "days", [])
+	var day := today if today in days else _day_before(today)
+	var streak := 0
+	while day in days:
+		streak += 1
+		day = _day_before(day)
+	return streak
+
+
+static func _day_before(day: int) -> int:
+	var unix := Time.get_unix_time_from_datetime_dict({"year": day / 10000, "month": (day / 100) % 100, "day": day % 100,
+			"hour": 12, "minute": 0, "second": 0})
+	var date := Time.get_date_dict_from_unix_time(unix - 86400)
+	return int(date.year) * 10000 + int(date.month) * 100 + int(date.day)

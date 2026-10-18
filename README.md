@@ -14,7 +14,7 @@ Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
   „Zum Home-Bildschirm“, dann über das Icon starten. Installiert läuft das
   Spiel auch offline (eigener Service Worker, `web/sw.js`); online kommt jeder
   neue Build sofort an. Achtung: Die installierte App hat eigene Bestzeiten,
-  getrennt von Safari.
+  getrennt von Safari – mitnehmen per „Stats“ → Backup/Restore.
 - Rechts oben steht `build <commit>`. Daran erkennst du, welche Version läuft.
   Ein neuer Build ist ca. 3–5 Minuten nach dem Push online (Status im Tab
   „Actions“). Zeigt das Spiel noch den alten Hash: Seite neu laden.
@@ -54,7 +54,12 @@ Dunkeln, Tageslicht am Ausgang, Höhlen-Hall, der sich nach der Hallengröße ri
 (Lava, Aufwind, Kristalle, Tropfen).
 Gespielt wird mit einer Gelenkfigur mit Schal; das Seil hängt durch und
 schlängelt sich zurück, bei einem Sturz fällt die Figur schlaff.
-Pause (**II**): Medaillenziele, Geist und Ton an/aus, **Share run** (beste Zeit
+Im Level-Menü stehen Medaillen und die Daily-Serie (Tage in Folge), im Ziel die
+Zwischenzeiten. Medaillen schalten **Outfits** für die Figur frei.
+„Stats“ → **Backup** kopiert alle Bestzeiten, Statistik und Tuning als Code,
+**Restore** liest ihn wieder ein – so wandern die Daten von Safari in die App
+auf dem Home-Bildschirm.
+Pause (**II**): Medaillenziele, Geist und Ton an/aus, Outfit, **Share run** (beste Zeit
 als Text-Code kopieren und an Freunde schicken), **Load run** (Code einfügen:
 der Lauf fährt als oranger Rivalen-Geist mit).
 TUNE-Tabs: Throw, Rope, Move, Camera, Misc (Lautstärken, Debug-Anzeige mit FPS,

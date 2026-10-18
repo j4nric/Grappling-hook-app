@@ -30,6 +30,12 @@ func _ready() -> void:
 	material_override = material
 
 
+func set_color(new_color: Color) -> void:
+	color = new_color
+	if material_override:
+		(material_override as StandardMaterial3D).albedo_color = color
+
+
 func reset(anchor: Vector3) -> void:
 	points.resize(segments + 1)
 	_previous.resize(segments + 1)

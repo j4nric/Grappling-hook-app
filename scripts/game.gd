@@ -120,10 +120,17 @@ func _ready() -> void:
 	# From the menu, the random cave is a new one every time.
 	menu.level_chosen.connect(func(index: int) -> void: load_level(index, true))
 	menu.stats_requested.connect(func() -> void: menu.show_stats(stats_sections()))
+	menu.backup_requested.connect(func() -> void:
+		_flush_stats()
+		Clipboard.copy(Backup.code())
+		menu.show_backup_status("Backup copied: paste it with Restore on the other device."))
+	menu.backup_pasted.connect(func(text: String) -> void: menu.show_backup_status(restore_backup(text)))
 	replay.finished.connect(_on_replay_finished)
 	pause_menu.restart_pressed.connect(restart)
 	pause_menu.levels_pressed.connect(open_menu)
 	pause_menu.share_requested.connect(func() -> void: pause_menu.show_status(share_run()))
+	pause_menu.outfit_changed.connect(func() -> void: player.figure.set_outfit(Outfits.find(Settings.outfit)))
+	player.figure.set_outfit(Outfits.find(Settings.outfit))
 	pause_menu.run_code_entered.connect(func(text: String) -> void: pause_menu.show_status(load_run_code(text)))
 	version_label.text = "build %s" % ProjectSettings.get_setting("application/config/version", "dev")
 	var panel_style := StyleBoxFlat.new()
@@ -184,20 +191,26 @@ func open_menu() -> void:
 	_flush_stats()
 	pause_menu.set_button_visible(false)
 	var entries := []
+	var counts := [0, 0, 0, 0]
 	for path in level_list:
 		var scene: Level = Levels.instantiate(path)
 		var record_id := Records.id(path, scene)
 		var best := Records.best_time(record_id)
 		var detail := ""
 		var level_title := scene.level_name
+		var medal := Records.Medal.NONE
 		if Levels.is_random_cave(path):
 			level_title = "Random Cave"
 			detail = "new every time"
 		elif best < INF:
-			detail = "%.2f s%s  %s" % [best, _tuned_mark(record_id), Records.medal_name(Records.medal(scene, best))]
-		entries.append({"name": level_title, "detail": detail})
+			medal = Records.medal(scene, best)
+			detail = "%.2f s%s" % [best, _tuned_mark(record_id)]
+		if path in Levels.LIST:
+			counts[medal] += 1
+		entries.append({"name": level_title, "detail": detail, "medal": medal})
 		scene.free()
 	menu.open(entries)
+	menu.set_summary(progress_text(counts))
 
 
 func _process(delta: float) -> void:
@@ -357,6 +370,8 @@ func _on_finished() -> void:
 		Records.save_ghost(_record_id, ghost.recording())
 	if not _edited and not level_list[level_index].begins_with(Levels.CAVE_PREFIX):
 		Stats.add_finish(_record_id, _elapsed)
+	if level_list[level_index].begins_with(Levels.CAVE_PREFIX + "daily/"):
+		Stats.add_daily_day(level_list[level_index].get_file().to_int())
 	_stats_piece.finishes = 1
 	_flush_stats()
 	_best = minf(_best, _elapsed)
@@ -377,6 +392,7 @@ func _on_finished() -> void:
 	if rival_time < INF:
 		best_line += "\nRival %.2f s  %s" % [rival_time, _signed(_elapsed - rival_time)]
 	finish_panel.get_node("Lines/Best").text = best_line
+	finish_panel.get_node("Lines/Splits").text = splits_text(_splits, _best_splits)
 	var flow_parts: PackedStringArray = []
 	if best_flow >= FLOW_MIN_SHOWN:
 		flow_parts.append("Longest flow x%d" % best_flow)
@@ -548,6 +564,44 @@ func _rival_time() -> float:
 	if _edited:
 		return INF
 	return float(Records.load_rival(_record_id).get("time", INF))
+
+
+## Progress from a backup code: files written, settings and tuning loaded
+## again, the screens refreshed. Returns the message to show.
+func restore_backup(text: String) -> String:
+	var restored := Backup.restore(text)
+	if restored < 0:
+		return "No backup code found in the pasted text."
+	Settings.load_settings()
+	player.figure.set_outfit(Outfits.find(Settings.outfit))
+	tuning.reload_saved()
+	_best = Records.best_time(_record_id)
+	_update_hud()
+	menu.show_stats(stats_sections())
+	return "Restored %d saved file%s." % [restored, "" if restored == 1 else "s"]
+
+
+## Checkpoint times of the run, each against the best run before it.
+static func splits_text(splits: Array, best_splits: Array) -> String:
+	var lines: PackedStringArray = []
+	for i in splits.size():
+		var line := "Checkpoint %d   %.2f" % [i + 1, float(splits[i])]
+		if i < best_splits.size():
+			line += "   %s" % _signed(float(splits[i]) - float(best_splits[i]))
+		lines.append(line)
+	return "\n".join(lines)
+
+
+## The line above the level list: medals over the fixed levels and the
+## daily streak. counts: levels per best medal (Records.Medal).
+func progress_text(counts: Array) -> String:
+	var parts: PackedStringArray = ["Gold %d" % counts[Records.Medal.GOLD], "Silver %d" % counts[Records.Medal.SILVER],
+			"Bronze %d" % counts[Records.Medal.BRONZE]]
+	var text := "%s   of %d levels" % ["  ".join(parts), Levels.LIST.size()]
+	var streak := Stats.daily_streak(CaveGenerator.daily_seed())
+	if streak > 0:
+		text += "\nDaily streak: %d day%s" % [streak, "" if streak == 1 else "s"]
+	return text
 
 
 ## Seconds ahead (-) or behind (+) the ghost at the same point of the level.
