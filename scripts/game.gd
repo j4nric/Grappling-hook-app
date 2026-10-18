@@ -27,9 +27,16 @@ signal level_loaded(level: Level)
 @onready var split_label: Label = $HUD/Safe/SplitLabel
 @onready var ghost_label: Label = $HUD/Safe/GhostLabel
 @onready var tuning := $Tuning
+@onready var camera_rig := $CameraRig
+@onready var fade: ColorRect = $World/Fade
 @onready var environment: Environment = $WorldEnvironment.environment
 @onready var ghost := $Ghost
 
+## Finish shot: slow motion this strong for this long (real seconds).
+const FINISH_SLOWMO := 0.3
+const FINISH_SLOWMO_TIME := 1.2
+## Respawn and restart: the picture comes back from black this fast (s).
+const RESPAWN_FADE := 0.35
 ## Ambient light in dark halls, as a share of the normal ambient light.
 const DARK_AMBIENT := 0.25
 ## How fast the light changes when entering or leaving a dark hall (1/s).
@@ -183,6 +190,8 @@ func _process(delta: float) -> void:
 func restart() -> void:
 	_respawn = level.start_position()
 	player.reset_to(_respawn)
+	camera_rig.stop_orbit()
+	_blink(RESPAWN_FADE * 0.6)
 	_elapsed = 0.0
 	_running = false
 	_finished = false
@@ -203,6 +212,14 @@ func restart() -> void:
 func _on_killed() -> void:
 	player.reset_to(_respawn)
 	_set_flow(0)
+	_blink(RESPAWN_FADE)
+
+
+## Hides a jump of the picture: black, then fading back in.
+func _blink(seconds: float) -> void:
+	fade.color.a = 1.0
+	var tween := fade.create_tween()
+	tween.tween_property(fade, "color:a", 0.0, seconds)
 
 
 ## Only a throw starts the run; after the finish it plays again.
@@ -244,6 +261,7 @@ func _on_finished() -> void:
 		return
 	_finished = true
 	_running = false
+	_finish_shot()
 	var tuned: bool = tuning.is_tuned()
 	var previous_best := _best
 	var new_best := Records.submit(_record_id, _elapsed, _splits, tuned)
@@ -299,6 +317,14 @@ func _show_split(delta: float) -> void:
 
 
 ## Seconds ahead (-) or behind (+) the ghost at the same point of the level.
+## Finish: slow motion for a moment while the camera circles the player.
+func _finish_shot() -> void:
+	camera_rig.start_orbit()
+	TimeScale.set_cinema(FINISH_SLOWMO)
+	get_tree().create_timer(FINISH_SLOWMO_TIME, true, false, true).timeout.connect(
+			func() -> void: TimeScale.set_cinema(1.0))
+
+
 ## Dark halls: the ambient light dims and the head lamp comes on.
 func _update_darkness(delta: float) -> void:
 	var target := 1.0 if level.is_dark_at(player.global_position.z) else 0.0

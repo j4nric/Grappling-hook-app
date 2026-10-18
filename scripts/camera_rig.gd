@@ -18,6 +18,17 @@ extends Node3D
 ## How fast it backs out again once the wall is gone (1/s); moving in is instant.
 @export var collision_return_speed := 4.0
 
+@export_group("Framing")
+## Under a ceiling closer than this (m) above the player, the camera drops
+## and looks up, so the hall stays in view instead of the rock overhead.
+@export var ceiling_near := 7.0
+## Camera height offset (m) and extra look height right under the ceiling.
+@export var ceiling_offset_y := -1.0
+@export var ceiling_look_up := 4.0
+## Finish: the camera circles the player this fast (rad/s) at this distance.
+@export var orbit_speed := 0.9
+@export var orbit_distance := 8.0
+
 @export_group("Field of view")
 ## The FOV is horizontal, so the tunnel width stays visible in portrait.
 @export var keep_width := true
@@ -61,6 +72,11 @@ var _fov_kick := 0.0
 var _fov_base := 65.0
 ## Camera position without collision (smoothed follow).
 var _follow := Vector3.ZERO
+## 0..1: how close the ceiling is above the player (smoothed).
+var ceiling_factor := 0.0
+## Finish orbit: on, and its angle.
+var orbiting := false
+var _orbit_angle := 0.0
 ## Camera offset from the player after wall clipping (smoothed outward).
 var _clip_offset := Vector3.ZERO
 ## True while clipped or still backing out to the free position.
@@ -111,11 +127,19 @@ func _process(delta: float) -> void:
 		return
 
 	var target_position := target.get_global_transform_interpolated().origin
-	var desired := target_position + offset
+	ceiling_factor = lerpf(ceiling_factor, _ceiling_closeness(target_position), 1.0 - exp(-3.0 * delta))
+	var frame_offset := offset
+	frame_offset.y = lerpf(offset.y, ceiling_offset_y, ceiling_factor)
+	if orbiting:
+		_orbit_angle += orbit_speed * delta
+		frame_offset = Vector3(sin(_orbit_angle), 0.25, cos(_orbit_angle)) * orbit_distance
+	var desired := target_position + frame_offset
 	_follow = _follow.lerp(desired, 1.0 - exp(-follow_speed * delta))
 	global_position = _avoid_walls(target_position, _follow, delta)
 
-	var look := target_position + look_ahead
+	var look := target_position + look_ahead + Vector3.UP * ceiling_look_up * ceiling_factor
+	if orbiting:
+		look = target_position
 	if _is_pulled():
 		look = look.lerp(target.anchor, anchor_look_weight)
 	_look_target = _look_target.lerp(look, 1.0 - exp(-look_lerp_speed * delta))
@@ -141,6 +165,30 @@ func _process(delta: float) -> void:
 		view_camera.global_transform = camera.global_transform
 		view_camera.fov = camera.fov
 		view_camera.keep_aspect = camera.keep_aspect
+
+
+## Finish shot: circle the player (until stop_orbit()).
+func start_orbit() -> void:
+	orbiting = true
+	# Start from where the camera is now, behind the player.
+	_orbit_angle = atan2(offset.x, offset.z)
+
+
+func stop_orbit() -> void:
+	orbiting = false
+
+
+## 1 with rock right above the player, 0 with ceiling_near or more space.
+func _ceiling_closeness(at: Vector3) -> float:
+	if not is_inside_tree() or ceiling_near <= 0.0:
+		return 0.0
+	var query := PhysicsRayQueryParameters3D.create(at, at + Vector3.UP * ceiling_near)
+	if target is CollisionObject3D:
+		query.exclude = [(target as CollisionObject3D).get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return 0.0
+	return clampf(1.0 - (at.distance_to(hit.position) - 1.0) / (ceiling_near - 1.0), 0.0, 1.0)
 
 
 ## Moves the camera in front of geometry between the player and it. Height

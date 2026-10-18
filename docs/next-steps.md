@@ -63,11 +63,11 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 
 ## 5. Kamera-Regie
 
-- [ ] **Unter der Decke:** Nach Zips hängt man knapp unter der Decke; die Kamera
+- [x] **Unter der Decke:** Nach Zips hängt man knapp unter der Decke; die Kamera
       senkt sich dann und blickt leicht nach oben, damit die Halle sichtbar bleibt.
-- [ ] **Ziel-Kamera:** Zeitlupe beim Durchfliegen des Ziels, die Kamera schwenkt
+- [x] **Ziel-Kamera:** Zeitlupe beim Durchfliegen des Ziels, die Kamera schwenkt
       um den Spieler.
-- [ ] **Respawn-Blende:** kurzes Abblenden statt hartem Sprung beim Tod.
+- [x] **Respawn-Blende:** kurzes Abblenden statt hartem Sprung beim Tod.
 
 ## 6. Raumklang
 
