@@ -1,7 +1,8 @@
 # Nächste Schritte – Runde 7
 
-Stand: 2026-10-18. Runden 1–6 sind erledigt (PRs #1–#51, Zusammenfassung in
-`roadmap.md`, Archiv unten). Runde 7 setzt die Ideen aus Runde 6 um.
+Stand: 2026-10-18. Runden 1–7 sind erledigt (PRs #1–#55, Zusammenfassung in
+`roadmap.md`, Archiv unten). Runde 7 hat die Ideen aus Runde 6 umgesetzt;
+offen ist nur, was das iPhone, ein Mac oder ein Server braucht.
 Reihenfolge = Umsetzungsreihenfolge, ein PR pro Themengebiet.
 
 ## Runde 7
