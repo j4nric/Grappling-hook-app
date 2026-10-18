@@ -32,8 +32,9 @@ func run() -> void:
 	# Floor friction: sliding on the floor stops.
 	main.restart()
 	await wait_frames(30)
+	# Above slide_speed it slides on (lighter braking), then stops.
 	p.velocity = Vector3(0, 0, -15)
-	await wait_frames(60)
+	await wait_frames(120)
 	check(p.is_on_floor(), "player is on the floor")
 	check(p.velocity.length() < 0.5, "floor friction stops the slide (%.1f m/s)" % p.velocity.length())
 

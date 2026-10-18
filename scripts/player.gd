@@ -19,6 +19,10 @@ signal hook_missed
 ## over), "reset"
 signal rope_released(reason: String)
 signal landed(impact_speed: float)
+## Hit a wall or the ceiling with speed and was redirected along it.
+signal deflected(impact_speed: float)
+## Squeezed between the floor and a moving obstacle.
+signal crushed
 
 ## IDLE: nothing out. FLYING: only a thrown hook in the air. ATTACHED: a rope
 ## pulls (a second hook may be in the air, see is_hook_flying()).
@@ -30,13 +34,35 @@ const FLOOR_NORMAL_Y := 0.7
 const NO_HOOK_GROUP := "no_hook"
 ## The hook and rope start here, relative to the body (the hand).
 const HOOK_OFFSET := Vector3(0.0, 0.6, 0.0)
+## cos(60°): wall hits steeper than this are crashes, not wall-kicks.
+const WALL_KICK_MIN_GLANCE := 0.5
 
 # --- Tuning (exposed in the inspector, change freely while playing) -----------
 @export_group("Physics")
 @export var gravity := 22.0
 @export var max_speed := 50.0
-## Braking on the floor (m/s²) when no rope pulls; stops endless sliding.
+## Braking on the floor (m/s²) when no rope pulls; stops endless sliding ...
 @export var floor_friction := 25.0
+## ... but above slide_speed (m/s) the player slides with this lighter
+## braking, so landings keep their momentum.
+@export var slide_friction := 6.0
+@export var slide_speed := 8.0
+## Share of the fall speed turned into forward speed on landing (a roll).
+@export var landing_roll := 0.3
+
+@export_group("Impacts")
+## Hitting a wall or the ceiling faster than this (m/s) redirects the speed
+## along the surface instead of losing it.
+@export var deflect_min_speed := 8.0
+## Share of the speed into the surface that is turned along it. Scaled by
+## how glancing the hit is: a grazing hit keeps almost everything, a head-on
+## hit almost nothing (it never turns a tiny sideways part into full speed,
+## and never ends up faster than before the hit).
+@export var deflect_keep := 1.0
+## Walls: share of the speed into the wall bounced back (wall-kick) ...
+@export var wall_bounce := 0.2
+## ... plus this upward kick (m/s).
+@export var wall_kick_up := 4.0
 
 @export_group("Throw")
 ## Hook speed (m/s) per finger speed (px/s, 720 px wide screen).
@@ -181,9 +207,12 @@ func _physics_process(delta: float) -> void:
 
 	velocity = velocity.limit_length(max_speed)
 	var fall_speed := -velocity.y
+	var before_slide := velocity
 	move_and_slide()
+	_handle_impacts(before_slide)
 
 	if is_on_floor() and not _was_on_floor:
+		_roll_on_landing(fall_speed)
 		landed.emit(fall_speed)
 	_was_on_floor = is_on_floor()
 
@@ -272,9 +301,60 @@ func _is_flying_by() -> bool:
 
 func _apply_floor_friction(delta: float) -> void:
 	var flat := Vector2(velocity.x, velocity.z)
-	flat = flat.move_toward(Vector2.ZERO, floor_friction * delta)
+	var friction := slide_friction if flat.length() > slide_speed else floor_friction
+	flat = flat.move_toward(Vector2.ZERO, friction * delta)
 	velocity.x = flat.x
 	velocity.z = flat.y
+
+
+## Walls and the ceiling redirect speed instead of eating it; walls also
+## kick back. A moving obstacle pressing down onto a grounded player crushes.
+func _handle_impacts(before: Vector3) -> void:
+	if _is_crushed():
+		crushed.emit()
+		return
+	for i in get_slide_collision_count():
+		var collision := get_slide_collision(i)
+		var normal := collision.get_normal()
+		if normal.y > FLOOR_NORMAL_Y:
+			continue
+		# A taut rope that drags the player into a surface is not momentum
+		# worth keeping (the contact release lets go of it anyway).
+		if _attached:
+			continue
+		var into := -before.dot(normal)
+		var speed := before.length()
+		if into <= 0.0 or speed < deflect_min_speed:
+			continue
+		var along := before - normal * before.dot(normal)
+		var glance := along.length() / speed
+		var redirected := velocity
+		if along.length() > 0.5:
+			var kept := minf(along.length() + into * deflect_keep * glance, speed)
+			redirected = along.normalized() * kept
+		# Only a glancing hit (under ~60° to the wall) kicks off; a head-on
+		# crash into an obstacle slides along it instead of bouncing back.
+		if absf(normal.y) < 0.5 and glance > WALL_KICK_MIN_GLANCE:
+			redirected += normal * into * wall_bounce + Vector3.UP * wall_kick_up
+		velocity = redirected.limit_length(max_speed)
+		deflected.emit(into)
+		return
+
+
+## Floor below and a moving obstacle pressing from above. (A pusher shows up
+## only in is_on_ceiling(), not in the slide collisions, so look up once.)
+func _is_crushed() -> bool:
+	if not (is_on_floor() and is_on_ceiling()):
+		return false
+	var hit := KinematicCollision3D.new()
+	return test_move(global_transform, Vector3.UP * 0.1, hit) and hit.get_collider() is AnimatableBody3D
+
+
+func _roll_on_landing(fall_speed: float) -> void:
+	var flat := Vector3(velocity.x, 0.0, velocity.z)
+	if fall_speed > 0.0 and flat.length() > 1.0:
+		velocity += flat.normalized() * fall_speed * landing_roll
+		velocity = velocity.limit_length(max_speed)
 
 
 func _zip_launch() -> void:

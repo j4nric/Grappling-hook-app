@@ -45,6 +45,7 @@ func _ready() -> void:
 	# viewport only draws the HUD.
 	get_viewport().disable_3d = true
 	player.hook_attached.connect(_on_hook_attached)
+	player.crushed.connect(_on_killed)
 	InputRouter.restart_requested.connect(restart)
 	InputRouter.throw_requested.connect(_on_throw)
 	InputRouter.release_requested.connect(_on_tap)

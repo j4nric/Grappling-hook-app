@@ -33,7 +33,7 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 - [x] **TUNE während des Zielens startet neu:** (zweiter Finger auf Buttons zählt nicht; Neustart = zwei Finger 0,3 s halten) Ein zweiter Finger (z. B. auf
       TUNE) macht aus dem Zielen einen Zwei-Finger-Tipp → Neustart. Zweiter
       Finger auf GUI darf nicht zählen; Neustart evtl. nur mit Halten (0,4 s).
-- [ ] **Stampfer drückt in den Boden:** Der vertikale Mover in Level 4 schiebt
+- [x] **Stampfer drückt in den Boden:** (`crushed` → Checkpoint) Der vertikale Mover in Level 4 schiebt
       den Spieler 0,4 m in den Boden (Gefahr, durchzufallen). Zerquetschen soll
       wie Lava zum Checkpoint führen.
 - [x] **Hintergrund/Tab-Wechsel:** (Pause bei Fokusverlust, Timer-Schritt max. 0,1 s) Kommt die App zurück, kann ein riesiger
@@ -43,7 +43,7 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       Kamera und Seil werden in `_physics_process` bewegt, Physik-Interpolation
       ist aus → sichtbares Ruckeln auf ProMotion-iPhones und bei Einbrüchen.
       Physik-Interpolation einschalten, Kamera im Render-Frame glätten.
-- [ ] **Zip-Launch in die Decke:** Wer nach oben zippt, prallt an die Decke und
+- [x] **Zip-Launch in die Decke:** (Umlenkung mit Streifwinkel) Wer nach oben zippt, prallt an die Decke und
       verliert den Großteil des Tempos (gemessen 38 → 24 m/s). Tempo entlang
       der Fläche umlenken statt vernichten.
 - [x] **Tempo-Grenze:** Der Zip-Boost kommt nach der Begrenzung, kurz
@@ -64,6 +64,13 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       Kontakt-Schonzeit den Zip-Launch, der Spieler schoss durch den Anker.
 - [x] **Neues Seil bremste:** Jedes neue Seil holte wieder langsam ein; jetzt
       startet es mit dem aktuellen Annäherungstempo (`_reel_base`).
+- [x] **Umlenkung verstärkte Rückwärtstempo:** Volle Geschwindigkeit entlang
+      der Fläche machte aus kleinen Restanteilen (z. B. 3 m/s rückwärts beim
+      Frontal-Crash) volles Tempo zurück. → Streifwinkel skaliert, nie schneller
+      als vorher, kein Wall-Kick bei Frontal-Crash, keine Umlenkung am Seil.
+- [x] **Stampfer unsichtbar für Kollisionen:** Ein schiebender `AnimatableBody3D`
+      taucht nicht in den Slide-Kollisionen auf, nur in `is_on_ceiling()` →
+      Erkennung per `test_move` nach oben.
 - [ ] **Bot wirft nie während des Zugs:** Ein Ketten-Bot würde zeigen, welche
       Zeiten mit Kettenwürfen möglich sind (Medaillen-Kalibrierung).
 
@@ -98,7 +105,7 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       Wind-Partikel, stärkerer Tempo-Sound (Tonhöhe).
 - [ ] **Schwingen** (siehe Entscheidung): Pendelphase vor dem Einholen,
       damit es nicht nur geradlinige Zips gibt.
-- [ ] **Landungen erhalten Schwung:** Rollen/Rutschen statt harter Bremsung;
+- [x] **Landungen erhalten Schwung:** (`landing_roll`, `slide_friction`, Wall-Kick) Rollen/Rutschen statt harter Bremsung;
       Wand-Abprall (Wall-Kick) beim Auftreffen mit Tempo.
 - [ ] **Flow-Anzeige:** Kette von Treffern ohne Bodenberührung zählen
       (z. B. „x5“), dezent im HUD – belohnt flüssiges Spielen.
