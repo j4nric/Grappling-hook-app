@@ -16,7 +16,7 @@ func run() -> void:
 	await wait_frames(4)
 	await get_tree().process_frame
 	var origin: Vector3 = p.get_global_transform_interpolated().origin + p.HOOK_OFFSET
-	var vertices: PackedVector3Array = p.rope.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	var vertices: PackedVector3Array = p.flight_rope.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
 	var nearest := INF
 	for v in vertices:
 		nearest = minf(nearest, v.distance_to(origin))

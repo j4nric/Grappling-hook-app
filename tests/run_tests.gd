@@ -1,7 +1,7 @@
 extends SceneTree
 ## Headless test runner. Runs every res://tests/test_*.gd one after another.
 ## godot --headless --fixed-fps 60 --path . --script res://tests/run_tests.gd
-## Exit code 1 if any check failed.
+## Exit code 1 if any check failed. TEST_FILTER=chain runs only matching files.
 
 const SAVED_FILES := ["user://tuning_v2.cfg", "user://tuning_v3.cfg", "user://records.cfg"]
 
@@ -12,8 +12,10 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var names: Array[String] = []
+	var filter := OS.get_environment("TEST_FILTER")
 	for file in DirAccess.get_files_at("res://tests"):
-		if file.begins_with("test_") and file.ends_with(".gd") and file != "test_case.gd":
+		if file.begins_with("test_") and file.ends_with(".gd") and file != "test_case.gd" \
+				and (filter == "" or file.contains(filter)):
 			names.append(file)
 	names.sort()
 

@@ -29,6 +29,8 @@ func run() -> void:
 
 	# A tap right after the hook bites is ignored, a later tap lets go.
 	var p := player()
+	main.restart()
+	await wait_frames(20)
 	InputRouter.throw_requested.emit(Vector2(0, -300), Vector2(0, -3000))
 	await wait_until(func() -> bool: return p.hook_state == p.HookState.ATTACHED, 60)
 	await _tap(9001, start)

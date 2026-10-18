@@ -59,9 +59,9 @@ size = Vector3(12, 14.0, 2)
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "First Swing"
-gold_time = 11.5
-silver_time = 15.5
-bronze_time = 22.0
+gold_time = 6.5
+silver_time = 8.8
+bronze_time = 12.2
 
 [node name="Start" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.6, 0)

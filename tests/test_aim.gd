@@ -52,6 +52,7 @@ func run() -> void:
 	InputRouter.throw_requested.emit(Vector2(0, -300), Vector2.ZERO)
 	await wait_until(func() -> bool: return missed[0], 120)
 	check(missed[0], "weak throw is reported as a miss")
-	check(p.hook.visible, "hook is still visible while it flies back")
+	await get_tree().process_frame
+	check(p.flight_hook.visible, "hook is still visible while it flies back")
 	await wait_frames(int(p.hook_retract_time * 60) + 3)
-	check(not p.hook.visible and not p.rope.visible, "hook is gone after flying back")
+	check(not p.flight_hook.visible and not p.flight_rope.visible, "hook is gone after flying back")

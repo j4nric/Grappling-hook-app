@@ -2,18 +2,26 @@ extends CharacterBody3D
 ## The player has no walking. It only has gravity, a thrown hook and momentum.
 ## Throw: the swipe direction aims, the flick speed sets how hard the hook is
 ## thrown (Pokémon GO style). The hook flies on an arc; where it hits, it
-## sticks and the rope yanks the player toward it. Shortly before the anchor
-## the rope lets go on its own and the player flies on with full speed
-## ("zip launch").
+## sticks and the rope yanks the player toward it (after a short swing).
+## Shortly before the anchor the rope lets go on its own and the player flies
+## on with full speed ("zip launch").
+##
+## Chaining: a new throw while the rope pulls keeps the rope until the new
+## hook bites (hand-over), so throwing early never costs momentum. A swipe
+## while a hook is still in the air is buffered and thrown when that hook
+## lands or misses.
 
 signal hook_thrown
 signal hook_attached(point: Vector3, normal: Vector3)
 ## The hook found nothing to stick to.
 signal hook_missed
-## reason: "zip", "contact", "blocked", "tap", "throw", "reset"
+## reason: "zip", "contact", "blocked", "tap", "chain" (a new hook took
+## over), "reset"
 signal rope_released(reason: String)
 signal landed(impact_speed: float)
 
+## IDLE: nothing out. FLYING: only a thrown hook in the air. ATTACHED: a rope
+## pulls (a second hook may be in the air, see is_hook_flying()).
 enum HookState { IDLE, FLYING, ATTACHED }
 
 ## The hook does not stick to surfaces facing up more than this (floors).
@@ -41,6 +49,12 @@ const HOOK_OFFSET := Vector3(0.0, 0.6, 0.0)
 @export var throw_pitch := 50.0
 ## How strongly sideways swipes turn the throw toward the walls.
 @export var throw_yaw_gain := 1.0
+## A second swipe sooner than this (s) after a throw, while that hook still
+## flies, is an accidental double swipe and is dropped.
+@export var throw_cooldown := 0.12
+## A swipe while a hook flies is kept this long (s) and thrown when the hook
+## in the air bites or misses.
+@export var throw_buffer_time := 0.3
 
 @export_group("Aim")
 ## The aim preview shows the arc of a throw at this hook speed (m/s), about a
@@ -61,6 +75,9 @@ const HOOK_OFFSET := Vector3(0.0, 0.6, 0.0)
 @export var min_hook_distance := 3.0
 ## Speed (m/s) toward the anchor added the moment the hook sticks: the yank.
 @export var pull_impulse := 6.0
+## After the hook sticks, the rope keeps its length this long (s): the player
+## swings on it before the reel pulls. 0 = pull at once.
+@export var swing_time := 0.0
 ## The rope shortens this fast right after the hook sticks (m/s) ...
 @export var reel_speed := 8.0
 ## ... and this much faster every second (m/s²) ...
@@ -75,10 +92,15 @@ const HOOK_OFFSET := Vector3(0.0, 0.6, 0.0)
 @export var zip_release_distance := 2.5
 ## Extra speed (m/s) in flight direction at the zip launch.
 @export var zip_boost := 3.0
+## Flyby: passing the anchor (moving away from it faster than
+## flyby_speed m/s) within this distance also lets go, instead of the rope
+## swinging the player back.
+@export var flyby_release_distance := 6.0
+@export var flyby_speed := 2.0
 ## Touching a wall or the ceiling while attached lets go of the rope.
 @export var release_on_contact := true
-## No contact or zip release right after the hook sticks (s), so a throw from
-## close to a wall still pulls.
+## No contact release right after the hook sticks (s), so a throw from close
+## to a wall still pulls.
 @export var contact_release_grace := 0.15
 ## A tap right after the hook sticks (s) does not let go: it is almost always
 ## an accidental touch at the end of the throw.
@@ -88,26 +110,38 @@ const HOOK_OFFSET := Vector3(0.0, 0.6, 0.0)
 
 # --- State ---------------------------------------------------------------------
 var hook_state := HookState.IDLE
-## Hook position while it flies, anchor point once it sticks.
+## Anchor point of the attached rope.
 var anchor := Vector3.ZERO
 var rope_length := 0.0
+## Position of the hook in the air.
+var flight_position := Vector3.ZERO
+var _attached := false
+var _flying := false
 var _hook_velocity := Vector3.ZERO
 var _attached_time := 0.0
+## Reel speed the current rope starts with (m/s): at least the speed the
+## player already moves toward the anchor, so a new rope never brakes.
+var _reel_base := 0.0
 var _was_on_floor := false
-## Hook position one physics tick ago, for smooth drawing while it flies.
-var _hook_prev := Vector3.ZERO
+## Flying hook position one physics tick ago, for smooth drawing.
+var _flight_prev := Vector3.ZERO
 ## Moving body the hook sticks to, and the anchor in its local space.
 var _anchor_body: Node3D = null
 var _anchor_local := Vector3.ZERO
-## Visual only: the hook flies back to the player after a miss or release.
-var _retract_left := 0.0
-var _retract_from := Vector3.ZERO
+var _since_throw := INF
+## Buffered throw: [swipe, flick] and how long it stays valid.
+var _buffered: Array = []
+var _buffer_left := 0.0
+var _rope_visual: RopeVisual
+var _flight_visual: RopeVisual
 ## Last throw, shown in the tuning panel to calibrate the throw strength.
 var last_throw_flick := 0.0
 var last_throw_speed := 0.0
 
 @onready var rope := $Rope
 @onready var hook: Node3D = $Hook
+@onready var flight_rope := $FlightRope
+@onready var flight_hook: Node3D = $FlightHook
 @onready var aim_line := $AimLine
 @onready var aim_marker: Node3D = $AimMarker
 
@@ -117,28 +151,32 @@ func _ready() -> void:
 	InputRouter.aim_cancelled.connect(_on_aim_cancelled)
 	InputRouter.throw_requested.connect(throw_hook)
 	InputRouter.release_requested.connect(release)
-	hook.top_level = true
-	hook.visible = false
+	_rope_visual = RopeVisual.new(rope, hook)
+	_flight_visual = RopeVisual.new(flight_rope, flight_hook)
 	aim_marker.top_level = true
 	aim_marker.visible = false
-	# These are placed by hand every rendered frame.
-	for node: Node3D in [rope, hook, aim_line, aim_marker]:
+	# Placed by hand every rendered frame.
+	for node: Node3D in [aim_line, aim_marker]:
 		node.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 
 
 func _physics_process(delta: float) -> void:
 	velocity.y -= gravity * delta
+	_since_throw += delta
+	_buffer_left -= delta
 
-	match hook_state:
-		HookState.FLYING:
-			_fly_hook(delta)
-		HookState.ATTACHED:
-			_attached_time += delta
-			if is_instance_valid(_anchor_body):
-				anchor = _anchor_body.global_transform * _anchor_local
+	if _flying:
+		_fly_hook(delta)
+	if _attached:
+		_attached_time += delta
+		if is_instance_valid(_anchor_body):
+			anchor = _anchor_body.global_transform * _anchor_local
+		if _is_flying_by():
+			_zip_launch()
+		else:
 			_apply_rope_constraint(delta)
 
-	if hook_state != HookState.ATTACHED and is_on_floor():
+	if not _attached and is_on_floor():
 		_apply_floor_friction(delta)
 
 	velocity = velocity.limit_length(max_speed)
@@ -149,11 +187,14 @@ func _physics_process(delta: float) -> void:
 		landed.emit(fall_speed)
 	_was_on_floor = is_on_floor()
 
-	if hook_state == HookState.ATTACHED and _attached_time >= contact_release_grace:
-		if zip_release_distance > 0.0 and global_position.distance_to(anchor) <= zip_release_distance \
-				and velocity.dot(global_position.direction_to(anchor)) > 0.0:
-			_zip_launch()
-		elif release_on_contact and _touches_wall_or_ceiling():
+	# No grace for the zip: min_hook_distance already keeps a fresh hook out
+	# of zip range, and a fast hand-over can reach the anchor within the grace.
+	if _attached and zip_release_distance > 0.0 \
+			and global_position.distance_to(anchor) <= zip_release_distance \
+			and velocity.dot(global_position.direction_to(anchor)) > 0.0:
+		_zip_launch()
+	elif _attached and _attached_time >= contact_release_grace:
+		if release_on_contact and _touches_wall_or_ceiling():
 			release("contact")
 		elif release_when_blocked and _is_rope_blocked():
 			release("blocked")
@@ -165,15 +206,27 @@ func _physics_process(delta: float) -> void:
 ## when the frame rate drops.
 func _process(delta: float) -> void:
 	var origin := get_global_transform_interpolated().origin + HOOK_OFFSET
-	if hook_state == HookState.FLYING:
-		var hook_pos := _hook_prev.lerp(anchor, Engine.get_physics_interpolation_fraction())
-		rope.update_line(origin, hook_pos)
-		hook.global_position = hook_pos
-	elif hook_state == HookState.ATTACHED:
-		rope.update_line(origin, anchor)
-		hook.global_position = anchor
-	elif _retract_left > 0.0:
-		_update_retract(delta, origin)
+	if _flying:
+		_flight_visual.show_at(origin, _flight_prev.lerp(flight_position, Engine.get_physics_interpolation_fraction()))
+	else:
+		_flight_visual.update_retract(delta, origin)
+	if _attached:
+		_rope_visual.show_at(origin, anchor)
+	else:
+		_rope_visual.update_retract(delta, origin)
+
+
+func is_hook_flying() -> bool:
+	return _flying
+
+
+func _update_state() -> void:
+	if _attached:
+		hook_state = HookState.ATTACHED
+	elif _flying:
+		hook_state = HookState.FLYING
+	else:
+		hook_state = HookState.IDLE
 
 
 ## Rope pull, applied as velocity so the momentum survives letting go.
@@ -181,8 +234,10 @@ func _process(delta: float) -> void:
 ## by adding exactly the inward speed needed, which turns falling into swinging.
 ## The reel starts at reel_speed and accelerates, so the pull builds up.
 func _apply_rope_constraint(delta: float) -> void:
-	var reel := minf(reel_speed + reel_acceleration * _attached_time, reel_max_speed)
-	rope_length = maxf(min_rope_length, rope_length - reel * delta)
+	var reel_time := _attached_time - swing_time
+	if reel_time > 0.0:
+		var reel := minf(_reel_base + reel_acceleration * reel_time, reel_max_speed)
+		rope_length = maxf(min_rope_length, rope_length - reel * delta)
 
 	var to_anchor := anchor - global_position
 	var distance := to_anchor.length()
@@ -201,6 +256,18 @@ func _apply_rope_constraint(delta: float) -> void:
 	inward_speed = velocity.dot(dir_to_anchor)
 	if inward_speed > max_inward:
 		velocity -= dir_to_anchor * (inward_speed - max_inward)
+
+
+## True when the player has passed the anchor while the reel pulls: the
+## velocity (before the rope corrects it) points away from a nearby anchor.
+func _is_flying_by() -> bool:
+	if _attached_time < swing_time:
+		return false
+	var to_anchor := anchor - global_position
+	var distance := to_anchor.length()
+	if distance > flyby_release_distance or distance < 0.001:
+		return false
+	return velocity.dot(to_anchor / distance) < -flyby_speed
 
 
 func _apply_floor_friction(delta: float) -> void:
@@ -237,37 +304,45 @@ static func can_stick(hit: Dictionary) -> bool:
 
 
 ## Sticks the hook at point and starts the pull. On a moving body the anchor
-## moves along.
+## moves along. An already attached rope hands over to the new one.
 func attach(point: Vector3, normal: Vector3, body: Object = null) -> void:
+	if _attached:
+		_rope_visual.retract(anchor, hook_retract_time * 0.5)
+		rope_released.emit("chain")
 	_anchor_body = body as AnimatableBody3D
 	if _anchor_body:
 		_anchor_local = _anchor_body.global_transform.affine_inverse() * point
 	anchor = point
 	rope_length = global_position.distance_to(anchor)
-	hook_state = HookState.ATTACHED
+	var approach := velocity.dot(global_position.direction_to(anchor))
+	_reel_base = clampf(approach, reel_speed, reel_max_speed)
+	_attached = true
 	_attached_time = 0.0
-	rope.visible = true
-	hook.visible = true
+	_update_state()
 	velocity += global_position.direction_to(anchor) * pull_impulse
 	hook_attached.emit(point, normal)
 
 
 func _fly_hook(delta: float) -> void:
-	_hook_prev = anchor
+	_flight_prev = flight_position
 	_hook_velocity.y -= hook_gravity * delta
-	var next := anchor + _hook_velocity * delta
-	var query := PhysicsRayQueryParameters3D.create(anchor, next)
+	var next := flight_position + _hook_velocity * delta
+	var query := PhysicsRayQueryParameters3D.create(flight_position, next)
 	query.exclude = [get_rid()]
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if not hit.is_empty():
+		flight_position = hit.position
 		if not can_stick(hit) or global_position.distance_to(hit.position) < min_hook_distance:
 			_miss()
 			return
+		_flying = false
+		_flight_visual.hide()
 		attach(hit.position, hit.normal, hit.collider)
+		_throw_buffered()
 	elif next.distance_to(global_position) > max_rope_length:
 		_miss()
 	else:
-		anchor = next
+		flight_position = next
 
 
 func _touches_wall_or_ceiling() -> bool:
@@ -370,63 +445,78 @@ func _hide_aim() -> void:
 	aim_marker.visible = false
 
 
+## Throws the hook. The attached rope keeps pulling until the new hook bites.
+## While a hook flies, the swipe is buffered instead.
 func throw_hook(swipe: Vector2, flick_velocity: Vector2) -> void:
 	_hide_aim()
 	Engine.time_scale = 1.0
 	if not _is_valid_swipe(swipe):
 		return
+	if _flying:
+		# A second swipe right after a throw is an accidental double swipe;
+		# a later one is kept for when this hook bites or misses.
+		if _since_throw >= throw_cooldown:
+			_buffered = [swipe, flick_velocity]
+			_buffer_left = throw_buffer_time
+		return
 	var speed := clampf(flick_velocity.length() * throw_speed_per_px, hook_min_speed, hook_max_speed)
 	last_throw_flick = flick_velocity.length()
 	last_throw_speed = speed
-	release("throw")
-	anchor = _hook_origin()
-	_hook_prev = anchor
+	_since_throw = 0.0
+	flight_position = _hook_origin()
+	_flight_prev = flight_position
 	_hook_velocity = _throw_direction(swipe) * speed + velocity
-	hook_state = HookState.FLYING
-	rope.visible = true
-	hook.visible = true
+	_flying = true
+	_update_state()
 	hook_thrown.emit()
 
 
+func _throw_buffered() -> void:
+	if _buffered.is_empty():
+		return
+	var throw: Array = _buffered
+	_buffered = []
+	if _buffer_left > 0.0:
+		_since_throw = INF
+		throw_hook(throw[0], throw[1])
+
+
 func _miss() -> void:
-	_set_idle(true)
+	_flying = false
+	_flight_visual.retract(flight_position, hook_retract_time)
+	_update_state()
 	hook_missed.emit()
+	_throw_buffered()
 
 
-## Lets go of the rope. Signals only if a rope or hook was out.
+## Lets go of the attached rope (a tap without a rope calls back a hook in
+## the air). Signals only if something was out.
 func release(reason := "tap") -> void:
-	if hook_state == HookState.IDLE:
+	if not _attached:
+		if _flying and reason == "tap":
+			_flying = false
+			_flight_visual.retract(flight_position, hook_retract_time)
+			_update_state()
+			rope_released.emit(reason)
 		return
-	if reason == "tap" and hook_state == HookState.ATTACHED and _attached_time < tap_release_lock:
+	if reason == "tap" and _attached_time < tap_release_lock:
 		return
-	_set_idle(reason != "throw" and reason != "reset")
+	_attached = false
+	_anchor_body = null
+	_rope_visual.retract(anchor, hook_retract_time)
+	_update_state()
 	rope_released.emit(reason)
 
 
-## retract: the hook flies back visibly instead of vanishing.
-func _set_idle(retract: bool) -> void:
-	hook_state = HookState.IDLE
-	_anchor_body = null
-	_retract_left = hook_retract_time if retract else 0.0
-	_retract_from = anchor
-	rope.visible = retract
-	hook.visible = retract
-
-
-func _update_retract(delta: float, origin: Vector3) -> void:
-	_retract_left = maxf(0.0, _retract_left - delta)
-	var t := 1.0 - _retract_left / maxf(hook_retract_time, 0.001)
-	var pos := _retract_from.lerp(origin, t)
-	rope.update_line(origin, pos)
-	hook.global_position = pos
-	if _retract_left <= 0.0:
-		rope.visible = false
-		hook.visible = false
-
-
 func reset_to(position_3d: Vector3) -> void:
-	release("reset")
-	_set_idle(false)
+	_attached = false
+	_flying = false
+	_anchor_body = null
+	_buffered = []
+	_since_throw = INF
+	_update_state()
+	_rope_visual.hide()
+	_flight_visual.hide()
 	_hide_aim()
 	Engine.time_scale = 1.0
 	global_position = position_3d

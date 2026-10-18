@@ -82,9 +82,9 @@ emission = Color(0.2, 0.85, 0.4, 1)
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "Lava Gaps"
-gold_time = 11.5
-silver_time = 16.0
-bronze_time = 22.0
+gold_time = 7.9
+silver_time = 10.7
+bronze_time = 14.8
 
 [node name="Start" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.6, 0)

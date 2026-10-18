@@ -67,3 +67,7 @@ Kamera, HUD, 5 Level, Speedrun, Optik, Sound, Debug/Auto-Qualität.
 | 2026-10-17 | Kamera-FOV | 75° vertikal → 65° horizontal (`max_fov` 105 → 90, `fov_per_speed` 0,5 → 0,4) | Hochformat zeigte seitlich zu wenig |
 | 2026-10-17 | `look_ahead.y` | 1 → 2,5 | mehr Decke im Bild, man wirft nach oben |
 | 2026-10-17 | `min_hook_distance` | neu: 3 | Haken direkt über dem Kopf schleuderte rückwärts (Bot-Test) |
+| 2026-10-18 | `throw_cooldown` / `throw_buffer_time` | neu: 0,12 / 0,3 s | Doppel-Wisch fallen lassen, späteren Wisch puffern |
+| 2026-10-18 | `flyby_release_distance` | neu: 6 m | am Anker vorbei = Zip statt Zurückschwingen |
+| 2026-10-18 | `swing_time` | neu: 0 | Pendelphase kostet in Gängen 2–3× Zeit |
+| 2026-10-18 | Medaillen | ~45 % schneller | Bot-Zeiten nach Ketten-/Vorbeiflug-Fixes |
