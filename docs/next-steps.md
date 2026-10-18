@@ -9,18 +9,18 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 
 ## Offene Entscheidungen
 
-- [ ] **Wurf während eines Zugs:** Seil-Übergabe (altes Seil hält, bis der neue
+- [x] **Wurf während eines Zugs:** → Seil-Übergabe (umgesetzt). Seil-Übergabe (altes Seil hält, bis der neue
       Haken greift – Spider-Man-Kette) oder wie jetzt sofort lösen?
 - [ ] **Höhlenmaßstab:** Vorschlag 40 m breit, 35 m hoch, Boden über weite
       Strecken Abgrund. Größer/kleiner?
-- [ ] **Schwingen:** Kurze Pendelphase (Seil hält seine Länge ~0,3 s), bevor
+- [x] **Schwingen:** (`swing_time`, Regler; in den Gängen kostet schon 0,1 s die 2–3-fache Zeit → Standard 0, in den Kavernen neu bewerten) Kurze Pendelphase (Seil hält seine Länge ~0,3 s), bevor
       das Einholen startet? Als Vorschau-Build A/B vergleichen.
 - [ ] **Rekorde mit verstellten Reglern (TUNE\*):** nicht speichern, oder
       speichern und markieren?
 
 ## 1. Bugs und Übersehenes (zuerst)
 
-- [ ] **Hook-Spam kostet Schwung:** Jeder neue Wurf löst das aktuelle Seil
+- [x] **Hook-Spam kostet Schwung:** (jetzt umgekehrt: Nachwerfen 38,6 m statt 26,1 m in 2 s) Jeder neue Wurf löst das aktuelle Seil
       sofort. Schnelles Nachwerfen bremst (2 s nach dem Start: 18 m statt 24 m,
       Spitze 17 statt 53 m/s), das Seil flackert, es gibt keine Abklingzeit.
       → Seil-Übergabe, Wurf-Puffer (Wisch während der Haken fliegt wird
@@ -55,6 +55,18 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
       eine Level-Version koppeln.
 - [x] **Kein Weg zurück ins Menü** außer über den Ziel-Bildschirm → Pause-Menü.
 
+### Neu entdeckt beim Umsetzen
+
+- [x] **Zurückschwingen am Anker:** Fliegt man unter/an einem Anker vorbei,
+      zog das straffe Seil zurück (gemessen: 40 m/s rückwärts). → Vorbeiflug-
+      Lösen (`flyby_release_distance`): am Anker vorbei = Zip-Launch.
+- [x] **Schonzeit blockierte den Zip:** Nach einer Seil-Übergabe verhinderte die
+      Kontakt-Schonzeit den Zip-Launch, der Spieler schoss durch den Anker.
+- [x] **Neues Seil bremste:** Jedes neue Seil holte wieder langsam ein; jetzt
+      startet es mit dem aktuellen Annäherungstempo (`_reel_base`).
+- [ ] **Bot wirft nie während des Zugs:** Ein Ketten-Bot würde zeigen, welche
+      Zeiten mit Kettenwürfen möglich sind (Medaillen-Kalibrierung).
+
 ## 2. Die Höhle: groß, hoch, leer
 
 - [ ] **Neuer Level-Baukasten „Kaverne“:** statt Kasten-Tunnel weite Hallen
@@ -78,7 +90,7 @@ Belege in Klammern stammen aus Headless-Messungen (60 fps) mit dem aktuellen Bui
 
 ## 3. Spielgefühl: flüssig und befriedigend
 
-- [ ] **Seil-Übergabe / Kettenwürfe** (siehe Entscheidung): der Moment, in dem
+- [x] **Seil-Übergabe / Kettenwürfe** (siehe Entscheidung): der Moment, in dem
       der neue Haken greift und das alte Seil loslässt, ist der Kern des Flows.
 - [ ] **Treffer-Gefühl:** Hit-Stop (40–60 ms Mini-Freeze) beim Einhaken,
       kurzer FOV-Kick beim Zip-Launch, Seil spannt sich sichtbar (zittert kurz).

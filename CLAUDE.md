@@ -98,8 +98,11 @@ Swipe-Vektor und das Fingertempo der letzten 0,1 s (`FLICK_WINDOW`).
   Flächen in der Gruppe `no_hook` (Eis), Treffer näher als `min_hook_distance` und
   Flüge über `max_rope_length` hinaus lassen ihn fallen. Auf beweglichen Körpern
   fährt der Anker mit.
-- Beim Wurf löst sich das alte Seil sofort: Man fliegt mit Schwung weiter,
-  während der neue Haken unterwegs ist.
+- **Kettenwürfe:** Ein Wurf während eines Zugs lässt das Seil weiter ziehen, bis
+  der neue Haken greift (Übergabe, `rope_released("chain")`). Ein Wisch, während
+  ein Haken fliegt, wird gepuffert (`throw_buffer_time`); ein zweiter Wisch innerhalb
+  `throw_cooldown` gilt als versehentlich. Seil-Grafik: `RopeVisual` (Seil am Anker
+  und Haken im Flug).
 - Zielen: gestrichelter Bogen = `predict_hook_path()` für `aim_preview_speed`
   (gleiche Physik wie der echte Flug), Kugel = Treffpunkt. `aim_assist_angle`
   sucht im Kegel nach einer greifbaren Fläche (0 = aus). `aim_time_scale`
@@ -114,10 +117,12 @@ deshalb bleibt der Schwung beim Loslassen erhalten und `move_and_slide`
 verhindert Clipping. Liegt der Spieler außerhalb der Seillänge, bekommt er genau
 die nötige Geschwindigkeit nach innen → Pendeln.
 
-**Ende des Zugs** (nach `contact_release_grace`), in dieser Reihenfolge:
+**Ende des Zugs**, in dieser Reihenfolge (Pendelphase `swing_time` vorher, Standard 0):
 - **Zip-Launch:** näher als `zip_release_distance` am Anker und in Bewegung auf ihn
   zu → Seil löst sich, der Spieler fliegt mit vollem Tempo + `zip_boost` weiter.
-- Berührung von Wand oder Decke (`release_on_contact`) → Seil löst sich.
+- **Vorbeiflug:** am Anker vorbei (näher als `flyby_release_distance`, Bewegung
+  weg vom Anker) → wie Zip-Launch, statt zurückzuschwingen.
+- Nach `contact_release_grace`: Berührung von Wand oder Decke (`release_on_contact`) → Seil löst sich.
 - Hindernis zwischen Spieler und Anker (`release_when_blocked`) → Seil löst sich.
 Böden lösen das Seil nie. Am Boden bremst `floor_friction`, solange kein Seil zieht.
 
@@ -147,7 +152,7 @@ Teleports (`reset_to`) rufen `reset_physics_interpolation()`.
 - Web-Export lokal: `godot --headless --path . --export-release "Web" build/web/index.html`
   (braucht die Web-Exportvorlagen `web_nothreads_*`).
 - **Tests:** `godot --headless --fixed-fps 60 --path . --script res://tests/run_tests.gd`
-  (Exit-Code 1 bei Fehlern). Neue Mechaniken bekommen einen Test in
+  (Exit-Code 1 bei Fehlern; `TEST_FILTER=chain` führt nur passende Dateien aus). Neue Mechaniken bekommen einen Test in
   `tests/test_*.gd` (erbt von `test_case.gd`, Helfer für Touch/Swipe und Warten).
   `--fixed-fps 60` ist wichtig: `InputRouter` misst das Fingertempo über die
   Frame-Zeit.

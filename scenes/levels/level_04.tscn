@@ -80,9 +80,9 @@ emission = Color(0.2, 0.85, 0.4, 1)
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "Movers"
-gold_time = 10.0
-silver_time = 14.0
-bronze_time = 19.0
+gold_time = 7.4
+silver_time = 10.0
+bronze_time = 14.0
 
 [node name="Start" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.6, 0)

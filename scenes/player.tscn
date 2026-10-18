@@ -83,6 +83,15 @@ top_level = true
 script = ExtResource("2_rope")
 thickness = 0.07
 
+[node name="FlightRope" type="MeshInstance3D" parent="."]
+top_level = true
+script = ExtResource("2_rope")
+thickness = 0.07
+
+[node name="FlightHook" type="MeshInstance3D" parent="."]
+top_level = true
+mesh = SubResource("mesh_hook")
+
 [node name="AimLine" type="MeshInstance3D" parent="."]
 top_level = true
 script = ExtResource("2_rope")
