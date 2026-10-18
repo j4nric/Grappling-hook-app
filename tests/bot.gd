@@ -18,6 +18,10 @@ const CHAIN_DISTANCE := 7.0
 ## yaw), so it does not repeat the same fatal line forever.
 const BIASES := [0.0, 25.0, -25.0, 45.0, -45.0]
 
+## Runs are reproducible: the same level and variant always give the same
+## time, whatever ran before (see reset()).
+const BASE_SEED := 4242
+
 static var _attempt := 0
 static var _last_position := Vector3.ZERO
 static var _fresh := true
@@ -29,6 +33,15 @@ static var _fresh := true
 static func reset(variant := 0) -> void:
 	_attempt = variant
 	_fresh = true
+	# Random shakes (brittle stalactites move their collider) start alike.
+	seed(BASE_SEED + variant)
+	TimeScale.reset()
+
+
+## Every start variant (BOT_FULL=1) or stop at the first run within bronze.
+## Measuring medal times needs the full set.
+static func full_runs() -> bool:
+	return OS.get_environment("BOT_FULL") == "1"
 
 
 ## Call once per physics frame. Returns true if it threw.

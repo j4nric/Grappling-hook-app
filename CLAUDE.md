@@ -42,10 +42,12 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   start, sprint, slalom, cathedral, narrows, skyway, lava_lake, ice_vault in
   `CavernBuilder.TEMPLATES`, nach dem Vorbild der Wide Cave breit und hoch),
   eigene Schlüssel gehen vor; `CavernBuilder.full_segment()` liefert die
-  vollständige Halle. Medaillenzeiten aus der Bot-Zeit (`tests/test_levels.gd`
-  gibt die beste von fünf Startvarianten aus; Gold 0,85×, Silber 1,2×,
-  Bronze 2×). Der Bot ist chaotisch und hängt sogar davon ab, was vorher lief:
-  Medaillen aus der besten beobachteten Zeit mehrerer Läufe ableiten.
+  vollständige Halle. Medaillenzeiten aus der Bot-Zeit (`BOT_FULL=1 TEST_FILTER=test_levels`
+  spielt alle fünf Startvarianten und gibt die beste aus; Gold 0,85×, Silber 1,2×,
+  Bronze 2×; ohne `BOT_FULL` hört der Test beim ersten Lauf innerhalb Bronze auf).
+  Der Bot ist chaotisch, aber reproduzierbar: `Bot.reset()` setzt den globalen
+  Zufall (brüchige Stalaktiten wackeln mit `randf` am Kollisionskörper) und
+  `TimeScale` zurück – gleicher Start, gleiche Zeit.
 - **Prozedurale Höhlen** (`CaveGenerator`) nutzen denselben Baukasten; Rekorde gelten
   pro Art und Seed (`Records.key()`). `tests/test_procedural.gd` lässt den Bot mehrere
   Seeds spielen und gibt Bot-Zeit und Schätzung aus (Kalibrierung von `RUN_SPEED`).

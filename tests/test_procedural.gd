@@ -53,6 +53,8 @@ func run() -> void:
 		main.level_list = single
 		var best := INF
 		for delay in [0, 7, 13, 19]:
+			if best <= main.level.bronze_time and not Bot.full_runs():
+				break
 			main.load_level(0)
 			Bot.reset([0, 7, 13, 19].find(delay))
 			await wait_frames(2 + delay)

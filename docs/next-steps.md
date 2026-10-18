@@ -10,12 +10,19 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 1. Technik vorab
 
-- [ ] **Bot-Messung unabhängig von der Reihenfolge (S):** Der Bot liefert je nach
+- [x] **Bot-Messung unabhängig von der Reihenfolge (S):** (umgesetzt: Ursache war
+      der globale Zufall – brüchige Stalaktiten wackeln mit `randf` an ihrem
+      Kollisionskörper, die Kamera würfelt ihr Wackeln aus demselben Strom.
+      `Bot.reset()` setzt jetzt Zufall und Zeitlupe zurück; ein Test prüft, dass
+      derselbe Start nach allen anderen Leveln dieselbe Zeit ergibt.) Der Bot liefert je nach
       vorher gelaufenen Tests andere Zeiten (Gates: 42,7 s bei Bronze 46,0 s – knapp).
       Jede Messung in einer frisch geladenen Hauptszene mit zurückgesetztem
       Zufall und gleicher Physik-Phase → gleiche Zeit bei jedem Lauf, Medaillen
       lassen sich sauber neu messen.
-- [ ] **Testlaufzeit (S):** Die Testsuite braucht ~15 min (Bot-Läufe). Bot-Tests
+- [x] **Testlaufzeit (S):** (umgesetzt: Zeit pro Testdatei in der Ausgabe; die
+      Bot-Tests hören beim ersten Lauf innerhalb Bronze auf, `BOT_FULL=1` spielt
+      alle Startvarianten für die Medaillen-Messung. Lokal ~40 s für alle 34
+      Dateien, davon 20 s Level-Bot und 12 s Zufallshöhlen.) Bot-Tests
       mit früherem Abbruch, wenn eine Variante schon klar gewinnt; Zeiten pro
       Testdatei ausgeben.
 
