@@ -13,6 +13,7 @@ const START_DELAYS := [0, 5, 11, 17, 23]
 func run() -> void:
 	levels = Levels.LIST
 	await load_main()
+	Bot.prepare(main)
 	var first_runs := {}
 	for i in Levels.LIST.size():
 		main.load_level(i)

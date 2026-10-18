@@ -5,8 +5,8 @@
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "Ice Ceiling"
-gold_time = 9.3
-silver_time = 13.1
-bronze_time = 21.8
+gold_time = 8.6
+silver_time = 12.1
+bronze_time = 20.2
 layout_seed = 303
 segments = [{"template": "start", "length": 45.0}, {"template": "ice_vault", "length": 70.0, "ice": 1.0}, {"template": "ice_vault", "length": 60.0, "ice": 1.0, "checkpoint": true, "pillars": 2}, {"template": "ice_vault", "length": 70.0, "ice": 0.7, "ice_stalactites": true, "islands": 2}, {"template": "start"}]

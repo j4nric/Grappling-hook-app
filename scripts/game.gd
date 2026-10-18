@@ -30,6 +30,7 @@ signal level_loaded(level: Level)
 @onready var flow_label: Label = $HUD/Safe/FlowLabel
 @onready var split_label: Label = $HUD/Safe/SplitLabel
 @onready var ghost_label: Label = $HUD/Safe/GhostLabel
+@onready var perfect_label: Label = $HUD/Safe/PerfectLabel
 @onready var tuning := $Tuning
 @onready var camera_rig := $CameraRig
 @onready var fade: ColorRect = $World/Fade
@@ -84,6 +85,8 @@ var _hint_dismissed := false
 ## rock in between.
 var flow := 0
 var best_flow := 0
+## Perfect chain throws in this run.
+var perfects := 0
 ## The flow counter shows from this many hooks in a row.
 const FLOW_MIN_SHOWN := 2
 ## Play not yet written to Stats (see _flush_stats()).
@@ -103,6 +106,7 @@ func _ready() -> void:
 	Settings.load_settings()
 	_base_ambient = environment.ambient_light_energy
 	player.hook_attached.connect(_on_hook_attached)
+	player.perfect_chain.connect(_on_perfect_chain)
 	player.crushed.connect(_on_killed)
 	# The flow breaks on landing, a miss, or bumping into rock with the rope on.
 	player.landed.connect(func(_speed: float) -> void: _set_flow(0))
@@ -237,6 +241,8 @@ func restart() -> void:
 	_running = false
 	_finished = false
 	best_flow = 0
+	perfects = 0
+	perfect_label.visible = false
 	_set_flow(0)
 	ghost.reset(Records.load_ghost(_record_id))
 	rival.reset(Records.load_rival(_record_id).get("run", {}))
@@ -323,6 +329,21 @@ func _on_hook_attached(_point: Vector3, _normal: Vector3) -> void:
 		_update_hud()
 
 
+## A perfectly timed chain throw: PERFECT pops up and fades.
+func _on_perfect_chain() -> void:
+	if _running:
+		perfects += 1
+		_stats_piece.perfects = int(_stats_piece.get("perfects", 0)) + 1
+	perfect_label.visible = true
+	perfect_label.modulate.a = 1.0
+	perfect_label.scale = Vector2.ONE * 1.5
+	var tween := perfect_label.create_tween()
+	tween.tween_property(perfect_label, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(0.4)
+	tween.tween_property(perfect_label, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(func() -> void: perfect_label.visible = false)
+
+
 func _on_finished() -> void:
 	if _finished or not _running:
 		return
@@ -356,7 +377,12 @@ func _on_finished() -> void:
 	if rival_time < INF:
 		best_line += "\nRival %.2f s  %s" % [rival_time, _signed(_elapsed - rival_time)]
 	finish_panel.get_node("Lines/Best").text = best_line
-	finish_panel.get_node("Lines/Flow").text = "Longest flow x%d" % best_flow if best_flow >= FLOW_MIN_SHOWN else ""
+	var flow_parts: PackedStringArray = []
+	if best_flow >= FLOW_MIN_SHOWN:
+		flow_parts.append("Longest flow x%d" % best_flow)
+	if perfects > 0:
+		flow_parts.append("Perfect x%d" % perfects)
+	finish_panel.get_node("Lines/Flow").text = "   ".join(flow_parts)
 	finish_panel.get_node("Lines/Target").text = _next_target(medal)
 	finish_panel.get_node("Lines/Again").text = "Tap to play again" if _touch else "Click to play again"
 	var next: Button = finish_panel.get_node("Lines/Buttons/Next")

@@ -26,6 +26,8 @@ Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
   werfen. Würde ein Wurf nicht halten (Eis, zu nah unter der Decke), wirft das
   Spiel automatisch flacher – die Ziellinie zeigt es vorher. Wirfst du, während
   dich ein Seil zieht, hält das alte Seil, bis der neue Haken greift (Kette).
+  Greift der neue Haken kurz bevor das alte Seil loslässt, ist das ein
+  **perfekter Kettenwurf**: Extra-Tempo, goldene Funken, „PERFECT“.
   Tippen = Seil lösen, zwei Finger halten (0,3 s) = Neustart, **II** = Pause.
 - **TUNE** (rechts oben) öffnet Regler für Physik und Kamera. Das Spiel pausiert,
   „Play“ macht weiter. Die Werte bleiben im Browser gespeichert (pro Browser
