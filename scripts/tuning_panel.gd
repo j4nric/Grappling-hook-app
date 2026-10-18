@@ -73,6 +73,7 @@ const PARAMS := [
 	["CameraRig", "max_roll", 0.0, 45.0, 1.0, "Camera"],
 	["CameraRig", "shake_strength", 0.0, 2.0, 0.05, "Camera"],
 	["CameraRig", "zip_fov_kick", 0.0, 30.0, 1.0, "Camera"],
+	["CameraRig", "collision_margin", 0.0, 2.0, 0.1, "Camera"],
 	["World/PixelView", "stretch_shrink", 1.0, 6.0, 1.0, "Camera"],
 	["Sfx", "volume", 0.0, 1.0, 0.05, "Misc"],
 	["Debug", "shown", 0.0, 1.0, 1.0, "Misc"],

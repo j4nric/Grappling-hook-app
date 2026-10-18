@@ -46,6 +46,10 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   halte sie klein. UIDs fehlen absichtlich, Godot ergänzt sie beim ersten Öffnen.
   Die von Godot erzeugten `*.gd.uid`- und `*.import`-Dateien werden mit committet.
 - Keine externen Addons ohne Rücksprache.
+- Grafik ist prozedural: Texturen und Materialien kommen aus `tools/gen_textures.py`,
+  Level-Geometrie nutzt nur Materialien aus `assets/materials/` (Welt-Triplanar,
+  nahtlos). Texturen klein halten und verlustfrei importieren (kein VRAM-Format:
+  iPhone-Browser können S3TC nicht).
 
 ## Dateiüberblick
 
@@ -79,6 +83,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/camera_rig.gd` | Verfolgerkamera: Lag, Look-Ahead (beim Zug Richtung Anker), Tempo-FOV (horizontal), Roll, Shake bei `hook_attached`/`landed` |
 | `scripts/game.gd` | Level laden, Timer, Ziel, Checkpoints (Lava/Absturz → letzter Checkpoint, Timer läuft weiter), Neustart, HUD |
 | `scripts/safe_area.gd` | `SafeArea.margins()`: Ränder für Notch/Home-Indikator in Viewport-Einheiten |
+| `tools/gen_textures.py` | Malt die Texturen (`assets/textures/`) und schreibt die Materialbibliothek (`assets/materials/`) |
+| `scenes/props/` | Wiederverwendbare Deko: Lichtkegel, leuchtender Kristall |
+| `scripts/flicker.gd` | Flackerndes Licht (Fackeln, Lava) |
 | `scripts/time_scale.gd` | `TimeScale`: Zeitlupe beim Zielen und Hit-Stop teilen sich `Engine.time_scale` |
 | `scripts/speed_lines.gd` | Speed-Lines (Shader `shaders/speed_lines.gdshader`) ab hohem Tempo |
 | `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler in Tabs, pausiert das Spiel, speichert in `user://tuning_v3.cfg`, „Copy“ kopiert getunte Werte als Text |

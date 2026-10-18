@@ -21,23 +21,18 @@ LAVA_Y = -9.0
 # show speed, and each piece only gets the few lights near it.
 CHUNK = 16.0
 TORCH_SPACING = 24.0
-# Dark cracks across the floor every few meters: a motion cue.
-CRACK_SPACING = 4.0
 
-# Materials: name -> (albedo rgb, emission rgb or None)
+# Textured materials from the library (tools/gen_textures.py): name -> file
+# in assets/materials/. World-space triplanar, so every chunk tiles on.
+LIBRARY = {
+    "rock": "rock", "rock2": "rock_dark", "floor": "rock_floor", "floor2": "rock_floor",
+    "obstacle": "obstacle", "ice": "ice", "lava": "lava", "mover": "metal",
+}
+# Plain glowing materials: name -> (albedo rgb, emission rgb)
 MATERIALS = {
-    "rock": ((0.42, 0.38, 0.33), None),
-    "rock2": ((0.33, 0.3, 0.27), None),
-    "floor": ((0.4, 0.36, 0.31), None),
-    "floor2": ((0.34, 0.3, 0.26), None),
-    "crack": ((0.12, 0.1, 0.09), None),
     "torch": ((1.0, 0.7, 0.3), (1.0, 0.55, 0.2)),
-    "obstacle": ((0.52, 0.31, 0.25), None),
-    "ice": ((0.55, 0.8, 0.95), (0.1, 0.25, 0.35)),
-    "lava": ((1.0, 0.35, 0.05), (1.0, 0.3, 0.0)),
     "finish": ((0.2, 0.85, 0.4), (0.2, 0.85, 0.4)),
     "checkpoint": ((1.0, 0.85, 0.2), (0.6, 0.5, 0.1)),
-    "mover": ((0.75, 0.45, 0.2), None),
 }
 
 
@@ -92,6 +87,7 @@ LEVELS = [
 
 class Scene:
     def __init__(self):
+        self.exts = []  # (type, path, id)
         self.subs = []  # (type, id, body)
         self.nodes = []
         self.box_meshes = {}
@@ -101,15 +97,24 @@ class Scene:
         self.subs.append((kind, sid, body))
         return sid
 
+    def ext(self, kind, path, eid):
+        if not any(e[2] == eid for e in self.exts):
+            self.exts.append((kind, path, eid))
+        return f'ExtResource("{eid}")'
+
     def material(self, name):
+        """Reference to a material: from the library, or a plain glowing one."""
+        if name in LIBRARY:
+            file = LIBRARY[name]
+            kind = "ShaderMaterial" if file == "lava" else "StandardMaterial3D"
+            return self.ext(kind, f"res://assets/materials/{file}.tres", f"m_{file}")
         sid = f"mat_{name}"
         if not any(s[1] == sid for s in self.subs):
             albedo, emission = MATERIALS[name]
-            body = f"albedo_color = Color({albedo[0]}, {albedo[1]}, {albedo[2]}, 1)"
-            if emission:
-                body += f"\nemission_enabled = true\nemission = Color({emission[0]}, {emission[1]}, {emission[2]}, 1)"
+            body = (f"albedo_color = Color({albedo[0]}, {albedo[1]}, {albedo[2]}, 1)\n"
+                    f"emission_enabled = true\nemission = Color({emission[0]}, {emission[1]}, {emission[2]}, 1)")
             self.sub("StandardMaterial3D", sid, body)
-        return sid
+        return f'SubResource("{sid}")'
 
     def box_shape(self, sx, sy, sz):
         key = (sx, sy, sz)
@@ -123,7 +128,7 @@ class Scene:
         if key not in self.box_meshes:
             sid = f"mesh_{len(self.box_meshes)}"
             self.box_meshes[key] = self.sub(
-                "BoxMesh", sid, f'material = SubResource("{self.material(mat)}")\nsize = Vector3({sx}, {sy}, {sz})')
+                "BoxMesh", sid, f'material = {self.material(mat)}\nsize = Vector3({sx}, {sy}, {sz})')
         return self.box_meshes[key]
 
     def node(self, name, kind, parent=".", pos=None, props="", groups=None):
@@ -141,7 +146,7 @@ class Scene:
     def csg(self, name, parent, pos, size, mat, ice=False):
         self.node(name, "CSGBox3D", parent, pos,
                   f'use_collision = true\nsize = Vector3({size[0]}, {size[1]}, {size[2]})\n'
-                  f'material = SubResource("{self.material("ice" if ice else mat)}")',
+                  f'material = {self.material("ice" if ice else mat)}',
                   groups=["no_hook"] if ice else None)
 
     def area(self, name, parent, pos, size):
@@ -192,15 +197,6 @@ def build(index, lv):
             sc.csg(f"Floor{n}", "Geometry/Floor", (0, FLOOR_Y - 0.5, (a + b) / 2), (12, 1, a - b),
                    "floor2" if tone else "floor")
             n += 1
-    sc.node("Cracks", "Node3D", "Geometry")
-    n = 0
-    for a0, b0 in lv["floor"]:
-        z = a0 - CRACK_SPACING / 2
-        while z > b0:
-            sc.node(f"Crack{n}", "MeshInstance3D", "Geometry/Cracks", (0, FLOOR_Y + 0.01, z),
-                    f'mesh = SubResource("{sc.box_mesh(12, 0.02, 0.25, "crack")}")')
-            z -= CRACK_SPACING
-            n += 1
 
     for side, x, ice in (("Ceiling", None, lv["ceiling_ice"]), ("WallLeft", -HALF_W - 0.5, lv["left_ice"]),
                          ("WallRight", HALF_W + 0.5, lv["right_ice"])):
@@ -247,7 +243,8 @@ def build(index, lv):
     while z > -length:
         x = -HALF_W if i % 2 == 0 else HALF_W
         sc.node(f"Torch{i}", "OmniLight3D", "Lights", (x * 0.85, 5.0, z),
-                "light_color = Color(1, 0.62, 0.3, 1)\nlight_energy = 2.5\nomni_range = 16.0")
+                "light_color = Color(1, 0.62, 0.3, 1)\nlight_energy = 2.5\nomni_range = 16.0\n"
+                + f'script = {sc.ext("Script", "res://scripts/flicker.gd", "3_flicker")}')
         sc.node(f"TorchMesh{i}", "MeshInstance3D", "Lights", (x * 0.97, 4.5, z),
                 f'mesh = SubResource("{sc.box_mesh(0.3, 0.6, 0.3, "torch")}")')
         z -= TORCH_SPACING if i > 0 else 6.0 + TORCH_SPACING / 2
@@ -258,7 +255,8 @@ def build(index, lv):
         sc.node(f"LavaMesh{i}", "MeshInstance3D", "Geometry", (0, LAVA_Y, (a + b) / 2),
                 f'mesh = SubResource("{sc.box_mesh(12, 0.5, a - b, "lava")}")')
         sc.node(f"LavaLight{i}", "OmniLight3D", "Lights", (0, LAVA_Y + 4, (a + b) / 2),
-                "light_color = Color(1, 0.35, 0.1, 1)\nlight_energy = 2.5\nomni_range = 14.0")
+                "light_color = Color(1, 0.35, 0.1, 1)\nlight_energy = 2.5\nomni_range = 14.0\n"
+                + f'script = {sc.ext("Script", "res://scripts/flicker.gd", "3_flicker")}\namount = 0.15\nspeed = 3.0')
         sc.area(f"Lava{i}", "KillZones", (0, LAVA_Y + 1.5, (a + b) / 2), (12, 3, a - b))
 
     sc.node("Checkpoints", "Node3D")
@@ -270,12 +268,13 @@ def build(index, lv):
                       f"transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, {CEIL_Y - (FLOOR_Y + CEIL_Y) / 2 - 0.3}, 0)")
 
     sc.node("FinishMarker", "CSGBox3D", ".", (0, (FLOOR_Y + CEIL_Y) / 2, -length),
-            f'size = Vector3(11.5, {CEIL_Y - FLOOR_Y - 0.5}, 0.3)\nmaterial = SubResource("{sc.material("finish")}")')
+            f'size = Vector3(11.5, {CEIL_Y - FLOOR_Y - 0.5}, 0.3)\nmaterial = {sc.material("finish")}')
     sc.area("Finish", ".", (0, (FLOOR_Y + CEIL_Y) / 2, -length), (12, CEIL_Y - FLOOR_Y, 2))
 
     ext = ('[ext_resource type="Script" path="res://scripts/level.gd" id="1_level"]\n'
            '[ext_resource type="Script" path="res://scripts/mover.gd" id="2_mover"]\n')
-    head = f"[gd_scene load_steps={len(sc.subs) + 3} format=3]\n\n"
+    ext += "".join(f'[ext_resource type="{k}" path="{p}" id="{i}"]\n' for k, p, i in sc.exts)
+    head = f"[gd_scene load_steps={len(sc.subs) + len(sc.exts) + 3} format=3]\n\n"
     subs = "\n".join(f'[sub_resource type="{k}" id="{i}"]\n{b}\n' for k, i, b in sc.subs)
     text = head + "; Generated by tools/gen_levels.py - edit the description there.\n\n" + ext + "\n" + subs + "\n" + "\n\n".join(sc.nodes) + "\n"
     path = OUT / f"level_{index + 1:02d}.tscn"
