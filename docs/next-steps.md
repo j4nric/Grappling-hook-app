@@ -1,14 +1,34 @@
-# Nächste Schritte – Runde 6
+# Nächste Schritte – Runde 7
 
 Stand: 2026-10-18. Runden 1–6 sind erledigt (PRs #1–#51, Zusammenfassung in
-`roadmap.md`, Archiv unten). Runde 5 hat das Grund-Design der Level, die neue
-Optik, den Höhlen-Editor und das Teilen gebracht. Ziel dieser Runde: **mehr
-Können belohnen, die Höhle lebendiger und abwechslungsreicher machen, den
-Fortschritt sichtbar machen** – und die Technik dahinter aufräumen.
+`roadmap.md`, Archiv unten). Runde 7 setzt die Ideen aus Runde 6 um.
 Reihenfolge = Umsetzungsreihenfolge, ein PR pro Themengebiet.
-Größe: S = klein, M = mittel, L = groß.
 
-## 1. Technik vorab
+## Runde 7
+
+- [x] **Bot in frischer Hauptszene (S):** (umgesetzt: `bot_run()` in
+      `tests/test_case.gd` lädt für jeden Bot-Lauf die Hauptszene neu; ein
+      Test spielt denselben Start zweimal und vergleicht die Zeit)
+- [ ] **Gold-Geist (M):** Bot-Läufe als mitgelieferter Geist, abgespielt im Tempo
+      der Gold-Zeit: zeigt eine Linie, die Gold schafft.
+- [ ] **Mehr Level mit den neuen Bausteinen (M):** Kurven, Abkürzungen, Pilze.
+- [ ] **Abkürzungen im Generator häufiger (S).**
+
+## Auf dem Gerät (nur mit dem iPhone möglich)
+
+- [ ] **Bildrate auf dem iPhone messen** (TUNE → Misc → Debug-Anzeige), vor allem
+      in Wide Cave und Skyway.
+- [ ] **Perfekter Kettenwurf, Sprungpilze, Winding Rift** anspielen: Schub zu
+      stark/schwach, Kurven zu eng?
+
+## Später
+
+- [ ] iOS-App, TestFlight, Game Center (braucht Mac + Apple-Developer-Account).
+- [ ] Bestenliste für die Daily Cave (braucht einen Server).
+
+## Archiv: Runde 6
+
+### 1. Technik vorab
 
 - [x] **Bot-Messung unabhängig von der Reihenfolge (S):** (umgesetzt: Ursache war
       der globale Zufall – brüchige Stalaktiten wackeln mit `randf` an ihrem
@@ -26,7 +46,7 @@ Größe: S = klein, M = mittel, L = groß.
       mit früherem Abbruch, wenn eine Variante schon klar gewinnt; Zeiten pro
       Testdatei ausgeben.
 
-## 2. Spielgefühl: Können belohnen
+### 2. Spielgefühl: Können belohnen
 
 - [x] **Perfekter Kettenwurf (M):** (umgesetzt: Signal `perfect_chain`, 3 Regler im
       Tab Rope mit Skizze, Zähler im Ziel und in der Statistik. Der Bot kam dabei
@@ -43,7 +63,7 @@ Größe: S = klein, M = mittel, L = groß.
       beim Aufkommen hoch und nach vorn schleudern (`bounce`). Neuer
       Baukasten-Schlüssel `bouncers`, Editor-Regler mit Skizze.
 
-## 3. Level: Abwechslung
+### 3. Level: Abwechslung
 
 - [x] **Kurvige Höhlen (L):** (umgesetzt: Schlüssel `shift`; jedes Bauteil der
       Halle wandert mit, die Übergänge prüfen jede Seite einzeln – Schräge,
@@ -63,7 +83,7 @@ Größe: S = klein, M = mittel, L = groß.
       „shortcut“, jede Halle seitlich versetzt) windende Schlucht mit Sprungpilzen,
       Abkürzung und offener Decke; Generator nutzt Versatz und Pilze auch.
 
-## 4. Darstellung: lebendige Höhle
+### 4. Darstellung: lebendige Höhle
 
 - [x] **Wasserfälle (M):** (umgesetzt: in knapp der Hälfte der Hallen ohne Lava
       und Deckenöffnung, `shaders/waterfall.gdshader`, Nebel am Fuß,
@@ -78,7 +98,7 @@ Größe: S = klein, M = mittel, L = groß.
       dem Ziel, Lichtstrahlen, warmes Licht) das Ziel als Höhlenausgang – helles Licht,
       Lichtstrahlen, Himmel; die Ziel-Kamerafahrt zeigt ihn.
 
-## 5. Motivation und Fortschritt
+### 5. Motivation und Fortschritt
 
 - [x] **Fortschritt im Level-Menü (S):** (umgesetzt: farbige Medaillen-Marke vor
       jedem Level, Zeile mit Gold/Silber/Bronze und Daily-Serie) Medaillen als farbige Marken je Level,
@@ -93,7 +113,7 @@ Größe: S = klein, M = mittel, L = groß.
       kopieren und woanders einfügen – z. B. von Safari in die App auf dem
       Home-Bildschirm (die haben getrennte Speicher).
 
-## 6. Optimierung
+### 6. Optimierung
 
 - [x] **Shader aufwärmen (S):** (umgesetzt: `Effects.warm_up()` beim Start hinter
       dem Schwarz: alle Effekte einmal, alle Level-Materialien und Shader einmal
@@ -112,27 +132,6 @@ Größe: S = klein, M = mittel, L = groß.
       `Progress` – eigene Knoten in `main.tscn`) Die Datei war auf ~700 Zeilen gewachsen.
 - [x] **Abschluss-Doku (S):** CLAUDE.md, README, roadmap, next-steps.
 
-## Auf dem Gerät (nur mit dem iPhone möglich)
-
-- [ ] **Bildrate auf dem iPhone messen** (TUNE → Misc → Debug-Anzeige), vor allem
-      in Wide Cave und Skyway.
-- [ ] **Perfekter Kettenwurf und Sprungpilze** anspielen: Schub zu stark/schwach?
-
-## Ideen für Runde 7
-
-- [ ] **Gold-Geist:** Bot-Läufe als mitgelieferter Geist in Medaillen-Tempo.
-- [ ] **Mehr Level mit den neuen Bausteinen** (Kurven, Abkürzungen, Pilze) –
-      nach deinem Feedback zu Winding Rift.
-- [ ] **Abkürzungen im Generator häufiger**, wenn sie sich bewähren.
-- [ ] **Bot und Physik-Engine:** die erste Fahrt nach dem Laden weicht ab
-      (Engine-Zustand); für exakte Wiederholbarkeit jeden Bot-Lauf in einer
-      frisch geladenen Hauptszene.
-
-## Später
-
-- [ ] iOS-App, TestFlight, Game Center (braucht Mac + Apple-Developer-Account).
-- [ ] Bestenliste für die Daily Cave (braucht einen Server).
-- [ ] Rivalen-Geist aus Bot-Läufen als „Gold-Geist“ mitliefern.
 
 ## Archiv: Runde 5
 
