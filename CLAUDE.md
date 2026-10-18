@@ -63,6 +63,10 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   Level-Geometrie nutzt nur Materialien aus `assets/materials/` (Welt-Triplanar,
   nahtlos). Texturen klein halten und verlustfrei importieren (kein VRAM-Format:
   iPhone-Browser können S3TC nicht).
+- Leistung: Lichter im Level schaltet `LightLod` (nie selbst `visible`/`light_energy`
+  von Level-Lichtern im Spiel setzen); Deko und Hallen haben eine Sichtweite
+  (`visibility_range_end`, im Nebel unsichtbar). `tests/test_performance.gd` wacht
+  darüber und über die Aufbauzeit.
 
 ## Dateiüberblick
 
@@ -101,7 +105,8 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/safe_area.gd` | `SafeArea.margins()`: Ränder für Notch/Home-Indikator in Viewport-Einheiten |
 | `tools/gen_textures.py` | Malt die Texturen (`assets/textures/`) und schreibt die Materialbibliothek (`assets/materials/`) |
 | `scenes/props/` | Wiederverwendbare Deko: Lichtkegel, leuchtender Kristall |
-| `scripts/flicker.gd` | Flackerndes Licht (Fackeln, Lava) |
+| `scripts/flicker.gd` | Flackerndes Licht (Fackeln, Lava); `fade` setzt `LightLod` |
+| `scripts/light_lod.gd` | `LightLod`: nur die nächsten `max_lights` Lichter an (Compatibility-Renderer: max. 8 pro Objekt), weich ein-/ausblenden |
 | `scripts/time_scale.gd` | `TimeScale`: Zeitlupe beim Zielen und Hit-Stop teilen sich `Engine.time_scale` |
 | `scripts/speed_lines.gd` | Speed-Lines (Shader `shaders/speed_lines.gdshader`) ab hohem Tempo |
 | `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler in Tabs, pausiert das Spiel, speichert in `user://tuning_v3.cfg`, „Copy“ kopiert getunte Werte als Text |
