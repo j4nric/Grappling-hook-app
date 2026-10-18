@@ -48,9 +48,10 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   Der Bot ist chaotisch, aber reproduzierbar: `Bot.reset()` setzt den globalen
   Zufall (brüchige Stalaktiten wackeln mit `randf` am Kollisionskörper) und
   `TimeScale` zurück, `Bot.prepare()` schaltet den Hit-Stop ab (sein
-  Physik-Takt hängt vom Zeitrest früherer Zeitlupen ab) – gleicher Start,
-  gleiche Zeit im selben Testablauf (die Physik-Engine behält etwas Zustand:
-  die erste Fahrt nach dem Laden der Hauptszene kann abweichen). Der Bot sieht Eis-Tore und steuert auf den Schlitz zu.
+  Physik-Takt hängt vom Zeitrest früherer Zeitlupen ab), und `bot_run()` in
+  `tests/test_case.gd` spielt jeden Lauf in einer frisch geladenen
+  Hauptszene (die Physik-Engine behält sonst Zustand) – gleicher Start,
+  gleiche Zeit, egal was vorher lief. Der Bot sieht Eis-Tore und steuert auf den Schlitz zu.
 - **Prozedurale Höhlen** (`CaveGenerator`) nutzen denselben Baukasten; Rekorde gelten
   pro Art und Seed (`Records.key()`). `tests/test_procedural.gd` lässt den Bot mehrere
   Seeds spielen und gibt Bot-Zeit und Schätzung aus (Kalibrierung von `RUN_SPEED`).

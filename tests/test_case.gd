@@ -2,6 +2,8 @@ extends Node
 ## Base for headless tests. A test overrides run() and reports with check().
 ## Run all tests: godot --headless --fixed-fps 60 --path . --script res://tests/run_tests.gd
 
+const BOT := preload("res://tests/bot.gd")
+
 var failures: Array[String] = []
 var main: Node
 
@@ -64,6 +66,30 @@ func load_main() -> void:
 				node.set(property, TEST_TUNING[node_path][property])
 	add_child(main)
 	await get_tree().process_frame
+
+
+## One bot run in a freshly loaded main scene (the physics engine keeps some
+## state across runs: only a fresh scene gives the same time every time).
+## Returns {"finished", "time", "deaths", "recording" (Ghost.recording())}.
+func bot_run(level_list: Array[String], index: int, variant: int, delay: int, max_frames: int) -> Dictionary:
+	if main:
+		main.free()
+	levels = level_list
+	level_index = index
+	await load_main()
+	BOT.prepare(main)
+	BOT.reset(variant)
+	await wait_frames(2 + delay)
+	var deaths := [0]
+	main.level.killed.connect(func() -> void: deaths[0] += 1)
+	var p := player()
+	var frames := 0
+	while not main._finished and frames < max_frames:
+		BOT.step(p)
+		await get_tree().physics_frame
+		frames += 1
+	return {"finished": main._finished, "time": main._elapsed if main._finished else INF, "deaths": deaths[0],
+			"recording": main.ghost.recording()}
 
 
 func player() -> CharacterBody3D:

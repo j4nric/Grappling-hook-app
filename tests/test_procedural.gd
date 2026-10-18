@@ -47,26 +47,18 @@ func run() -> void:
 	await wait_frames(2)
 	check(main.level_index == random_index and main.level_list[random_index] != first, "New cave after the finish")
 
-	# The bot gets through several seeds.
-	Bot.prepare(main)
+	# The bot gets through several seeds (each run in a fresh main scene).
 	for seed_value in SEEDS:
 		var single: Array[String] = [Levels.cave_path("random", seed_value)]
-		main.level_list = single
+		var made := CaveGenerator.make("random", seed_value)
+		var bronze := made.bronze_time
+		var estimate := CaveGenerator.estimate_time(made.segments)
+		made.free()
 		var best := INF
 		for delay in [0, 7, 13, 19]:
-			if best <= main.level.bronze_time and not Bot.full_runs():
+			if best <= bronze and not Bot.full_runs():
 				break
-			main.load_level(0)
-			Bot.reset([0, 7, 13, 19].find(delay))
-			await wait_frames(2 + delay)
-			var p := player()
-			var frames := 0
-			while not main._finished and frames < MAX_FRAMES:
-				Bot.step(p)
-				await get_tree().physics_frame
-				frames += 1
-			if main._finished:
-				best = minf(best, main._elapsed)
-		var estimate := CaveGenerator.estimate_time(main.level.segments)
-		print("    seed %d: bot %.2f s, estimate %.1f s, bronze %.1f s" % [seed_value, best, estimate, main.level.bronze_time])
-		check(best <= main.level.bronze_time, "bot gets bronze in cave %d" % seed_value)
+			var result := await bot_run(single, 0, [0, 7, 13, 19].find(delay), delay, MAX_FRAMES)
+			best = minf(best, result.time)
+		print("    seed %d: bot %.2f s, estimate %.1f s, bronze %.1f s" % [seed_value, best, estimate, bronze])
+		check(best <= bronze, "bot gets bronze in cave %d" % seed_value)

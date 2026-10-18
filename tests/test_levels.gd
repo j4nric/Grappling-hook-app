@@ -11,60 +11,44 @@ const START_DELAYS := [0, 5, 11, 17, 23]
 
 
 func run() -> void:
-	levels = Levels.LIST
-	await load_main()
-	Bot.prepare(main)
-	var first_runs := {}
 	for i in Levels.LIST.size():
-		main.load_level(i)
-		Bot.reset()
-		await wait_frames(2)
+		levels = Levels.LIST
+		level_index = i
+		if main:
+			main.free()
+		await load_main()
 		var level: Level = main.level
 		check(level.has_node("Start") and level.has_node("Finish"), "level %d has start and finish" % (i + 1))
 		check(level.gold_time < level.silver_time and level.silver_time < level.bronze_time, "level %d medal times are ordered" % (i + 1))
+		var medals := [level.gold_time, level.silver_time, level.bronze_time]
+		var level_name := level.level_name
 		# The bot's flight is chaotic: tiny differences in the start change
 		# the run. The best of a few starts judges the level, not one throw.
 		var best := INF
 		var best_deaths := 0
 		var times: Array[String] = []
 		for delay in START_DELAYS:
-			if best <= main.level.bronze_time and not Bot.full_runs():
+			if best <= float(medals[2]) and not Bot.full_runs():
 				break
-			main.load_level(i)
-			Bot.reset(START_DELAYS.find(delay))
-			await wait_frames(2 + delay)
-			var p := player()
-			var deaths := [0]
-			main.level.killed.connect(func() -> void: deaths[0] += 1)
-			var frames := 0
-			while not main._finished and frames < MAX_FRAMES:
-				Bot.step(p)
-				await get_tree().physics_frame
-				frames += 1
-			times.append("%.2f" % main._elapsed if main._finished else "-")
-			if delay == START_DELAYS[0]:
-				first_runs[i] = main._elapsed if main._finished else INF
-			if main._finished and main._elapsed < best:
-				best = main._elapsed
-				best_deaths = deaths[0]
-		level = main.level
-		print("    level %d %-12s bot best %.2f s, %d deaths (medals %.1f/%.1f/%.1f) runs %s" % [i + 1, level.level_name, best, best_deaths, level.gold_time, level.silver_time, level.bronze_time, " ".join(times)])
+			var result := await bot_run(Levels.LIST, i, START_DELAYS.find(delay), delay, MAX_FRAMES)
+			times.append("%.2f" % result.time if result.finished else "-")
+			if result.time < best:
+				best = result.time
+				best_deaths = result.deaths
+		print("    level %d %-12s bot best %.2f s, %d deaths (medals %.1f/%.1f/%.1f) runs %s" % [i + 1, level_name, best, best_deaths, medals[0], medals[1], medals[2], " ".join(times)])
 		check(best < INF, "bot finishes level %d" % (i + 1))
-		check(best <= level.bronze_time, "bot gets at least bronze in level %d" % (i + 1))
+		check(best <= float(medals[2]), "bot gets at least bronze in level %d" % (i + 1))
 
-	# The same start gives the same time, whatever ran before (here: all
-	# levels): medal times can be measured again any time.
-	var again := level_named("level_01")
-	main.load_level(again)
-	Bot.reset(0)
-	await wait_frames(2 + START_DELAYS[0])
-	var frames_again := 0
-	while not main._finished and frames_again < MAX_FRAMES:
-		Bot.step(player())
-		await get_tree().physics_frame
-		frames_again += 1
-	check(main._finished and is_equal_approx(main._elapsed, first_runs[again]),
-			"bot runs are reproducible (%.2f s, first %.2f s)" % [main._elapsed, first_runs[again]])
+	# The same start gives the same time, whatever ran before (each run in a
+	# fresh main scene): medal times can be measured again any time.
+	var again := level_named("level_09")
+	var one := await bot_run(Levels.LIST, again, 1, START_DELAYS[1], MAX_FRAMES)
+	var two := await bot_run(Levels.LIST, again, 1, START_DELAYS[1], MAX_FRAMES)
+	check(one.finished and is_equal_approx(one.time, two.time),
+			"bot runs are reproducible (%.2f s, again %.2f s)" % [one.time, two.time])
+	levels = Levels.LIST
+	main.free()
+	await load_main()
 
 	# Changing level right at the finish line must not finish the next level
 	# (levels 3 and 4 share the finish position).
