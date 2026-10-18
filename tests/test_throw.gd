@@ -42,6 +42,9 @@ func run() -> void:
 	# still reaches far; from the floor it keeps its pitch.
 	main.restart()
 	await wait_frames(10)
+	# The test tunnel is low (ceiling 9 m): a reach that fits it.
+	var reach: float = p.min_throw_reach
+	p.min_throw_reach = 14.0
 	var up := Vector2(0, -300)
 	var normal_dir: Vector3 = p._throw_direction(up, 60.0)
 	check(is_equal_approx(rad_to_deg(asin(normal_dir.y)), p.throw_pitch), "from the floor the throw keeps its pitch")
@@ -52,3 +55,4 @@ func run() -> void:
 	var path: Dictionary = p.predict_hook_path(flat_dir, 60.0)
 	var points: PackedVector3Array = path.points
 	check(path.hit and p.global_position.distance_to(points[-1]) >= p.min_throw_reach, "the flatter throw holds further away")
+	p.min_throw_reach = reach

@@ -8,7 +8,7 @@ const SHADER := preload("res://shaders/speed_lines.gdshader")
 ## The pixel view, so the streaks use its coarse pixels.
 @export var pixel_view: SubViewportContainer
 ## Speed (m/s) where the lines appear ...
-@export var start_speed := 28.0
+@export var start_speed := 45.0
 ## ... and where they are strongest.
 @export var full_speed := 48.0
 ## How fast the lines fade in and out (1/s).

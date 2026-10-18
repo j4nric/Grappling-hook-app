@@ -42,7 +42,7 @@ const PARAMS := {
 	"Player/tension_boost": ["Pull weight", "m/s²", "pull",
 		"Extra constant pull toward the anchor on top of the reel. Makes the pull feel heavier and faster."],
 	"Player/min_rope_length": ["Shortest rope", "m", "zip_min",
-		"The rope never gets shorter than this (only matters with zip launch off)."],
+		"The rope never gets shorter than this. Longer than the zip distance: the pull ends hanging here unless your swing carries you past - throw again."],
 	"Player/zip_release_distance": ["Zip launch distance", "m", "zip",
 		"The rope lets go this far before the anchor and you fly on at full speed. 0 = pulled all the way to the rock."],
 	"Player/zip_boost": ["Zip launch boost", "m/s", "zip_boost",

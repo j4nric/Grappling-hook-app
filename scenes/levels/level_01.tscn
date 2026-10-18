@@ -5,8 +5,8 @@
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "First Swing"
-gold_time = 6.5
-silver_time = 9.2
-bronze_time = 15.3
+gold_time = 5.9
+silver_time = 8.3
+bronze_time = 13.9
 layout_seed = 101
 segments = [{"length": 45.0, "width": 30.0, "ceiling": 22.0, "floor": "ground", "stalactites": 0.25, "crystals": 2, "shafts": 1}, {"length": 60.0, "width": 36.0, "ceiling": 26.0, "stalactites": 0.45, "islands": 1, "crystals": 2, "shafts": 1}, {"length": 70.0, "width": 42.0, "ceiling": 30.0, "checkpoint": true, "pillars": 1, "stalactites": 0.35, "crystals": 3, "shafts": 2}, {"length": 50.0, "width": 34.0, "ceiling": 24.0, "floor": "ground", "stalactites": 0.25, "crystals": 2, "shafts": 1}]

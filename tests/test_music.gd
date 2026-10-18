@@ -19,6 +19,8 @@ func run() -> void:
 		await get_tree().process_frame
 	check(music.levels[1] > 0.8 and music.levels[2] > 0.6, "at full speed pulse and arpeggio play %s" % [music.levels])
 	main.restart()
+	# After the landing on the start ledge (a landing ends the flow).
+	await wait_frames(30)
 	main.flow = music.arp_flow
 	for i in 120:
 		p.velocity = Vector3.ZERO

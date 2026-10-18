@@ -3,8 +3,9 @@ extends Area3D
 ## A column of rising air: inside it, bodies with a velocity (the player) are
 ## pushed up, up to a top speed. Wisps rise inside to show it.
 
-## Upward acceleration inside (m/s²), against gravity (22).
-@export var lift := 46.0
+## Upward acceleration inside (m/s²) on top of cancelling the body's own
+## gravity, so it lifts the same whatever the gravity is tuned to.
+@export var lift := 24.0
 ## Fastest upward speed it pushes to (m/s).
 @export var max_rise := 20.0
 
@@ -22,7 +23,8 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	for body in _bodies:
 		if is_instance_valid(body) and body.velocity.y < max_rise:
-			body.velocity.y = minf(body.velocity.y + lift * delta, max_rise)
+			var gravity: float = body.get("gravity") if "gravity" in body else 0.0
+			body.velocity.y = minf(body.velocity.y + (gravity + lift) * delta, max_rise)
 
 
 func contains(body: Node3D) -> bool:

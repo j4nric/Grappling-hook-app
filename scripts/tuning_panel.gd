@@ -29,51 +29,51 @@ const DEFAULTS_SECTION := "defaults"
 
 ## [node path relative to the parent, property path, min, max, step, tab]
 const PARAMS := [
-	["Player", "throw_speed_per_px", 0.002, 0.03, 0.001, "Throw"],
-	["Player", "hook_min_speed", 0.0, 40.0, 1.0, "Throw"],
-	["Player", "hook_max_speed", 10.0, 150.0, 1.0, "Throw"],
+	["Player", "throw_speed_per_px", 0.002, 0.06, 0.001, "Throw"],
+	["Player", "hook_min_speed", 0.0, 80.0, 1.0, "Throw"],
+	["Player", "hook_max_speed", 10.0, 200.0, 1.0, "Throw"],
 	["Player", "hook_gravity", 0.0, 80.0, 1.0, "Throw"],
 	["Player", "throw_pitch", 0.0, 90.0, 1.0, "Throw"],
-	["Player", "min_throw_reach", 0.0, 40.0, 1.0, "Throw"],
+	["Player", "min_throw_reach", 0.0, 60.0, 1.0, "Throw"],
 	["Player", "throw_yaw_gain", 0.0, 2.0, 0.05, "Throw"],
 	["Player", "max_rope_length", 10.0, 100.0, 1.0, "Throw"],
 	["Player", "min_hook_distance", 0.0, 10.0, 0.25, "Throw"],
-	["Player", "throw_buffer_time", 0.0, 1.0, 0.05, "Throw"],
-	["Player", "aim_preview_speed", 5.0, 100.0, 1.0, "Throw"],
+	["Player", "throw_buffer_time", 0.0, 1.5, 0.05, "Throw"],
+	["Player", "aim_preview_speed", 5.0, 200.0, 1.0, "Throw"],
 	["Player", "aim_assist_angle", 0.0, 30.0, 1.0, "Throw"],
 	["Player", "aim_time_scale", 0.1, 1.0, 0.05, "Throw"],
 	["Player", "pull_impulse", 0.0, 30.0, 0.5, "Rope"],
-	["Player", "reel_speed", 0.0, 40.0, 0.5, "Rope"],
+	["Player", "reel_speed", 0.0, 80.0, 0.5, "Rope"],
 	["Player", "reel_acceleration", 0.0, 150.0, 1.0, "Rope"],
 	["Player", "reel_max_speed", 5.0, 80.0, 1.0, "Rope"],
-	["Player", "tension_boost", 0.0, 40.0, 0.5, "Rope"],
-	["Player", "min_rope_length", 0.0, 15.0, 0.25, "Rope"],
-	["Player", "zip_release_distance", 0.0, 10.0, 0.25, "Rope"],
+	["Player", "tension_boost", 0.0, 80.0, 0.5, "Rope"],
+	["Player", "min_rope_length", 0.0, 25.0, 0.25, "Rope"],
+	["Player", "zip_release_distance", 0.0, 20.0, 0.25, "Rope"],
 	["Player", "zip_boost", 0.0, 20.0, 0.5, "Rope"],
-	["Player", "flyby_release_distance", 0.0, 15.0, 0.5, "Rope"],
+	["Player", "flyby_release_distance", 0.0, 30.0, 0.5, "Rope"],
 	["Player", "swing_time", 0.0, 1.0, 0.05, "Rope"],
 	["Player", "contact_release_grace", 0.0, 1.0, 0.05, "Rope"],
-	["Player", "rope_pluck", 0.0, 2.0, 0.05, "Rope"],
-	["Player", "flight_rope_slack", 1.0, 1.3, 0.01, "Rope"],
-	["Player", "gravity", 5.0, 60.0, 0.5, "Move"],
+	["Player", "rope_pluck", 0.0, 4.0, 0.05, "Rope"],
+	["Player", "flight_rope_slack", 1.0, 1.6, 0.01, "Rope"],
+	["Player", "gravity", 5.0, 100.0, 0.5, "Move"],
 	["Player", "max_speed", 10.0, 120.0, 1.0, "Move"],
-	["Player", "floor_friction", 0.0, 100.0, 1.0, "Move"],
-	["Player", "slide_friction", 0.0, 50.0, 0.5, "Move"],
+	["Player", "floor_friction", 0.0, 200.0, 1.0, "Move"],
+	["Player", "slide_friction", 0.0, 100.0, 0.5, "Move"],
 	["Player", "landing_roll", 0.0, 1.0, 0.05, "Move"],
 	["Player", "deflect_keep", 0.0, 1.0, 0.05, "Move"],
 	["Player", "wall_bounce", 0.0, 1.0, 0.05, "Move"],
-	["Player", "wall_kick_up", 0.0, 15.0, 0.5, "Move"],
+	["Player", "wall_kick_up", 0.0, 25.0, 0.5, "Move"],
 	["CameraRig", "follow_speed", 1.0, 20.0, 0.25, "Camera"],
 	["CameraRig", "base_fov", 40.0, 120.0, 1.0, "Camera"],
 	["CameraRig", "fov_per_speed", 0.0, 2.0, 0.05, "Camera"],
-	["CameraRig", "max_fov", 60.0, 140.0, 1.0, "Camera"],
+	["CameraRig", "max_fov", 60.0, 160.0, 1.0, "Camera"],
 	["CameraRig", "offset:y", 0.0, 8.0, 0.25, "Camera"],
 	["CameraRig", "offset:z", 2.0, 15.0, 0.25, "Camera"],
 	["CameraRig", "look_ahead:y", -5.0, 10.0, 0.25, "Camera"],
 	["CameraRig", "anchor_look_weight", 0.0, 1.0, 0.05, "Camera"],
 	["CameraRig", "roll_per_speed", 0.0, 5.0, 0.1, "Camera"],
 	["CameraRig", "max_roll", 0.0, 45.0, 1.0, "Camera"],
-	["CameraRig", "shake_strength", 0.0, 2.0, 0.05, "Camera"],
+	["CameraRig", "shake_strength", 0.0, 3.0, 0.05, "Camera"],
 	["CameraRig", "zip_fov_kick", 0.0, 30.0, 1.0, "Camera"],
 	["CameraRig", "collision_margin", 0.0, 2.0, 0.1, "Camera"],
 	["CameraRig", "ceiling_near", 0.0, 15.0, 0.5, "Camera"],
@@ -86,9 +86,12 @@ const PARAMS := [
 	["Debug", "min_fps", 20.0, 60.0, 1.0, "Misc"],
 	["Effects", "haptics", 0.0, 1.0, 1.0, "Misc"],
 	["Effects", "hit_stop_time", 0.0, 0.2, 0.01, "Misc"],
-	["Effects", "streak_speed", 5.0, 60.0, 1.0, "Misc"],
-	["World/SpeedLines", "start_speed", 5.0, 60.0, 1.0, "Misc"],
+	["Effects", "streak_speed", 5.0, 100.0, 1.0, "Misc"],
+	["World/SpeedLines", "start_speed", 5.0, 100.0, 1.0, "Misc"],
 ]
+
+## Tabs whose values change the play (and mark records with TUNE*).
+const GAMEPLAY_TABS := ["Throw", "Rope", "Move"]
 
 const FONT_SIZE := 26
 const ROW_HEIGHT := 52.0
@@ -342,10 +345,11 @@ func _update_toggle_text() -> void:
 	_toggle.text = "TUNE*" if is_tuned() else "TUNE"
 
 
-## Some value differs from its code default: records get marked (TUNE*).
+## Some value that changes the play differs from its code default: records
+## get marked (TUNE*). Camera, sound and debug settings do not count.
 func is_tuned() -> bool:
 	for p in PARAMS:
-		if not _is_default(p):
+		if p[5] in GAMEPLAY_TABS and not _is_default(p):
 			return true
 	return false
 

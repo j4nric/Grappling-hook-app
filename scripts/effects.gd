@@ -26,7 +26,7 @@ extends Node3D
 
 @export_group("Wind")
 ## Speed (m/s) at which wind streaks start, and where they are densest.
-@export var streak_speed := 22.0
+@export var streak_speed := 34.0
 @export var streak_full_speed := 45.0
 
 var _sparks: CPUParticles3D

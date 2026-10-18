@@ -11,7 +11,8 @@ const HOOK_SPEEDS := [65.0, 42.0]
 const YAWS := [0.0, -10.0, 10.0, -20.0, 20.0, -30.0, 30.0, -40.0, 40.0, -50.0, 50.0, -60.0, 60.0, -70.0, 70.0, -80.0, 80.0]
 ## Ignore anchors less than this far ahead (m).
 const MIN_PROGRESS := 2.0
-## Chain throw when the pulling anchor is this close (m).
+## Chain throw when the pulling anchor is this close (m), or a little more
+## than the shortest rope (it never gets closer than that).
 const CHAIN_DISTANCE := 7.0
 ## After each respawn the bot leans toward another direction (degrees of
 ## yaw), so it does not repeat the same fatal line forever.
@@ -39,7 +40,7 @@ static func step(p: CharacterBody3D) -> bool:
 	if p.is_hook_flying():
 		return false
 	var chaining: bool = p.hook_state == p.HookState.ATTACHED
-	if chaining and p.global_position.distance_to(p.anchor) > CHAIN_DISTANCE:
+	if chaining and p.global_position.distance_to(p.anchor) > maxf(CHAIN_DISTANCE, p.min_rope_length + 3.0):
 		return false
 	var best_score := -INF
 	var best := Vector3.ZERO  # (swipe x, swipe y, hook speed)
