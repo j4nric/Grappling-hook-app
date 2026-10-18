@@ -101,6 +101,11 @@ var _panel: PanelContainer
 var _toggle: Button
 var _last_throw: Label
 var _copy: Button
+var _illustration: TuningIllustration
+var _info_title: Label
+var _info_text: Label
+## Key of the slider explained at the top.
+var _selected := ""
 ## Pause state before the panel opened (the level menu may pause, too).
 var _was_paused := false
 
@@ -112,6 +117,7 @@ func _ready() -> void:
 		_defaults[_key(p)] = _target(p).get_indexed(p[1])
 	_build_ui()
 	_load()
+	_select(PARAMS[0])
 
 
 func _key(p: Array) -> String:
@@ -124,8 +130,42 @@ func _target(p: Array) -> Node:
 
 func _set_value(p: Array, value: float) -> void:
 	_target(p).set_indexed(p[1], value)
-	var prefix := "cam " if p[0] == "CameraRig" else ""
-	_labels[_key(p)].text = "%s%s  %s" % [prefix, p[1], str(snappedf(value, p[4]))]
+	_labels[_key(p)].text = "%s  %s" % [_title(p), _format(p, value)]
+	if _key(p) == _selected:
+		_explain(p)
+
+
+## Plain name of a slider (TuningInfo), the property name as a fallback.
+func _title(p: Array) -> String:
+	return TuningInfo.PARAMS.get(_key(p), [p[1]])[0]
+
+
+func _format(p: Array, value: float) -> String:
+	var unit: String = TuningInfo.PARAMS.get(_key(p), ["", ""])[1]
+	return ("%s %s" % [str(snappedf(value, p[4])), unit]).strip_edges()
+
+
+## Shows what the slider does: name, explanation and the animated sketch.
+func _select(p: Array) -> void:
+	if _selected != "" and _labels.has(_selected):
+		_labels[_selected].remove_theme_color_override("font_color")
+	_selected = _key(p)
+	_labels[_selected].add_theme_color_override("font_color", Color(0.91, 0.77, 0.28))
+	_explain(p)
+
+
+func _explain(p: Array) -> void:
+	var info: Array = TuningInfo.PARAMS.get(_key(p), [p[1], "", "", ""])
+	_info_title.text = "%s  %s" % [info[0], _format(p, _sliders[_key(p)].value)]
+	_info_text.text = "%s\n%s" % [info[3], _key(p)]
+	var current := {}
+	for q in PARAMS:
+		current[_key(q)] = _sliders[_key(q)].value
+	_illustration.show_param(_key(p), info[2], _sliders[_key(p)].value, current)
+
+
+func selected_key() -> String:
+	return _selected
 
 
 # --- UI -------------------------------------------------------------------------
@@ -200,6 +240,22 @@ func _build_ui() -> void:
 	_last_throw.add_theme_font_size_override("font_size", 22)
 	root.add_child(_last_throw)
 
+	# What the selected slider does: sketch, name and explanation.
+	_illustration = TuningIllustration.new()
+	root.add_child(_illustration)
+	_info_title = Label.new()
+	_info_title.add_theme_color_override("font_color", Color(0.91, 0.77, 0.28))
+	root.add_child(_info_title)
+	_info_text = Label.new()
+	_info_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_info_text.add_theme_font_size_override("font_size", 20)
+	# Fixed height: the rows below must not jump when the text changes.
+	_info_text.custom_minimum_size = Vector2(0, 104)
+	_info_text.max_lines_visible = 4
+	_info_text.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_info_text.modulate = Color(1, 1, 1, 0.8)
+	root.add_child(_info_text)
+
 	var tabs := TabContainer.new()
 	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(tabs)
@@ -217,6 +273,13 @@ func _build_ui() -> void:
 			scroll.add_child(rows)
 			tab_rows[tab_name] = rows
 		_add_row(tab_rows[tab_name], p)
+	# A new tab explains its first slider.
+	tabs.tab_changed.connect(func(index: int) -> void:
+		var tab_name := tabs.get_tab_control(index).name
+		for p in PARAMS:
+			if p[5] == tab_name:
+				_select(p)
+				return)
 
 
 func _add_row(rows: VBoxContainer, p: Array) -> void:
@@ -226,6 +289,11 @@ func _add_row(rows: VBoxContainer, p: Array) -> void:
 	label.custom_minimum_size = Vector2(LABEL_WIDTH, 0)
 	label.add_theme_font_size_override("font_size", 22)
 	label.clip_text = true
+	# Tap the name to see what it does.
+	label.mouse_filter = Control.MOUSE_FILTER_STOP
+	label.gui_input.connect(func(event: InputEvent) -> void:
+		if (event is InputEventMouseButton or event is InputEventScreenTouch) and event.pressed:
+			_select(p))
 	row.add_child(label)
 	_labels[_key(p)] = label
 	var slider := HSlider.new()
@@ -236,6 +304,10 @@ func _add_row(rows: VBoxContainer, p: Array) -> void:
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.value = _defaults[_key(p)]
 	slider.value_changed.connect(func(v: float) -> void: _set_value(p, v))
+	slider.drag_started.connect(_select.bind(p))
+	slider.gui_input.connect(func(event: InputEvent) -> void:
+		if (event is InputEventMouseButton or event is InputEventScreenTouch) and event.pressed and _selected != _key(p):
+			_select(p))
 	row.add_child(slider)
 	_sliders[_key(p)] = slider
 	_set_value(p, slider.value)

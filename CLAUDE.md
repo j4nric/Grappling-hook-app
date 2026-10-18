@@ -125,7 +125,9 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
 | `scripts/light_lod.gd` | `LightLod`: nur die nächsten `max_lights` Lichter an (Compatibility-Renderer: max. 8 pro Objekt), weich ein-/ausblenden |
 | `scripts/time_scale.gd` | `TimeScale`: Zeitlupe beim Zielen und Hit-Stop teilen sich `Engine.time_scale` |
 | `scripts/speed_lines.gd` | Speed-Lines (Shader `shaders/speed_lines.gdshader`) ab hohem Tempo |
-| `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler in Tabs, pausiert das Spiel, speichert in `user://tuning_v3.cfg`, „Copy“ kopiert getunte Werte als Text |
+| `scripts/tuning_panel.gd` | Debug-Overlay „TUNE“: Regler in Tabs, pausiert das Spiel, speichert in `user://tuning_v3.cfg`, „Copy“ kopiert getunte Werte als Text; oben Erklärung und Skizze des gewählten Reglers |
+| `scripts/tuning_info.gd` | `TuningInfo`: Klarname, Einheit, Skizzen-Art und Erklärung je Regler |
+| `scripts/tuning_illustration.gd` | `TuningIllustration`: animierte Skizze je Regler (vereinfachtes Modell mit den aktuellen Werten) |
 | `tests/` | Headless-Tests (`run_tests.gd` führt alle `test_*.gd` aus), laufen in CI vor jedem Merge/Deploy |
 | `.github/actions/setup-godot/` | Lädt Godot + Web-Vorlagen in CI (gecacht) |
 | `docs/` | Design, Roadmap, nächste Schritte, iOS-Export |
@@ -211,7 +213,8 @@ Teleports (`reset_to`) rufen `reset_physics_interpolation()`.
 - Starte mit dem Spielgefühl. Bevor Features dazukommen: Läuft der Testtunnel,
   fühlt sich das Pendeln richtig an? Erst dann weiter in `docs/roadmap.md`.
 - Neue Stellschrauben, die man auf dem Handy drehen können soll, in
-  `PARAMS` in `tuning_panel.gd` eintragen. Gespeichert werden nur Werte, die
+  `PARAMS` in `tuning_panel.gd` eintragen, dazu Name, Einheit, Skizze und
+  Erklärung in `TuningInfo.PARAMS` (`tests/test_tuning.gd` prüft das). Gespeichert werden nur Werte, die
   vom Code-Standard abweichen; ändert sich ein Standard im Code, verfällt der
   gespeicherte Wert dafür automatisch.
 - Jede Änderung an Physik-Tuning-Werten kurz in `docs/roadmap.md` unter
