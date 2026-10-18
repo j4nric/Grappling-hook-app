@@ -948,13 +948,13 @@ func _draw_cave_top() -> void:
 	var total := 0.0
 	var widest := 20.0
 	for seg in halls:
-		var full: Dictionary = CavernBuilder.SEGMENT_DEFAULTS.merged(seg, true)
+		var full: Dictionary = CavernBuilder.full_segment(seg)
 		total += float(full.length)
 		widest = maxf(widest, float(full.width))
 	_view(Vector2(-4.0, -widest / 2.0 - 4.0), total + 8.0, widest + 8.0)
 	var z := 0.0
 	for i in halls.size():
-		var full: Dictionary = CavernBuilder.SEGMENT_DEFAULTS.merged(halls[i], true)
+		var full: Dictionary = CavernBuilder.full_segment(halls[i])
 		var length := float(full.length)
 		var w := float(full.width)
 		var rect := Rect2(_to(Vector2(z, w / 2.0)), _to(Vector2(z + length, -w / 2.0)) - _to(Vector2(z, w / 2.0)))
@@ -969,7 +969,7 @@ func _draw_cave_top() -> void:
 	# A dot runs through the cave.
 	var at := fmod(_time * 30.0, total)
 	draw_circle(_to(Vector2(at, sin(at * 0.05) * 4.0)), 5.0, PLAYER)
-	var full_selected: Dictionary = CavernBuilder.SEGMENT_DEFAULTS.merged(halls[selected], true)
+	var full_selected: Dictionary = CavernBuilder.full_segment(halls[selected])
 	_caption("%d halls, %.0f m; hall %d: %.0f m long (top view)" % [halls.size(), total, selected + 1, float(full_selected.length)])
 
 

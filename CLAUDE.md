@@ -38,15 +38,23 @@ Die drei Säulen, an denen jede Entscheidung gemessen wird:
   `CavernBuilder.SEGMENT_DEFAULTS`) und `layout_seed`. `CavernBuilder` baut daraus beim
   Laden die Geometrie (Felsblöcke als MultiMesh je Halle und Material, Kollision je
   Halle in einem StaticBody). Gleicher Seed, gleiche Höhle. Reihenfolge in
-  `scripts/levels.gd`. Medaillenzeiten aus der Bot-Zeit (`tests/test_levels.gd`
-  gibt die beste von drei Startvarianten aus).
+  `scripts/levels.gd`. Hallen nutzen meist eine **Vorlage** (`"template"`:
+  start, sprint, slalom, cathedral, narrows, skyway, lava_lake, ice_vault in
+  `CavernBuilder.TEMPLATES`, nach dem Vorbild der Wide Cave breit und hoch),
+  eigene Schlüssel gehen vor; `CavernBuilder.full_segment()` liefert die
+  vollständige Halle. Medaillenzeiten aus der Bot-Zeit (`tests/test_levels.gd`
+  gibt die beste von fünf Startvarianten aus; Gold 0,85×, Silber 1,2×,
+  Bronze 2×). Der Bot ist chaotisch und hängt sogar davon ab, was vorher lief:
+  Medaillen aus der besten beobachteten Zeit mehrerer Läufe ableiten.
 - **Prozedurale Höhlen** (`CaveGenerator`) nutzen denselben Baukasten; Rekorde gelten
   pro Art und Seed (`Records.key()`). `tests/test_procedural.gd` lässt den Bot mehrere
   Seeds spielen und gibt Bot-Zeit und Schätzung aus (Kalibrierung von `RUN_SPEED`).
 - Level-Design-Regeln (gelernt beim Bauen): Übergänge zu niedrigeren/schmaleren
   Hallen sind schräg (sonst prallt man ab); Decken haben einen Deckel (keine Taschen
   zum Steckenbleiben); Boden-Hallen sind massiv bis in die Tiefe; Tore sind Eis mit
-  senkrechtem Schlitz bis zur Decke und Felsinsel dahinter; in Eis-Hallen garantiert
+  senkrechtem Schlitz bis zur Decke und Felsinsel dahinter; wird die nächste
+  Halle breiter oder höher, schließt ein Rahmen die Lücke um die kleinere
+  Öffnung (sonst fliegt man hinter die Wände ins Leere); in Eis-Hallen garantiert
   `anchor_spacing` greifbare Stalaktiten. Neue Elemente im Baukasten dürfen den
   Zufallsstrom nur dort nutzen, wo sie vorkommen – sonst ändern sich alle
   bestehenden Höhlen (Rekorde, Medaillen). Decke und Wände sind nur optisch

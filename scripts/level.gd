@@ -63,7 +63,9 @@ func _ready() -> void:
 ## Short hash of what makes this level: name and layout (records belong to
 ## one version of a level).
 func version() -> String:
-	return "%08x" % (hash(level_name + var_to_str(segments) + str(layout_seed)) & 0xffffffff)
+	# The full halls (with their templates): a changed template is a new version.
+	var halls := segments.map(func(seg: Dictionary) -> Dictionary: return CavernBuilder.full_segment(seg))
+	return "%08x" % (hash(level_name + var_to_str(halls) + str(layout_seed)) & 0xffffffff)
 
 
 ## The hint for a position, "" if none.

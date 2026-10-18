@@ -134,3 +134,5 @@ Musik nach Tempo, Tutorial.
 | 2026-10-18 | Medaillen, `RUN_SPEED` 16 → 25 | neu kalibriert | Bot-Zeiten mit den neuen Werten |
 | 2026-10-18 | `rope_end_release` | neu: 1 (an) | Seilende: am kürzesten Seil löst es wie ein Zip, statt hängen zu lassen (Kegelpendel); Medaillen neu kalibriert |
 | 2026-10-18 | Emission | Farbe weiß → schwarz; Eis 0,3 → 0,8, Kristall 0,9 → 1,6 | Godot addiert Farbe und Textur: alles Leuchtende war fast weiß |
+| 2026-10-18 | Level | alle nach Hallen-Vorlagen: 50–90 m breit (vorher 30–46), Decke 28–46 m (vorher 20–34), neues Level „Skyway“ | Entscheidung: Wide Cave als Vorlage für alle Level |
+| 2026-10-18 | Medaillen, Zufallshöhlen-Bronze 1,65 → 2,1× | neu kalibriert (beste von 5 Bot-Starts) | breitere Level, Bot in sehr großen Hallen langsamer |

@@ -42,11 +42,42 @@ func run() -> void:
 			z -= float(seg.length)
 		check(rays > 100 and bumps == 0, "%s: ceiling and walls are flat (%d bumps in %d rays)" % [level.level_name, bumps, rays])
 
+	# No way out of the cave: where a hall gets wider or higher, the frame
+	# around the smaller opening is closed (seen from the bigger hall),
+	# beside the smaller hall's walls (8 m thick) and above its lid.
+	var caves: Array[String] = Levels.LIST.duplicate()
+	for seed_value in [11, 2024, 31337, 48213]:
+		caves.append(Levels.cave_path("random", seed_value))
+	main.level_list = caves
+	for i in caves.size():
+		main.load_level(i)
+		await wait_frames(2)
+		var halls: Array = main.level.segments
+		var z := 0.0
+		for k in range(1, halls.size()):
+			var prev := CavernBuilder.full_segment(halls[k - 1])
+			var next := CavernBuilder.full_segment(halls[k])
+			z -= float(prev.length)
+			var gap := (float(next.width) - float(prev.width)) / 2.0
+			if gap > 10.0:
+				var x := float(prev.width) / 2.0 + 8.0 + (gap - 8.0) / 2.0
+				var back := _ray(space, Vector3(x, 10.0, z - 6.0), Vector3(x, 10.0, z + 30.0))
+				check(not back.is_empty() and back.position.z < z + 6.0,
+						"%s: closed beside hall %d's entrance" % [main.level.level_name, k + 1])
+			var prev_top := float(prev.ceiling) + (CavernBuilder.OPEN_HEIGHT if prev.open else 0.0)
+			var next_top := float(next.ceiling) + (CavernBuilder.OPEN_HEIGHT if next.open else 0.0)
+			if next_top - prev_top > 16.0:
+				var y := prev_top + 14.0 + (next_top - prev_top - 14.0) / 2.0
+				var over := _ray(space, Vector3(0.0, y, z - 6.0), Vector3(0.0, y, z + 30.0))
+				check(not over.is_empty() and over.position.z < z + 6.0,
+						"%s: closed above hall %d's entrance" % [main.level.level_name, k + 1])
+	main.level_list = Levels.LIST
+
 	# Sliding along the ceiling of the Wide Cave: the speed carries on.
 	main.load_level(level_named("level_07"))
 	await wait_frames(2)
 	var p := player()
-	var c: float = main.level.segments[1].ceiling
+	var c: float = CavernBuilder.full_segment(main.level.segments[1]).ceiling
 	var lane := INF
 	for x in [0.0, -6.0, 6.0, -12.0, 12.0, -18.0, 18.0, -24.0, 24.0]:
 		if _ray(space, Vector3(x, c - 1.0, -45.0), Vector3(x, c - 1.0, -115.0)).is_empty() \

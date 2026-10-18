@@ -19,6 +19,15 @@ func run() -> void:
 	var wall := _ray(space, Vector3(20, 10, -80), Vector3(40, 10, -80))
 	check(not wall.is_empty() and wall.collider.is_in_group("no_hook"), "slick walls do not hold the hook")
 
+	# Nothing to stand on in the open air (only the floating stones).
+	var ledges := 0
+	for z in range(-42, -138, -4):
+		for x in [-20.0, 0.0, 20.0]:
+			var down := _ray(space, Vector3(x, 26 + CavernBuilder.OPEN_HEIGHT - 2.0, z), Vector3(x, -20.0, z))
+			if not down.is_empty() and not down.collider is Floater and down.normal.y > 0.7:
+				ledges += 1
+	check(ledges == 0, "no ledges in the open air (%d)" % ledges)
+
 	var floaters := level.get_tree().get_nodes_in_group("floater")
 	check(floaters.size() >= 6 and floaters.size() <= 7, "a floating stone every 14 m (%d)" % floaters.size())
 	var first: Floater = null

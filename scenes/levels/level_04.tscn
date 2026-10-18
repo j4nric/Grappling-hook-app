@@ -5,8 +5,8 @@
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "Movers"
-gold_time = 7.2
-silver_time = 10.1
-bronze_time = 16.9
+gold_time = 7.5
+silver_time = 10.5
+bronze_time = 17.6
 layout_seed = 404
-segments = [{"length": 45.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.3, "crystals": 2, "shafts": 1}, {"length": 70.0, "width": 40.0, "ceiling": 30.0, "ice": 0.6, "stalactites": 0.15, "crystals": 2, "movers": [[-8.0, 18.0, 20.0, 6.0, 4.0, 4.0, Vector3(16, 0, 0), 3.5, 0.0], [8.0, 20.0, 45.0, 6.0, 4.0, 4.0, Vector3(-16, 0, 0), 3.0, 0.4]]}, {"length": 60.0, "width": 40.0, "ceiling": 30.0, "checkpoint": true, "ice": 0.6, "stalactites": 0.15, "crystals": 2, "movers": [[0.0, 22.0, 25.0, 5.0, 5.0, 5.0, Vector3(0, -12, 0), 2.5, 0.0], [-10.0, 16.0, 45.0, 5.0, 5.0, 5.0, Vector3(20, 0, 0), 3.0, 0.6]]}, {"length": 60.0, "width": 34.0, "ceiling": 24.0, "floor": "ground", "stalactites": 0.3, "crystals": 2, "shafts": 1, "movers": [[0.0, 18.0, 30.0, 30.0, 4.0, 4.0, Vector3(0, -15, 0), 3.0, 0.0]]}]
+segments = [{"template": "start", "length": 45.0}, {"template": "sprint", "length": 70.0, "width": 60.0, "ice": 0.6, "movers": [[-14.0, 22.0, 20.0, 7.0, 5.0, 5.0, Vector3(28, 0, 0), 3.5, 0.0], [14.0, 24.0, 45.0, 7.0, 5.0, 5.0, Vector3(-28, 0, 0), 3.0, 0.4]]}, {"template": "sprint", "length": 60.0, "width": 60.0, "checkpoint": true, "ice": 0.6, "movers": [[0.0, 26.0, 25.0, 6.0, 6.0, 6.0, Vector3(0, -14, 0), 2.5, 0.0], [-18.0, 20.0, 45.0, 6.0, 6.0, 6.0, Vector3(36, 0, 0), 3.0, 0.6]]}, {"template": "start", "length": 60.0, "width": 56.0, "ceiling": 30.0, "movers": [[0.0, 22.0, 30.0, 50.0, 5.0, 5.0, Vector3(0, -17, 0), 3.0, 0.0]]}]
