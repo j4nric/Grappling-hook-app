@@ -51,7 +51,33 @@ def tone(freq, seconds, harmonics=((1, 1.0),)):
     return sum(amp * np.sin(phase * h) for h, amp in harmonics)
 
 
-def save(name, x, gain=0.8):
+def cave_reverb(x, wet):
+    """Bakes cave reverb into a sound: early reflections plus a dark,
+    exponentially decaying tail (1.4 s). Its own random generator, so the dry
+    sounds stay the same. Web builds play sounds as plain samples, where bus
+    effects are not available - baked reverb works everywhere."""
+    room = np.random.default_rng(101)
+    n = int(RATE * 1.4)
+    tt = np.arange(n) / RATE
+    tail = room.uniform(-1, 1, n) * np.exp(-tt * 4.5)
+    tail = lowpass(tail, 2200)
+    ir = np.zeros(n)
+    for delay, gain in ((0.023, 0.6), (0.041, 0.45), (0.067, 0.35), (0.097, 0.25)):
+        ir[int(delay * RATE)] += gain
+    ir += tail * 0.12
+    size = len(x) + n
+    wet_signal = np.fft.irfft(np.fft.rfft(x, size) * np.fft.rfft(ir, size), size)
+    dry = np.concatenate([x, np.zeros(n)])
+    out = dry + wet_signal * wet / max(np.max(np.abs(wet_signal)), 1e-6) * np.max(np.abs(x))
+    # Trim silence at the end.
+    level = np.abs(out) > 0.002 * np.max(np.abs(out))
+    last = np.nonzero(level)[0][-1] if level.any() else len(out) - 1
+    return out[: last + 1]
+
+
+def save(name, x, gain=0.8, room=0.0):
+    if room > 0.0:
+        x = cave_reverb(x, room)
     x = x / max(np.max(np.abs(x)), 1e-6) * gain
     data = (np.clip(x, -1, 1) * 32767).astype("<i2").tobytes()
     with wave.open(str(OUT / f"{name}.wav"), "wb") as w:
@@ -62,31 +88,46 @@ def save(name, x, gain=0.8):
     print("wrote", f"assets/sounds/{name}.wav", f"{len(x) / RATE:.2f}s")
 
 
+def save_loop(name, x, gain):
+    """A seamless ambient loop: the end crossfades into the start. Its import
+    settings loop it (written once; Godot fills in the rest)."""
+    fade = int(0.3 * RATE)
+    n = len(x) - fade
+    loop = x[:n].copy()
+    ramp = np.linspace(0, 1, fade)
+    loop[:fade] = x[:fade] * ramp + x[n:] * (1 - ramp)
+    save(name, loop, gain)
+    imp = OUT / f"{name}.wav.import"
+    if not imp.exists():
+        imp.write_text('[remap]\n\nimporter="wav"\ntype="AudioStreamWAV"\n\n[params]\n\n'
+                       "edit/loop_mode=2\nedit/loop_begin=0\nedit/loop_end=-1\n")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
 
     # Throw: rising whoosh.
     d = 0.28
-    save("throw", lowpass(noise(d), np.linspace(400, 3500, len(t(d)))) * env(len(t(d)), 0.03, curve=2))
+    save("throw", lowpass(noise(d), np.linspace(400, 3500, len(t(d)))) * env(len(t(d)), 0.03, curve=2), room=0.25)
 
     # Hook bites: metallic clank + click.
     d = 0.25
     clank = tone(1250, d, ((1, 1), (2.76, 0.6), (5.4, 0.3))) * env(len(t(d)), 0.001, curve=6)
     click = noise(d) * env(len(t(d)), 0.0005, curve=30)
-    save("hook", clank + 0.8 * click)
+    save("hook", clank + 0.8 * click, room=0.35)
 
     # Miss: dull low tick.
     d = 0.15
-    save("miss", lowpass(noise(d), 600) * env(len(t(d)), 0.001, curve=8), 0.5)
+    save("miss", lowpass(noise(d), 600) * env(len(t(d)), 0.001, curve=8), 0.5, room=0.3)
 
     # Zip launch: quick upward snap.
     d = 0.18
-    save("zip", tone(np.linspace(300, 1400, len(t(d))), d, ((1, 1), (2, 0.3))) * env(len(t(d)), 0.002, curve=4), 0.6)
+    save("zip", tone(np.linspace(300, 1400, len(t(d))), d, ((1, 1), (2, 0.3))) * env(len(t(d)), 0.002, curve=4), 0.6, room=0.3)
 
     # Landing: low thud.
     d = 0.3
     thud = tone(np.linspace(110, 50, len(t(d))), d) * env(len(t(d)), 0.002, curve=5)
-    save("land", thud + 0.5 * lowpass(noise(d), 400) * env(len(t(d)), 0.001, curve=12))
+    save("land", thud + 0.5 * lowpass(noise(d), 400) * env(len(t(d)), 0.001, curve=12), room=0.4)
 
     # Lava: sizzle.
     d = 0.6
@@ -96,7 +137,7 @@ def main():
     d = 0.35
     half = len(t(d)) // 2
     ding = np.concatenate([tone(880, d / 2, ((1, 1), (2, 0.3)))[:half], tone(1320, d / 2, ((1, 1), (2, 0.3)))])
-    save("checkpoint", ding * env(len(ding), 0.003, curve=2), 0.5)
+    save("checkpoint", ding * env(len(ding), 0.003, curve=2), 0.5, room=0.2)
 
     # GO: short bright beep.
     d = 0.2
@@ -124,19 +165,54 @@ def main():
     # Scrape: gritty slide along rock (wall or ceiling deflection).
     d = 0.35
     grit = lowpass(noise(d), 2500) * (0.5 + 0.5 * (rng.uniform(0, 1, len(t(d))) > 0.7))
-    save("scrape", lowpass(grit, 1800) * env(len(t(d)), 0.005, curve=1.5), 0.55)
+    save("scrape", lowpass(grit, 1800) * env(len(t(d)), 0.005, curve=1.5), 0.55, room=0.25)
 
     # Crack: a brittle stalactite snaps (sharp crack, then a falling rumble).
     d = 0.6
     snap = noise(d) * env(len(t(d)), 0.0005, curve=25)
     rumble = lowpass(noise(d), 300) * env(len(t(d)), 0.05, curve=2)
-    save("crack", snap + 0.8 * rumble, 0.7)
+    save("crack", snap + 0.8 * rumble, 0.7, room=0.45)
 
     # Ring: bright rising chime when flying through a speed ring.
     d = 0.4
     sweep = np.linspace(880, 1760, len(t(d)))
     chime = tone(sweep, d, ((1, 1), (2, 0.4), (3, 0.15))) * env(len(t(d)), 0.002, curve=2.5)
-    save("ring", chime, 0.5)
+    save("ring", chime, 0.5, room=0.3)
+
+    # --- Ambience, played at places in the cave (AudioStreamPlayer3D). Own
+    # generator, so the sounds above stay as they are.
+    amb = np.random.default_rng(55)
+
+    # Lava: deep rumble with bubbles popping.
+    d = 4.3
+    n = len(t(d))
+    rumble = lowpass(amb.uniform(-1, 1, n), 90) * 6.0
+    rumble *= 0.7 + 0.3 * np.sin(2 * np.pi * 0.5 * t(d))
+    for _ in range(18):
+        at = int(amb.uniform(0, d - 0.2) * RATE)
+        bd = 0.12
+        bt = t(bd)
+        bubble = np.sin(2 * np.pi * np.cumsum(amb.uniform(150, 320) * (1 + 2 * bt / bd)) / RATE) * np.exp(-bt * 30)
+        rumble[at:at + len(bt)] += bubble * amb.uniform(0.2, 0.5)
+    save_loop("amb_lava", rumble, 0.7)
+
+    # Crystal: soft shimmering hum (two tones beating slowly).
+    d = 4.3
+    hum = tone(1320, d) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.37 * t(d))) + 0.6 * tone(1983, d) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.23 * t(d) + 1))
+    save_loop("amb_crystal", hum, 0.35)
+
+    # Updraft: rushing air, swelling.
+    d = 4.3
+    rush = lowpass(amb.uniform(-1, 1, len(t(d))), 900) - lowpass(amb.uniform(-1, 1, len(t(d))), 120)
+    rush *= 0.65 + 0.35 * np.sin(2 * np.pi * 0.6 * t(d))
+    save_loop("amb_updraft", rush, 0.6)
+
+    # Drip: one water drop falling into a pool, with the cave's echo.
+    d = 0.3
+    tt = t(d)
+    f = amb.uniform(1500, 1900) * (1 + 0.6 * tt / d)
+    drip = np.sin(2 * np.pi * np.cumsum(f) / RATE) * np.exp(-tt * 22)
+    save("drip", drip, 0.5, room=0.6)
 
 
 if __name__ == "__main__":

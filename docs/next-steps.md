@@ -71,9 +71,16 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 
 ## 6. Raumklang
 
-- [ ] **Höhlen-Hall:** Reverb-Bus für Effekte und Musik.
-- [ ] **3D-Geräusche:** Tropfen, Lava-Brodeln, Kristall-Summen, Aufwind-Rauschen
-      an ihren Orten (`AudioStreamPlayer3D`).
+- [x] **Höhlen-Hall:** Hall für die Effekte (umgesetzt als eingebackener Hall
+      in `tools/gen_sounds.py`: frühe Reflexionen + 1,4 s Nachhall).
+- [x] **3D-Geräusche:** Tropfen, Lava-Brodeln, Kristall-Summen, Aufwind-Rauschen
+      an ihren Orten (`AmbientSound`, ein `AudioStreamPlayer3D`, vom Baukasten
+      platziert).
+- [x] **Neu entdeckt:** Im Web-Export spielt Godot Sounds als Web-Audio-Samples;
+      Bus-Effekte (Reverb) greifen dort nicht zuverlässig → Hall in die Dateien
+      backen statt Reverb-Bus.
+- [x] **Neu entdeckt:** Dutzende dauernd laufende 3D-Schleifen kosten im Browser
+      je einen Audio-Knoten → Geräusche spielen nur in Hörweite des Spielers.
 
 ## 7. Replays und Statistik
 
