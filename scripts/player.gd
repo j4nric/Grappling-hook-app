@@ -39,16 +39,16 @@ const WALL_KICK_MIN_GLANCE := 0.5
 
 # --- Tuning (exposed in the inspector, change freely while playing) -----------
 @export_group("Physics")
-@export var gravity := 22.0
+@export var gravity := 43.0
 @export var max_speed := 50.0
 ## Braking on the floor (m/s²) when no rope pulls; stops endless sliding ...
-@export var floor_friction := 25.0
+@export var floor_friction := 76.0
 ## ... but above slide_speed (m/s) the player slides with this lighter
 ## braking, so landings keep their momentum.
-@export var slide_friction := 6.0
+@export var slide_friction := 34.5
 @export var slide_speed := 8.0
 ## Share of the fall speed turned into forward speed on landing (a roll).
-@export var landing_roll := 0.3
+@export var landing_roll := 0.4
 
 @export_group("Impacts")
 ## Hitting a wall or the ceiling faster than this (m/s) redirects the speed
@@ -58,81 +58,81 @@ const WALL_KICK_MIN_GLANCE := 0.5
 ## how glancing the hit is: a grazing hit keeps almost everything, a head-on
 ## hit almost nothing (it never turns a tiny sideways part into full speed,
 ## and never ends up faster than before the hit).
-@export var deflect_keep := 1.0
+@export var deflect_keep := 0.0
 ## Walls: share of the speed into the wall bounced back (wall-kick) ...
-@export var wall_bounce := 0.2
+@export var wall_bounce := 0.4
 ## ... plus this upward kick (m/s).
-@export var wall_kick_up := 4.0
+@export var wall_kick_up := 8.0
 
 @export_group("Throw")
 ## Hook speed (m/s) per finger speed (px/s, 720 px wide screen).
-@export var throw_speed_per_px := 0.015
-@export var hook_min_speed := 8.0
-@export var hook_max_speed := 90.0
+@export var throw_speed_per_px := 0.03
+@export var hook_min_speed := 40.0
+@export var hook_max_speed := 122.0
 ## Gravity on the flying hook. Higher = weak throws drop sooner.
-@export var hook_gravity := 25.0
+@export var hook_gravity := 3.0
 ## Angle above the horizon for a straight-up swipe (degrees).
-@export var throw_pitch := 50.0
+@export var throw_pitch := 56.0
 ## How strongly sideways swipes turn the throw toward the walls.
-@export var throw_yaw_gain := 1.0
+@export var throw_yaw_gain := 1.3
 ## A second swipe sooner than this (s) after a throw, while that hook still
 ## flies, is an accidental double swipe and is dropped.
 @export var throw_cooldown := 0.12
 ## A swipe while a hook flies is kept this long (s) and thrown when the hook
 ## in the air bites or misses.
-@export var throw_buffer_time := 0.3
+@export var throw_buffer_time := 0.65
 
 @export_group("Aim")
 ## The aim preview shows the arc of a throw at this hook speed (m/s), about a
 ## good flick. The real throw depends on the flick.
-@export var aim_preview_speed := 50.0
+@export var aim_preview_speed := 96.0
 ## Pitch assist: a throw that would not hold - ice, nothing in reach, or rock
 ## closer than this (m), as right under the ceiling - is thrown flatter, down
 ## to min_throw_pitch (degrees; = throw_pitch turns it off).
-@export var min_throw_reach := 14.0
+@export var min_throw_reach := 28.0
 @export var min_throw_pitch := 5.0
 ## Aim assist: if the throw would find nothing to stick to, search this cone
 ## (degrees) for the closest wall or ceiling. 0 = off.
-@export var aim_assist_angle := 0.0
+@export var aim_assist_angle := 11.0
 ## Game speed while the finger aims (1 = off, 0.5 = half speed).
-@export var aim_time_scale := 1.0
+@export var aim_time_scale := 0.3
 ## Seconds the hook takes to fly back after a miss or letting go.
 @export var hook_retract_time := 0.2
 
 @export_group("Rope")
 ## The hook gives up when it gets further away than this.
-@export var max_rope_length := 70.0
+@export var max_rope_length := 68.0
 ## Hooks closer than this do not hold: there is nothing left to pull.
-@export var min_hook_distance := 3.0
+@export var min_hook_distance := 5.25
 ## Speed (m/s) toward the anchor added the moment the hook sticks: the yank.
-@export var pull_impulse := 6.0
+@export var pull_impulse := 2.0
 ## After the hook sticks, the rope keeps its length this long (s): the player
 ## swings on it before the reel pulls. 0 = pull at once.
 @export var swing_time := 0.0
 ## The rope shortens this fast right after the hook sticks (m/s) ...
-@export var reel_speed := 8.0
+@export var reel_speed := 25.5
 ## ... and this much faster every second (m/s²) ...
-@export var reel_acceleration := 30.0
+@export var reel_acceleration := 4.0
 ## ... up to this speed (m/s).
-@export var reel_max_speed := 30.0
-@export var min_rope_length := 0.5
+@export var reel_max_speed := 40.0
+@export var min_rope_length := 9.25
 ## Extra acceleration toward the anchor; makes the pull feel heavier.
-@export var tension_boost := 6.0
+@export var tension_boost := 31.5
 ## The rope lets go this far before the anchor and the player flies on with
 ## full speed (zip launch). 0 = pull all the way.
-@export var zip_release_distance := 2.5
+@export var zip_release_distance := 5.5
 ## Extra speed (m/s) in flight direction at the zip launch.
-@export var zip_boost := 3.0
+@export var zip_boost := 0.0
 ## Flyby: passing the anchor (moving away from it faster than
 ## flyby_speed m/s) within this distance also lets go, instead of the rope
 ## swinging the player back.
-@export var flyby_release_distance := 6.0
+@export var flyby_release_distance := 11.5
 @export var flyby_speed := 2.0
 ## Touching a wall or the ceiling while attached lets go of the rope.
 @export var release_on_contact := true
 ## No contact release right after the hook sticks (s), so a throw from close
 ## to a wall still pulls.
-@export var contact_release_grace := 0.15
+@export var contact_release_grace := 0.0
 ## A tap right after the hook sticks (s) does not let go: it is almost always
 ## an accidental touch at the end of the throw.
 @export var tap_release_lock := 0.15
@@ -141,11 +141,11 @@ const WALL_KICK_MIN_GLANCE := 0.5
 
 @export_group("Look")
 ## The rope twangs when the hook bites: wave height (m), 0 = off ...
-@export var rope_pluck := 0.5
+@export var rope_pluck := 2.0
 ## ... and how fast it dies down (1/s).
 @export var rope_pluck_decay := 9.0
 ## Rope length per straight distance while the hook flies (> 1: it sags).
-@export var flight_rope_slack := 1.03
+@export var flight_rope_slack := 1.23
 
 # --- State ---------------------------------------------------------------------
 var hook_state := HookState.IDLE

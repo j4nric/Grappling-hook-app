@@ -17,8 +17,9 @@ func run() -> void:
 	await wait_until(func() -> bool: return p.hook_state == p.HookState.ATTACHED, 60)
 	check(sfx._players["hook"].playing, "hook biting clanks")
 	await wait_until(func() -> bool: return p.velocity.length() > 20.0, 120)
-	await get_tree().process_frame
-	check(sfx._wind.playing and sfx._wind.volume_db > -20.0, "wind is audible at speed")
+	# The wind fades in with the speed.
+	var heard := await wait_until(func() -> bool: return sfx._wind.playing and sfx._wind.volume_db > -20.0, 60)
+	check(heard, "wind is audible at speed")
 
 	main.load_level(1)
 	await wait_frames(3)

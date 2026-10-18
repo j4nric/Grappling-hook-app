@@ -7,7 +7,7 @@ extends Node3D
 ## Camera that actually renders (inside the low-res pixel viewport). It copies
 ## this rig's camera every frame.
 @export var view_camera: Camera3D
-@export var offset := Vector3(0.0, 3.5, 10.0)
+@export var offset := Vector3(0.0, 3.5, 10.5)
 ## Higher = snappier follow. Lower = more lag / more sense of speed.
 @export var follow_speed := 6.0
 @export var look_ahead := Vector3(0.0, 3.0, -12.0)
@@ -32,9 +32,9 @@ extends Node3D
 @export_group("Field of view")
 ## The FOV is horizontal, so the tunnel width stays visible in portrait.
 @export var keep_width := true
-@export var base_fov := 65.0
-@export var fov_per_speed := 0.4
-@export var max_fov := 90.0
+@export var base_fov := 61.0
+@export var fov_per_speed := 0.8
+@export var max_fov := 113.0
 @export var fov_lerp_speed := 4.0
 ## Extra FOV (degrees) for a moment at the zip launch: the punch of the launch.
 @export var zip_fov_kick := 12.0
@@ -43,18 +43,18 @@ extends Node3D
 
 @export_group("Hook")
 ## How far the view turns toward the anchor while the rope pulls (0..1).
-@export var anchor_look_weight := 0.3
+@export var anchor_look_weight := 0.4
 @export var look_lerp_speed := 5.0
 
 @export_group("Roll")
 ## Degrees of roll per m/s of sideways speed.
-@export var roll_per_speed := 1.2
-@export var max_roll := 12.0
+@export var roll_per_speed := 1.0
+@export var max_roll := 6.0
 @export var roll_lerp_speed := 4.0
 
 @export_group("Shake")
 ## Maximum shake offset (m) at full trauma.
-@export var shake_strength := 0.35
+@export var shake_strength := 0.8
 ## Trauma added when the hook sticks (0..1).
 @export var hook_shake := 0.35
 ## Trauma per m/s of landing speed above 8 m/s.

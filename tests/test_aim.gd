@@ -23,14 +23,17 @@ func run() -> void:
 	await wait_frames(5)
 	var flat := Vector3(0, 0, -1)
 	check(not p._sticks_along(flat), "flat throw down the tunnel finds nothing")
+	var assist_default: float = p.aim_assist_angle
+	p.aim_assist_angle = 0.0
 	check(p._assisted_direction(flat) == flat, "assist off keeps the direction")
 	p.aim_assist_angle = 20.0
 	var assisted: Vector3 = p._assisted_direction(flat)
 	check(p._sticks_along(assisted), "assist finds a surface")
 	check(rad_to_deg(assisted.angle_to(flat)) <= 20.5, "assist stays inside its cone")
-	p.aim_assist_angle = 0.0
+	p.aim_assist_angle = assist_default
 
 	# Slow motion while aiming; the run timer keeps real time.
+	var slow_default: float = p.aim_time_scale
 	p.aim_time_scale = 0.5
 	InputRouter.throw_requested.emit(Vector2(0, -300), Vector2(0, -3000))
 	var start: float = main._elapsed
@@ -42,13 +45,17 @@ func run() -> void:
 	check(absf(elapsed - 1.0) < 0.1, "timer counts real time in slow motion (%.2f s)" % elapsed)
 	InputRouter.aim_cancelled.emit()
 	check(is_equal_approx(Engine.time_scale, 1.0), "cancelling the aim restores the speed")
-	p.aim_time_scale = 1.0
+	p.aim_time_scale = slow_default
 
 	# A miss flies back visibly, then disappears.
 	main.restart()
 	await wait_frames(30)
 	var missed := [false]
 	p.hook_missed.connect(func() -> void: missed[0] = true)
+	# A throw that cannot reach the ceiling: slow and heavy.
+	var tuned := [p.hook_min_speed, p.hook_gravity]
+	p.hook_min_speed = 5.0
+	p.hook_gravity = 25.0
 	InputRouter.throw_requested.emit(Vector2(0, -300), Vector2.ZERO)
 	await wait_until(func() -> bool: return missed[0], 120)
 	check(missed[0], "weak throw is reported as a miss")
@@ -56,3 +63,5 @@ func run() -> void:
 	check(p.flight_hook.visible, "hook is still visible while it flies back")
 	await wait_frames(int(p.hook_retract_time * 60) + 3)
 	check(not p.flight_hook.visible and not p.flight_rope.visible, "hook is gone after flying back")
+	p.hook_min_speed = tuned[0]
+	p.hook_gravity = tuned[1]

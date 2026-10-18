@@ -8,7 +8,7 @@ extends RefCounted
 ## come from an estimate of the run time (calibrated against the test bot).
 
 ## Average speed of a good run (m/s) and extra seconds per kind of hall.
-const RUN_SPEED := 16.0
+const RUN_SPEED := 25.0
 const EXTRA_SECONDS := {"gate": 6.0, "ice": 2.0, "movers": 1.0, "brittle": 1.5, "dark": 1.0, "updraft": 3.0}
 ## Medal times as multiples of the estimate. The test bot needs about 0.82
 ## of the estimate; like the authored levels, gold is 0.85, silver 1.2 and

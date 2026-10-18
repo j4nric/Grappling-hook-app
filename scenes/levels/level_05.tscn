@@ -5,8 +5,8 @@
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "Gates"
-gold_time = 22.7
-silver_time = 32.0
-bronze_time = 53.3
+gold_time = 13.9
+silver_time = 19.6
+bronze_time = 32.7
 layout_seed = 505
 segments = [{"length": 45.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.3, "crystals": 2, "shafts": 1}, {"length": 60.0, "width": 40.0, "ceiling": 30.0, "stalactites": 0.4, "crystals": 2, "gate": [-8.0, 14.0]}, {"length": 70.0, "width": 44.0, "ceiling": 32.0, "checkpoint": true, "islands": 2, "pillars": 1, "stalactites": 0.3, "crystals": 3, "shafts": 2, "gate": [9.0, 12.0]}, {"length": 70.0, "width": 40.0, "ceiling": 30.0, "floor": "lava", "checkpoint": true, "stalactites": 0.45, "crystals": 2, "gate": [-6.0, 14.0]}, {"length": 40.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.25, "crystals": 1}]

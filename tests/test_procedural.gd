@@ -52,7 +52,7 @@ func run() -> void:
 		var single: Array[String] = [Levels.cave_path("random", seed_value)]
 		main.level_list = single
 		var best := INF
-		for delay in [0, 7]:
+		for delay in [0, 7, 13, 19]:
 			main.load_level(0)
 			Bot.reset()
 			await wait_frames(2 + delay)

@@ -17,7 +17,10 @@ func run() -> void:
 	await wait_until(func() -> bool: return p.hook_state == p.HookState.IDLE, 180)
 	check(_reasons.back() == "zip", "pull ends with a zip launch (%s)" % str(_reasons))
 	check(p.velocity.length() > 15.0, "zip launch keeps the speed (%.1f m/s)" % p.velocity.length())
-	check(p.global_position.distance_to(anchor) <= p.zip_release_distance + 0.5, "zip launch happens close to the anchor")
+	# Released by the zip or by passing the anchor (flyby), whichever comes
+	# first, plus one frame of flight.
+	var release := maxf(p.zip_release_distance, p.flyby_release_distance) + p.velocity.length() / 60.0 + 0.5
+	check(p.global_position.distance_to(anchor) <= release, "zip launch happens close to the anchor (%.1f m)" % p.global_position.distance_to(anchor))
 
 	# The pull builds up: faster at the end than at the start.
 	main.restart()

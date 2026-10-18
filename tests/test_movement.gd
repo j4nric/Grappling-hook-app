@@ -9,12 +9,16 @@ func run() -> void:
 	var deflections := [0]
 	p.deflected.connect(func(_speed: float) -> void: deflections[0] += 1)
 
-	# Zip into the ceiling at 45°: the speed is turned along the ceiling.
+	# Zip into the ceiling at 45°: with deflection on, the speed is turned
+	# along the ceiling (the tuned default may switch it off).
+	var keep: float = p.deflect_keep
+	p.deflect_keep = 1.0
 	await _launch(p, Vector3(0, 5, -5), Vector3(0, 30, -30))
 	var before := Vector2(30, 30).length()
 	await wait_until(func() -> bool: return deflections[0] > 0, 30)
 	check(deflections[0] > 0, "ceiling hit is a deflection")
 	check(p.velocity.length() >= before * 0.8, "ceiling keeps the speed (%.1f of %.1f m/s)" % [p.velocity.length(), before])
+	p.deflect_keep = keep
 	check(p.velocity.z < -25.0, "ceiling redirect points forward (%.1f m/s)" % p.velocity.z)
 	check(p.velocity.length() <= before + 0.01, "a deflection never adds speed")
 
@@ -34,7 +38,10 @@ func run() -> void:
 	await wait_frames(1)
 	check(p.velocity.z > -1.0, "head-on crash does not bounce back (z %.1f m/s)" % p.velocity.z)
 
-	# Landing with forward speed rolls on instead of stopping.
+	# Landing with forward speed rolls on instead of stopping; with light
+	# slide braking it slides on for a while.
+	var slide: float = p.slide_friction
+	p.slide_friction = 6.0
 	var landed := [false]
 	p.landed.connect(func(_speed: float) -> void: landed[0] = true)
 	await _launch(p, Vector3(0, -1, -5), Vector3(0, -15, -10))
@@ -44,6 +51,7 @@ func run() -> void:
 	await wait_frames(30)
 	flat = Vector2(p.velocity.x, p.velocity.z).length()
 	check(flat > 5.0, "the slide keeps going for a while (%.1f m/s)" % flat)
+	p.slide_friction = slide
 	await wait_frames(150)
 	check(p.velocity.length() < 0.5, "the slide stops (%.1f m/s)" % p.velocity.length())
 

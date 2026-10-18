@@ -113,3 +113,12 @@ Musik nach Tempo, Tutorial.
 | 2026-10-18 | Hindernisse | Stalaktiten ×0,5 und ≤ 8 m (vorher 13 m), Vorsprünge ×0,5, Säulen −1 | Feedback: zu viele Hindernisse, Flow leidet |
 | 2026-10-18 | Decke/Wände | Kollision flach, Optik ±0,4 m rau | Feedback: Hängenbleiben an Deckenkanten |
 | 2026-10-18 | Medaillen | neu kalibriert | Bot-Zeiten nach glatter Decke und weniger Hindernissen (Gold 0,85×, Silber 1,2×, Bronze 2×) |
+| 2026-10-18 | Wurf | `throw_speed_per_px` 0,015 → 0,03, Haken 8–90 → 40–122 m/s, `hook_gravity` 25 → 3, `throw_pitch` 50 → 56°, `throw_yaw_gain` 1 → 1,3, `aim_preview_speed` 50 → 96 | vom Handy getunt: schnelle, fast gerade Würfe |
+| 2026-10-18 | Wurf-Hilfen | `min_throw_reach` 14 → 28 m, `aim_assist_angle` 0 → 11°, `aim_time_scale` 1 → 0,3, `throw_buffer_time` 0,3 → 0,65 s, `max_rope_length` 70 → 68 m, `min_hook_distance` 3 → 5,25 m | vom Handy getunt |
+| 2026-10-18 | Zug | `pull_impulse` 6 → 2, `reel_speed` 8 → 25,5, `reel_acceleration` 30 → 4, `reel_max_speed` 30 → 40, `tension_boost` 6 → 31,5, `min_rope_length` 0,5 → 9,25 m | vom Handy getunt: sofort kräftiger, gleichmäßiger Zug |
+| 2026-10-18 | Lösen | `zip_release_distance` 2,5 → 5,5 m, `zip_boost` 3 → 0, `flyby_release_distance` 6 → 11,5 m, `contact_release_grace` 0,15 → 0 s | vom Handy getunt |
+| 2026-10-18 | Bewegung | `gravity` 22 → 43, `floor_friction` 25 → 76, `slide_friction` 6 → 34,5, `landing_roll` 0,3 → 0,4, `deflect_keep` 1 → 0, `wall_bounce` 0,2 → 0,4, `wall_kick_up` 4 → 8 | vom Handy getunt: schwer und direkt |
+| 2026-10-18 | Kamera/Effekte | FOV 65 → 61°, `fov_per_speed` 0,4 → 0,8, `max_fov` 90 → 113°, Abstand 10 → 10,5 m, `anchor_look_weight` 0,3 → 0,4, Neigung 1,2 → 1,0 (max 12 → 6°), Shake 0,35 → 0,8, Seil-Zittern 0,5 → 2, Durchhang 1,03 → 1,23, Wind-Streifen ab 34, Speed-Lines ab 45 m/s | vom Handy getunt |
+| 2026-10-18 | Aufwind `lift` | 46 → 24 m/s² netto über der Schwerkraft | bei Schwerkraft 43 hob er kaum noch; jetzt unabhängig von der Schwerkraft |
+| 2026-10-18 | Regler-Grenzen | höher, wo Werte am Anschlag waren (u. a. Wurfstärke 0,06, schwächster Wurf 80, Seil-Zittern 4) | Wunsch: mehr Spielraum nach oben |
+| 2026-10-18 | Medaillen, `RUN_SPEED` 16 → 25 | neu kalibriert | Bot-Zeiten mit den neuen Werten |

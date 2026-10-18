@@ -29,5 +29,6 @@ func run() -> void:
 	main.restart()
 	await get_tree().process_frame
 	var drawn := p.get_global_transform_interpolated().origin
-	check(drawn.distance_to(p.global_position) < 0.01, "a teleport is not interpolated")
-	check(p.figure.global_position.distance_to(p.global_position) < 0.01, "the figure jumps with the teleport")
+	# (Within one frame of falling: the teleport itself was 100 m.)
+	check(drawn.distance_to(p.global_position) < 0.05, "a teleport is not interpolated")
+	check(p.figure.global_position.distance_to(p.global_position) < 0.05, "the figure jumps with the teleport")
