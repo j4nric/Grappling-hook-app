@@ -1,13 +1,95 @@
-# Nächste Schritte – Runde 5
+# Nächste Schritte – Runde 6
 
-Stand: 2026-10-18. Runden 1–4 sind erledigt (PRs #1–#36, Zusammenfassung in
-`roadmap.md`, Archiv unten). Die Physik ist jetzt am Handy getunt und Standard
-(PR #36). Ziel dieser Runde: **das Grund-Design der Level in der Wide Cave
-finden** – Level passend zur neuen Physik – und das Tunen von Level und Physik
-so bequem machen wie das Tunen der Physik schon ist.
+Stand: 2026-10-18. Runden 1–5 sind erledigt (PRs #1–#43, Zusammenfassung in
+`roadmap.md`, Archiv unten). Runde 5 hat das Grund-Design der Level, die neue
+Optik, den Höhlen-Editor und das Teilen gebracht. Ziel dieser Runde: **mehr
+Können belohnen, die Höhle lebendiger und abwechslungsreicher machen, den
+Fortschritt sichtbar machen** – und die Technik dahinter aufräumen.
+Reihenfolge = Umsetzungsreihenfolge, ein PR pro Themengebiet.
 Größe: S = klein, M = mittel, L = groß.
 
-## 1. Level-Design (Kern der Runde)
+## 1. Technik vorab
+
+- [ ] **Bot-Messung unabhängig von der Reihenfolge (S):** Der Bot liefert je nach
+      vorher gelaufenen Tests andere Zeiten (Gates: 42,7 s bei Bronze 46,0 s – knapp).
+      Jede Messung in einer frisch geladenen Hauptszene mit zurückgesetztem
+      Zufall und gleicher Physik-Phase → gleiche Zeit bei jedem Lauf, Medaillen
+      lassen sich sauber neu messen.
+- [ ] **Testlaufzeit (S):** Die Testsuite braucht ~15 min (Bot-Läufe). Bot-Tests
+      mit früherem Abbruch, wenn eine Variante schon klar gewinnt; Zeiten pro
+      Testdatei ausgeben.
+
+## 2. Spielgefühl: Können belohnen
+
+- [ ] **Perfekter Kettenwurf (M):** Greift der neue Haken, während man kurz vor
+      dem Zip am alten Anker ist (`perfect_chain_window`), gibt es einen
+      Tempo-Schub (`perfect_chain_boost`), goldene Funken, ein „PERFECT“ im HUD
+      und einen hellen Ton. Belohnt Timing statt Zufall. Regler im TUNE-Panel
+      mit Skizze; Medaillen danach neu messen.
+- [ ] **Sprungpilze (M):** neues Element – Riesenpilze auf Böden und Inseln, die
+      beim Aufkommen hoch und nach vorn schleudern (`bounce`). Neuer
+      Baukasten-Schlüssel `bouncers`, Editor-Regler mit Skizze.
+
+## 3. Level: Abwechslung
+
+- [ ] **Kurvige Höhlen (L):** Hallen mit seitlichem Versatz (`shift`): die Höhle
+      windet sich statt schnurgerade zu laufen. Übergänge schließen alles
+      außerhalb der gemeinsamen Öffnung; der Bot zielt zur nächsten
+      Hallenmitte; Editor-Regler und Skizze (Draufsicht).
+- [ ] **Abkürzungen (M):** aus dem Design-Dokument („Abzweigungen“) – eine enge
+      Felsröhre durch eine Trennwand neben dem normalen Weg: kürzer, aber
+      riskant (`shortcut`).
+- [ ] **Neues Level „Winding Rift“ (M):** windende Schlucht mit Sprungpilzen,
+      Abkürzung und offener Decke; Generator nutzt Versatz und Pilze auch.
+
+## 4. Darstellung: lebendige Höhle
+
+- [ ] **Wasserfälle (M):** fließender Shader an Wänden, Gischt-Partikel am Fuß,
+      Rauschen als 3D-Geräusch (`tools/gen_sounds.py`), Deko mit eigenem Zufall.
+- [ ] **Teilchen in der Luft (S):** Staub und Glühwürmchen um die Kamera, je Halle
+      anders (Lava: Glut, Eis: Schneeflocken, dunkle Halle: Glühwürmchen).
+- [ ] **Lava, die fließt (M):** Lava-Shader mit Strömung und Pulsieren, Glutblasen.
+- [ ] **Ausgang ins Tageslicht (S):** das Ziel als Höhlenausgang – helles Licht,
+      Lichtstrahlen, Himmel; die Ziel-Kamerafahrt zeigt ihn.
+
+## 5. Motivation und Fortschritt
+
+- [ ] **Fortschritt im Level-Menü (S):** Medaillen als farbige Marken je Level,
+      Summe Gold/Silber/Bronze, Daily-Cave-Serie (Tage in Folge).
+- [ ] **Zwischenzeiten im Ziel (S):** Tabelle der Checkpoints mit Zeit und
+      Abstand zur Bestzeit.
+- [ ] **Farben für die Figur (M):** Anzug- und Schalfarben, freigespielt durch
+      Medaillen; Auswahl im Pause-Menü.
+- [ ] **Daten sichern (S):** Bestzeiten, Statistik und Tuning als Code
+      kopieren und woanders einfügen – z. B. von Safari in die App auf dem
+      Home-Bildschirm (die haben getrennte Speicher).
+
+## 6. Optimierung
+
+- [ ] **Shader aufwärmen (S):** Im Browser ruckelt der erste Funke, Zip-Burst
+      oder Ring, weil Shader erst dann kompiliert werden. Beim Laden alle
+      Effekt-Materialien einmal unsichtbar zeichnen.
+- [ ] **Ladezeit und Paketgröße (S):** Web-Paket messen, Texturen/Sounds/Musik
+      prüfen, Unnötiges ausschließen.
+- [ ] **game.gd aufteilen (M):** Die Datei ist auf ~700 Zeilen gewachsen; HUD und
+      Ziel-Bildschirm in eigene Scripts.
+- [ ] **Abschluss-Doku (S):** CLAUDE.md, README, roadmap, next-steps.
+
+## Auf dem Gerät (nur mit dem iPhone möglich)
+
+- [ ] **Bildrate auf dem iPhone messen** (TUNE → Misc → Debug-Anzeige), vor allem
+      in Wide Cave und Skyway.
+- [ ] **Perfekter Kettenwurf und Sprungpilze** anspielen: Schub zu stark/schwach?
+
+## Später
+
+- [ ] iOS-App, TestFlight, Game Center (braucht Mac + Apple-Developer-Account).
+- [ ] Bestenliste für die Daily Cave (braucht einen Server).
+- [ ] Rivalen-Geist aus Bot-Läufen als „Gold-Geist“ mitliefern.
+
+## Archiv: Runde 5
+
+### 1. Level-Design (Kern der Runde)
 
 - [x] **Höhlen-Editor im TUNE-Panel (L):** (umgesetzt: Tab „Cave“ mit 23 Reglern
       pro Halle, inkl. offener Decke und schwebender Steine; Skizzen: Querschnitt,
@@ -64,7 +146,7 @@ Größe: S = klein, M = mittel, L = groß.
       Start, anderes Ergebnis) – Medaillen aus der besten Zeit mehrerer Läufe,
       Bronze für Zufallshöhlen großzügiger (2,1× der Schätzung).
 
-## 2. Spielgefühl
+### 2. Spielgefühl
 
 - [x] **Seilende (S):** Mit `min_rope_length` 9,25 m > `zip_release_distance`
       5,5 m endete der Zug hängend, man konnte um den Anker kreisen
@@ -77,7 +159,7 @@ Größe: S = klein, M = mittel, L = groß.
       Hallen bei gleichen Längen, damit die Hinweise an ihren Stellen bleiben) Hinweise und Abstände
       stammen aus der alten, langsameren Physik (Bot jetzt 7,5 s).
 
-## 3. Speedrun und Motivation
+### 3. Speedrun und Motivation
 
 - [ ] ~~**Medaillen aus echten Läufen (M):**~~ (Entscheidung 4: nein, Medaillen bleiben aus Bot-Zeiten) Der Bot spielt anders als ein Mensch
       (keine Zeitlupe, keine Zielhilfe). Deine Bestzeiten als „Dev-Zeit“ und
@@ -90,7 +172,7 @@ Größe: S = klein, M = mittel, L = groß.
 - [x] **Statistik-Verlauf (S):** (umgesetzt: Kurve der letzten 50 Zielzeiten je
       Level im Stats-Bildschirm, Gold-Linie = Bestzeit bis dahin) Bestzeit pro Level über die Zeit als kleine Kurve.
 
-## 4. Präsentation
+### 4. Präsentation
 
 - [ ] ~~**Sound-Mix überarbeiten (M):**~~ (Entscheidung 2: alles gut, bleibt so)
 - [x] **Sturz als Ragdoll (M):** (umgesetzt: die Figur fliegt bei Lava/Absturz
@@ -101,7 +183,7 @@ Größe: S = klein, M = mittel, L = groß.
       Anteil folgen der Halle, in der man ist; offene Hallen hallen weniger, der
       Wind bleibt trocken) große Hallen mehr Nachhall als enge Gänge.
 
-## 5. Technik und Qualität
+### 5. Technik und Qualität
 
 - [x] **Test-Profil statt Standardwerte (M):** (umgesetzt: `TEST_TUNING` in
       `tests/test_case.gd` für alle Tests in den Testtunneln) Mechanik-Tests liefen mit den
@@ -120,23 +202,13 @@ Größe: S = klein, M = mittel, L = groß.
       Sichtweite schneidet weit Entferntes ab. Nichts zu tun.) mehr Fläche und Lichter im Bild;
       Browser-Messung wie in Runde 3 wiederholen.
 
-## Entscheidungen (Runde 5)
+### Entscheidungen (Runde 5)
 
 1. Seil löst am kürzesten Punkt automatisch (Zip): **ja** (umgesetzt).
 2. Sound: **alles gut**, kein Umbau.
 3. Wide Cave als Vorlage für alle Level: **ja** (umgesetzt).
 4. Medaillen aus deinen Läufen: **nein**, sie bleiben aus Bot-Zeiten.
 
-## Auf dem Gerät (nur mit dem iPhone möglich)
-
-- [ ] **Bildrate auf dem iPhone messen** (TUNE → Misc → Debug-Anzeige), vor allem
-      in der Wide Cave.
-- [ ] **Wide Cave spielen** und Breite, Höhe, Licht, Ankerabstände bewerten.
-
-## Später
-
-- [ ] iOS-App, TestFlight, Game Center (braucht Mac + Apple-Developer-Account).
-- [ ] Bestenliste für die Daily Cave (braucht einen Server).
 
 ## Archiv: Runde 3 und 4
 
