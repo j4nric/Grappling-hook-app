@@ -5,8 +5,9 @@ extends "res://tests/test_case.gd"
 const Bot := preload("res://tests/bot.gd")
 ## Physics frames the bot gets per level (60 per second).
 const MAX_FRAMES := 60 * 60
-## Frames to wait before the bot starts, one run each.
-const START_DELAYS := [0, 5, 11]
+## Frames to wait before the bot starts, one run each (with its own lean,
+## see Bot.reset()): the best of them judges the level.
+const START_DELAYS := [0, 5, 11, 17, 23]
 
 
 func run() -> void:
@@ -25,7 +26,7 @@ func run() -> void:
 		var best_deaths := 0
 		for delay in START_DELAYS:
 			main.load_level(i)
-			Bot.reset()
+			Bot.reset(START_DELAYS.find(delay))
 			await wait_frames(2 + delay)
 			var p := player()
 			var deaths := [0]

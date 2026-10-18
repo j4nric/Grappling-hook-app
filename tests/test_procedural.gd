@@ -13,7 +13,7 @@ func run() -> void:
 	for seed_value in range(1, 40):
 		var halls := CaveGenerator.segments(seed_value)
 		var middle := halls.size() - 2
-		var fair: bool = halls[0].floor == "ground" and halls[-1].floor == "ground" and middle >= 4 and middle <= 6
+		var fair: bool = CavernBuilder.full_segment(halls[0]).floor == "ground" and CavernBuilder.full_segment(halls[-1]).floor == "ground" and middle >= 4 and middle <= 6
 		for i in range(1, halls.size() - 1):
 			if i > 1 and halls[i].kind == halls[i - 1].kind:
 				fair = false
@@ -54,7 +54,7 @@ func run() -> void:
 		var best := INF
 		for delay in [0, 7, 13, 19]:
 			main.load_level(0)
-			Bot.reset()
+			Bot.reset([0, 7, 13, 19].find(delay))
 			await wait_frames(2 + delay)
 			var p := player()
 			var frames := 0

@@ -22,17 +22,21 @@ Größe: S = klein, M = mittel, L = groß.
       an den Wänden sitzen und die Wände 40 m weg sind. Licht entlang der
       Flugbahn (Deckenkristalle, Lichtkegel in der Mitte) und ein Leitlicht zum
       Ausgang.
-- [ ] **Level an die neue Reichweite anpassen (M):** Haken fliegen jetzt fast
+- [x] **Level an die neue Reichweite anpassen (M):** (umgesetzt: alle Level breiter
+      und höher nach dem Vorbild der Wide Cave, Entscheidung 3) Haken fliegen jetzt fast
       gerade (`hook_gravity` 3) bis 68 m; viele Hallen sind dafür zu kurz und
       zu niedrig. Abstände zwischen Ankerzonen, Hallenlängen und Deckenhöhen
       neu ausloten – erst in der Wide Cave, dann übertragen.
-- [ ] **Hallen-Vorlagen als Design-Vokabular (M):** wenige benannte Hallentypen
+- [x] **Hallen-Vorlagen als Design-Vokabular (M):** (umgesetzt: start, sprint,
+      slalom, cathedral, narrows, skyway, lava_lake, ice_vault; Level und
+      Generator nutzen sie; neues Level „Skyway“ mit offenen Decken) wenige benannte Hallentypen
       mit klarer Aufgabe (Sprint: lang und hoch; Slalom: Säulen versetzt;
       Kathedrale: sehr hoch, Ringe; Engstelle: schmal und niedrig, schräg
       angeschlossen). Level und Generator setzen sich daraus zusammen.
 - [x] **Orientierung (S):** (umgesetzt: Bernstein-Marke am Ausgang jeder Halle) Landmarken und ein sichtbarer Ausgang je Halle, damit
       man in breiten Hallen die Richtung nicht verliert.
-- [ ] **Tempo-Ringe auf der Ideallinie (S):** zwischen zwei Ankerzonen statt
+- [x] **Tempo-Ringe auf der Ideallinie (S):** (umgesetzt: nahe der Mitte, auf der
+      Höhe der Schwünge) zwischen zwei Ankerzonen statt
       zufällig in der Hallenmitte.
 
 - [x] **Neue Optik (Wunsch):** Felsmodelle statt Quader (Brocken, Stalaktiten,
@@ -49,6 +53,17 @@ Größe: S = klein, M = mittel, L = groß.
 - [x] **Neu entdeckt:** Die Zeit-Skizze im TUNE-Panel nutzte `%g` (gibt es in
       GDScript nicht) – Achsenbeschriftung fehlte.
 
+- [x] **Neu entdeckt:** Wird eine Halle breiter oder höher, blieb der Rahmen um
+      die kleinere Öffnung offen: Der Bot flog hinter die Wände ins Leere (bei
+      x = −82 in einer 91 m breiten Halle). Jetzt schließt ein Rahmen die Lücke
+      (`tests/test_flow.gd` prüft es auch in Zufallshöhlen).
+- [x] **Neu entdeckt:** Die Schräge aus einer offenen Halle lag mit ihrer Oberseite
+      frei in der Luft – man konnte darauf stehen und kam ohne Hakenziel nicht
+      mehr weg. Aus offenen Hallen gibt es keine Schräge mehr.
+- [x] **Neu entdeckt:** Bot-Zeiten hängen davon ab, was vorher lief (gleicher
+      Start, anderes Ergebnis) – Medaillen aus der besten Zeit mehrerer Läufe,
+      Bronze für Zufallshöhlen großzügiger (2,1× der Schätzung).
+
 ## 2. Spielgefühl
 
 - [x] **Seilende (S):** Mit `min_rope_length` 9,25 m > `zip_release_distance`
@@ -57,7 +72,8 @@ Größe: S = klein, M = mittel, L = groß.
       Punkt wie ein Zip (`rope_end_release`, Regler „Rope end release“).
 - [ ] **Tuning-Presets (M):** mehrere Wertesätze speichern und mit einem Tipp
       wechseln (A/B-Vergleich), Werte als Code einfügen statt nur kopieren.
-- [ ] **Tutorial an die neue Physik anpassen (S):** Hinweise und Abstände
+- [x] **Tutorial an die neue Physik anpassen (S):** (umgesetzt: breitere, höhere
+      Hallen bei gleichen Längen, damit die Hinweise an ihren Stellen bleiben) Hinweise und Abstände
       stammen aus der alten, langsameren Physik (Bot jetzt 7,5 s).
 
 ## 3. Speedrun und Motivation
@@ -84,7 +100,8 @@ Größe: S = klein, M = mittel, L = groß.
       Standardwerten und brauchten nach jeder Übernahme von Handy-Werten
       Anpassungen (PR #36: 15 Tests). Ein festes Test-Tuning für Mechanik-Tests,
       Standardwerte nur noch in Level- und Bot-Tests.
-- [ ] **Bot an die neue Physik (M):** Der Bot nutzt weder Zeitlupe noch
+- [x] **Bot an die neue Physik (M):** (umgesetzt: jede Startvariante bekommt eine
+      eigene Richtungsvorliebe, `Bot.reset(variant)`; beste von 5 Starts) Der Bot nutzt weder Zeitlupe noch
       Zielhilfe, und Startverzögerungen ändern in prozeduralen Höhlen nichts
       (gleiche Zeit bei jedem Start) – Varianten über die Wurfrichtung statt
       über den Start.

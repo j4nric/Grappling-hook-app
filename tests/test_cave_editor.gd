@@ -21,17 +21,17 @@ func run() -> void:
 	t._set_open(true)
 	t._sliders["CaveEditor/hall"].value = 2
 	check(editor.selected_hall == 2, "picking a hall")
-	check(is_equal_approx(t._sliders["CaveEditor/width"].value, float(original[2].width)), "the sliders show the picked hall (%s vs %s)" % [t._sliders["CaveEditor/width"].value, original[2].width])
+	check(is_equal_approx(t._sliders["CaveEditor/width"].value, float(CavernBuilder.full_segment(original[2]).width)), "the sliders show the picked hall (%s vs %s)" % [t._sliders["CaveEditor/width"].value, CavernBuilder.full_segment(original[2]).width])
 	check(t._labels["CaveEditor/hall"].text.contains("3 of %d" % original.size()), "the hall reads as 3 of %d" % original.size())
 
 	# Changing a value rebuilds the cave a moment later.
 	t._sliders["CaveEditor/width"].value = 100
-	check(main.level.segments[2].width == original[2].width, "not rebuilt at once (slider still moving)")
+	check(CavernBuilder.full_segment(main.level.segments[2]).width == CavernBuilder.full_segment(original[2]).width, "not rebuilt at once (slider still moving)")
 	await _real_seconds(0.6)
 	check(int(main.level.segments[2].width) == 100, "the cave is rebuilt with the new width")
 	var starts := editor.hall_starts()
 	var z: float = player().global_position.z
-	check(z < starts[2] and z > starts[2] - float(main.level.segments[2].length), "the player waits in the edited hall (z %.0f)" % z)
+	check(z < starts[2] and z > starts[2] - float(CavernBuilder.full_segment(main.level.segments[2]).length), "the player waits in the edited hall (z %.0f)" % z)
 	check(main._edited and main._record_id.begins_with("edit_"), "an edited cave keeps its own records")
 	check(main.level_label.text.contains("(edit)"), "the HUD shows it is an edit")
 

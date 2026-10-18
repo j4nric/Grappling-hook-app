@@ -23,9 +23,11 @@ static var _last_position := Vector3.ZERO
 static var _fresh := true
 
 
-## Back to the first preference (a new level).
-static func reset() -> void:
-	_attempt = 0
+## A new level. `variant` picks the starting preference (lean), so several
+## starts of the same level fly different lines (the physics alone is
+## deterministic: the same start always gives the same run).
+static func reset(variant := 0) -> void:
+	_attempt = variant
 	_fresh = true
 
 

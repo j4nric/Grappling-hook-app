@@ -120,6 +120,35 @@ const SEGMENT_DEFAULTS := {
 	"floater_size": 3.5,
 	## Walls of wet, slick rock: the hook does not hold on them.
 	"slick_walls": false,
+	## A hall template (TEMPLATES) whose values this hall starts from.
+	"template": "",
+}
+
+## Hall templates, built on the Wide Cave (wide, high, few obstacles): a hall
+## names one with "template", its own keys win. Each has a clear job.
+const TEMPLATES := {
+	# Start and end: a ground hall to stand and land in.
+	"start": {"length": 40.0, "width": 50.0, "ceiling": 28.0, "floor": "ground", "stalactites": 0.1,
+		"outcrops": 0.0, "crystals": 2, "shafts": 1},
+	# Long and high: swing at full speed.
+	"sprint": {"length": 90.0, "width": 70.0, "ceiling": 34.0, "stalactites": 0.1, "outcrops": 0.1,
+		"crystals": 4, "shafts": 2},
+	# Columns to swing around.
+	"slalom": {"length": 80.0, "width": 70.0, "ceiling": 32.0, "pillars": 4, "stalactites": 0.1,
+		"outcrops": 0.05, "crystals": 3, "shafts": 1},
+	# Very high and wide, rock islands: room for big arcs.
+	"cathedral": {"length": 80.0, "width": 90.0, "ceiling": 46.0, "islands": 2, "stalactites": 0.1,
+		"crystals": 5, "shafts": 3},
+	# Narrow and low: precise throws (entered over slanted slabs).
+	"narrows": {"length": 50.0, "width": 44.0, "ceiling": 24.0, "stalactites": 0.2, "outcrops": 0.2,
+		"crystals": 2, "shafts": 1},
+	# Open ceiling, slick walls: along the floating stones only.
+	"skyway": {"length": 90.0, "width": 70.0, "ceiling": 30.0, "open": true, "floater_spacing": 16.0,
+		"slick_walls": true, "stalactites": 0.0, "outcrops": 0.0, "crystals": 2, "shafts": 0},
+	"lava_lake": {"length": 80.0, "width": 70.0, "ceiling": 34.0, "floor": "lava", "islands": 2,
+		"stalactites": 0.15, "crystals": 3, "shafts": 1},
+	"ice_vault": {"length": 80.0, "width": 70.0, "ceiling": 34.0, "ice": 0.9, "stalactites": 0.1,
+		"outcrops": 0.15, "crystals": 3, "shafts": 1},
 }
 
 var _level: Node3D
@@ -174,7 +203,13 @@ func build(level: Node3D, segments: Array, seed_value: int) -> float:
 
 
 func _segment(raw: Dictionary) -> Dictionary:
+	return full_segment(raw)
+
+
+## A hall with every key: the defaults, its template, its own keys.
+static func full_segment(raw: Dictionary) -> Dictionary:
 	var seg := SEGMENT_DEFAULTS.duplicate(true)
+	seg.merge(TEMPLATES.get(raw.get("template", ""), {}).duplicate(true), true)
 	seg.merge(raw, true)
 	return seg
 
@@ -210,7 +245,9 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 	for i in int(seg.updrafts):
 		_updraft(Vector3(_rng.randf_range(-w / 2.0 + 8.0, w / 2.0 - 8.0), 0, z0 - length * (i + 0.5) / float(seg.updrafts)), c)
 	for i in int(seg.rings):
-		_ring(Vector3(_rng.randf_range(-w / 3.0, w / 3.0), c * _rng.randf_range(0.45, 0.7), z0 - length * (i + 0.5) / float(seg.rings)))
+		# On the ideal line: near the middle, at the height swings pass.
+		_ring(Vector3(_rng.randf_range(-w / 3.0, w / 3.0) * 0.25, c * lerpf(0.55, 0.65, (_rng.randf_range(0.45, 0.7) - 0.45) / 0.25),
+				z0 - length * (i + 0.5) / float(seg.rings)))
 	if seg.dark and _level.has_method("add_dark_range"):
 		_level.add_dark_range(z0, z1)
 	var spacing: float = seg.anchor_spacing
@@ -261,7 +298,24 @@ func _transition(prev: Dictionary, next: Dictionary, z: float) -> void:
 		var wide := maxf(float(prev.width), float(next.width)) + 20.0
 		_solid("ice", Vector3(0, (low + high) / 2.0 + 3.0, z), Vector3(wide, high - low - 6.0, 4.0))
 		_shape("rock_dark", Vector3(0, (low + high) / 2.0 + 3.0, z), Vector3(wide, high - low - 6.0, 6.0), Vector3.ZERO)
-	if drop > 0.5:
+	# Into a wider or higher hall: close the frame around the smaller hall's
+	# opening, or the space behind its walls and above its lid stays open.
+	var wider := (float(next.width) - float(prev.width)) / 2.0
+	var rise := _top(next) - _top(prev)
+	if wider > 0.5 or rise > 0.5:
+		var outer := float(next.width) / 2.0 + 8.0
+		var inner := minf(float(prev.width), float(next.width)) / 2.0
+		var top := _top(next) + 12.0
+		if wider > 0.5:
+			for side: float in [-1.0, 1.0]:
+				_box("rock_dark", Vector3(side * (inner + outer) / 2.0, (DEPTH_Y + top) / 2.0, z + 2.0),
+						Vector3(outer - inner, top - DEPTH_Y, 4.0), Vector3.ZERO)
+		if rise > 0.5:
+			var low := minf(_top(prev), _top(next)) + 6.0
+			_box("rock_dark", Vector3(0, (low + top) / 2.0, z + 2.0), Vector3(inner * 2.0 + 2.0, top - low, 4.0), Vector3.ZERO)
+	# Out of an open hall no slope: the stones fly below the next ceiling,
+	# and a slab's top would be a ledge in the open air (nothing covers it).
+	if drop > 0.5 and not prev.open:
 		var run := maxf(drop * 2.5, 8.0)
 		var face := Vector3(0, from - drop / 2.0, z + run / 2.0)
 		var along := Vector3(0, drop, run)

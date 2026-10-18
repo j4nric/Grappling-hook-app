@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level.gd" id="1_level"]
+
+[node name="Level" type="Node3D"]
+script = ExtResource("1_level")
+level_name = "Skyway"
+gold_time = 17.2
+silver_time = 24.3
+bronze_time = 40.6
+layout_seed = 808
+segments = [{"template": "start"}, {"template": "skyway", "length": 80.0}, {"template": "sprint", "length": 60.0, "checkpoint": true}, {"template": "skyway", "length": 90.0, "floater_spacing": 18.0, "floater_size": 3.0}, {"template": "cathedral", "length": 70.0, "checkpoint": true, "open": true, "floater_spacing": 14.0, "islands": 1}, {"template": "start"}]

@@ -76,7 +76,7 @@ func _get(property: StringName) -> Variant:
 		return null
 	if segments.is_empty():
 		return 0.0
-	var seg: Dictionary = CavernBuilder.SEGMENT_DEFAULTS.merged(segments[selected_hall], true)
+	var seg: Dictionary = CavernBuilder.full_segment(segments[selected_hall])
 	var value: Variant = seg[String(property)]
 	if String(property) == "floor":
 		return float(FLOORS.find(value))
@@ -168,8 +168,8 @@ func place_player() -> void:
 		return
 	var z := 0.0
 	for i in selected_hall:
-		z -= float(CavernBuilder.SEGMENT_DEFAULTS.merged(segments[i], true).length)
-	var seg: Dictionary = CavernBuilder.SEGMENT_DEFAULTS.merged(segments[selected_hall], true)
+		z -= float(CavernBuilder.full_segment(segments[i]).length)
+	var seg: Dictionary = CavernBuilder.full_segment(segments[selected_hall])
 	game.player.reset_to(Vector3(0, float(seg.ceiling) * 0.45, z - 6.0))
 
 
@@ -179,7 +179,7 @@ func hall_starts() -> Array[float]:
 	var z := 0.0
 	for seg in segments:
 		starts.append(z)
-		z -= float(CavernBuilder.SEGMENT_DEFAULTS.merged(seg, true).length)
+		z -= float(CavernBuilder.full_segment(seg).length)
 	return starts
 
 
