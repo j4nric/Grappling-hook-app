@@ -32,9 +32,10 @@ static func make(kind: String, seed_value: int) -> Level:
 	return level
 
 
-## Today's seed: the date as a number (20261018), the same for everyone.
+## Today's seed: the UTC date as a number (20261018), the same for everyone
+## at the same moment, whatever their time zone.
 static func daily_seed() -> int:
-	var date := Time.get_date_dict_from_system()
+	var date := Time.get_date_dict_from_system(true)
 	return int(date.year) * 10000 + int(date.month) * 100 + int(date.day)
 
 
