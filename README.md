@@ -20,7 +20,7 @@ Jeder Push auf `main` baut automatisch eine Web-Version (GitHub Actions,
   schnell schnippen = weiter, gerader Wurf; Finger stehen lassen = schwacher Wurf,
   der Haken fällt herunter. Der Haken zieht dich zum Treffpunkt; berührst du
   Wand oder Decke, löst sich das Seil von selbst.
-  Tippen = Seil lösen, Zwei-Finger-Tipp = Neustart.
+  Tippen = Seil lösen, zwei Finger halten (0,3 s) = Neustart, **II** = Pause.
 - **TUNE** (rechts oben) öffnet Regler für Physik und Kamera. Das Spiel pausiert,
   „Play“ macht weiter. Die Werte bleiben im Browser gespeichert (pro Browser
   getrennt: Safari und Chrome haben eigene Werte), „Reset“ stellt die

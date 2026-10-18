@@ -8,11 +8,15 @@ signal level_loaded(level: Level)
 
 ## Falling below this Y counts like lava.
 @export var kill_y := -30.0
+## Longest frame the run timer counts (s). A hitch or a return from the
+## background must not add a jump to the time.
+@export var max_timer_step := 0.1
 ## Level to start directly (index into Levels.LIST); -1 opens the level menu.
 @export var start_level := -1
 
 @onready var player := $Player
 @onready var menu := $LevelMenu
+@onready var pause_menu := $PauseMenu
 @onready var safe: Control = $HUD/Safe
 @onready var time_label: Label = $HUD/Safe/TimeLabel
 @onready var best_label: Label = $HUD/Safe/BestLabel
@@ -42,9 +46,11 @@ func _ready() -> void:
 	get_viewport().disable_3d = true
 	player.hook_attached.connect(_on_hook_attached)
 	InputRouter.restart_requested.connect(restart)
-	InputRouter.throw_requested.connect(_on_any_input)
-	InputRouter.release_requested.connect(_on_any_input)
+	InputRouter.throw_requested.connect(_on_throw)
+	InputRouter.release_requested.connect(_on_tap)
 	menu.level_chosen.connect(load_level)
+	pause_menu.restart_pressed.connect(restart)
+	pause_menu.levels_pressed.connect(open_menu)
 	version_label.text = "build %s" % ProjectSettings.get_setting("application/config/version", "dev")
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.03, 0.03, 0.05, 0.85)
@@ -70,6 +76,7 @@ func load_level(index: int) -> void:
 		remove_child(level)
 		level.queue_free()
 	level_index = index
+	pause_menu.set_button_visible(true)
 	level = load(Levels.LIST[index]).instantiate()
 	level.name = "Level"
 	# Move the player before the level exists, so it never overlaps the new
@@ -85,6 +92,7 @@ func load_level(index: int) -> void:
 
 
 func open_menu() -> void:
+	pause_menu.set_button_visible(false)
 	var entries := []
 	for path in Levels.LIST:
 		var scene: Level = load(path).instantiate()
@@ -100,7 +108,7 @@ func open_menu() -> void:
 func _process(delta: float) -> void:
 	if _running:
 		# Real time: slow motion while aiming must not shorten the run.
-		_elapsed += delta / maxf(Engine.time_scale, 0.001)
+		_elapsed += minf(delta / maxf(Engine.time_scale, 0.001), max_timer_step)
 		ghost.update_run(_elapsed, player.global_position)
 	if player.global_position.y < kill_y:
 		_on_killed()
@@ -129,13 +137,20 @@ func _on_killed() -> void:
 	player.reset_to(_respawn)
 
 
-func _on_any_input(_a = null, _b = null, _c = null) -> void:
+## Only a throw starts the run; after the finish it plays again.
+func _on_throw(_swipe: Vector2, _flick: Vector2) -> void:
 	if _finished:
 		restart()
 	elif not _running:
 		_running = true
 		_flash_go()
 		run_started.emit()
+
+
+## A tap lets go of the rope (player.gd); after the finish it plays again.
+func _on_tap() -> void:
+	if _finished:
+		restart()
 
 
 ## Start signal: the run (and the timer) starts with the first throw.
@@ -210,6 +225,6 @@ func _update_hud() -> void:
 	elif _hint_dismissed:
 		hint_label.text = ""
 	elif _touch:
-		hint_label.text = "Swipe up and let go: throw hook\nTap: let go   Two-finger tap: restart"
+		hint_label.text = "Swipe up and let go: throw hook\nTap: let go   Hold two fingers: restart"
 	else:
 		hint_label.text = "Drag and release: throw hook   Right click: let go   R: restart"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/effects.gd" id="8_effects"]
 [ext_resource type="Script" path="res://scripts/sfx.gd" id="9_sfx"]
 [ext_resource type="Script" path="res://scripts/debug_overlay.gd" id="10_debug"]
+[ext_resource type="Script" path="res://scripts/pause_menu.gd" id="11_pause"]
 
 [sub_resource type="Environment" id="env"]
 background_mode = 1
@@ -249,6 +250,9 @@ script = ExtResource("5_tuning")
 script = ExtResource("10_debug")
 player = NodePath("../Player")
 pixel_view = NodePath("../World/PixelView")
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+script = ExtResource("11_pause")
 
 [node name="LevelMenu" type="CanvasLayer" parent="."]
 script = ExtResource("6_menu")
