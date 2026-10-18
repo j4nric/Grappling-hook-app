@@ -49,6 +49,12 @@ const LEDGE_Y := 0.0
 const DEPTH_Y := -60.0
 ## Lava lakes lie this deep.
 const LAVA_Y := -24.0
+## How far the drawn rock of ceiling and walls may stand out from or sink
+## into the flat collision (m): rough to look at, smooth to fly along.
+const CEILING_ROUGHNESS := 0.4
+const WALL_ROUGHNESS := 0.4
+## Longest stalactite (m): longer ones cut through the swing.
+const STALACTITE_MAX := 8.0
 
 const SEGMENT_DEFAULTS := {
 	"length": 60.0,
@@ -57,12 +63,13 @@ const SEGMENT_DEFAULTS := {
 	"ceiling": 26.0,
 	## "abyss" (nothing below), "ground" (rock floor at ledge height) or "lava".
 	"floor": "abyss",
-	## Stalactites per 10 m.
-	"stalactites": 0.6,
+	## Stalactites per 10 m (obstacles more than targets: the whole ceiling
+	## holds the hook).
+	"stalactites": 0.3,
 	"pillars": 0,
 	"islands": 0,
 	## Outcrops on the walls per 10 m (hook targets at the sides).
-	"outcrops": 0.3,
+	"outcrops": 0.15,
 	"crystals": 2,
 	"shafts": 1,
 	## Share of ceiling blocks that are ice (do not hold the hook).
@@ -170,7 +177,8 @@ func _build_hall(seg: Dictionary, z0: float) -> void:
 	var c: float = seg.ceiling
 	for i in roundi(float(seg.stalactites) * length / 10.0):
 		var top := Vector3(_rng.randf_range(-w / 2.0 + 5.0, w / 2.0 - 5.0), c, _rng.randf_range(z1 + 3.0, z0 - 3.0))
-		var hang := _rng.randf_range(4.0, minf(13.0, c - 6.0))
+		# Short: they decorate the ceiling instead of blocking the flight.
+		var hang := _rng.randf_range(3.0, minf(STALACTITE_MAX, c - 6.0))
 		# Only halls with brittle ones roll for it: other caves stay as they were.
 		if float(seg.brittle) > 0.0 and _rng.randf() < float(seg.brittle):
 			_brittle_stalactite(top, hang)
@@ -252,25 +260,34 @@ func _slab(material: String, face: Vector3, normal: Vector3, along: Vector3, acr
 
 
 ## Irregular walls: thick rock slabs, shifted and tilted, down into the depth.
+## Only the look is rough: the collision is a flat face at the hall width,
+## so sliding along a wall never catches on an edge.
 func _walls(seg: Dictionary, z0: float, z1: float) -> void:
 	var w: float = seg.width
 	var c: float = seg.ceiling
+	var top := c + 12.0
+	for side in [-1.0, 1.0]:
+		_solid("rock", Vector3(side * (w / 2.0 + 4.0), (DEPTH_Y + top) / 2.0, (z0 + z1) / 2.0),
+				Vector3(8.0, top - DEPTH_Y, z0 - z1))
 	var z := z0
 	var n := 0
 	while z > z1 + 0.1:
 		var piece := minf(_rng.randf_range(7.0, 13.0), z - z1)
 		for side in [-1.0, 1.0]:
 			var thick := _rng.randf_range(4.0, 8.0)
-			var x: float = side * (w / 2.0 + thick / 2.0 + _rng.randf_range(-1.5, 1.5))
-			var top := c + 12.0
-			_box("rock" if n % 2 == 0 else "rock_dark", Vector3(x, (DEPTH_Y + top) / 2.0, z - piece / 2.0),
-					Vector3(thick, top - DEPTH_Y, piece + 3.0),
-					Vector3(_rng.randf_range(-0.05, 0.05), _rng.randf_range(-0.15, 0.15), _rng.randf_range(-0.08, 0.08)))
+			# Never more than WALL_ROUGHNESS in front of the flat face.
+			var x: float = side * (w / 2.0 + thick / 2.0 + _rng.randf_range(-1.5, 1.5) / 1.5 * WALL_ROUGHNESS)
+			var tilt := Vector3(_rng.randf_range(-0.05, 0.05), _rng.randf_range(-0.15, 0.15), _rng.randf_range(-0.08, 0.08))
+			_shape("rock" if n % 2 == 0 else "rock_dark", Vector3(x, (DEPTH_Y + top) / 2.0, z - piece / 2.0),
+					Vector3(thick, top - DEPTH_Y, piece + 3.0), tilt * 0.2)
 			n += 1
 		z -= piece
 
 
-## Ceiling from big blocks at slightly different heights: a rough vault.
+## Ceiling from big blocks at slightly different heights: a rough vault to
+## look at. To fly along, it is flat: one collision box per block, all with
+## their underside at the ceiling height, so there is no edge to catch on.
+## Ice blocks (no hook) stay ice in the collision, too.
 func _ceiling(seg: Dictionary, z0: float, z1: float) -> void:
 	var w: float = seg.width
 	var c: float = seg.ceiling
@@ -284,13 +301,16 @@ func _ceiling(seg: Dictionary, z0: float, z1: float) -> void:
 		for i in columns:
 			var x := -w / 2.0 - 4.0 + col_w * (i + 0.5)
 			var thick := _rng.randf_range(5.0, 9.0)
-			var bottom := c + _rng.randf_range(-2.0, 1.0)
+			# -2..1 m drawn as before (same random numbers), shown within
+			# CEILING_ROUGHNESS of the flat underside.
+			var bottom := c + (_rng.randf_range(-2.0, 1.0) + 2.0) / 3.0 * (CEILING_ROUGHNESS * 2.0) - CEILING_ROUGHNESS
 			var ice := _rng.randf() < float(seg.ice)
-			_box("ice" if ice else ("rock_dark" if (i + int(z)) % 3 == 0 else "rock"),
-					Vector3(x, bottom + thick / 2.0, z - piece / 2.0), Vector3(col_w + 3.0, thick, piece + 3.0),
-					Vector3(_rng.randf_range(-0.06, 0.06), _rng.randf_range(-0.2, 0.2), _rng.randf_range(-0.06, 0.06)))
+			var material := "ice" if ice else ("rock_dark" if (i + int(z)) % 3 == 0 else "rock")
+			_solid("ice" if ice else "rock", Vector3(x, c + 3.0, z - piece / 2.0), Vector3(col_w, 6.0, piece))
+			var tilt := Vector3(_rng.randf_range(-0.06, 0.06), _rng.randf_range(-0.2, 0.2), _rng.randf_range(-0.06, 0.06))
+			_shape(material, Vector3(x, bottom + thick / 2.0, z - piece / 2.0), Vector3(col_w + 3.0, thick, piece + 3.0),
+					tilt * Vector3(0.25, 1.0, 0.25))
 		z -= piece
-
 
 func _stalactite(top: Vector3, length: float, ice: bool) -> void:
 	var thick := _rng.randf_range(1.6, 3.0)
@@ -443,16 +463,14 @@ func _gate(seg: Dictionary, z: float) -> void:
 	var top: float = seg.ceiling + 4.0
 	var hx: float = seg.gate[0]
 	var hw: float = seg.gate[1]
-	# A slit from the depth to just under the ceiling: steer through it
-	# sideways. (A floor edge would catch the dip of a long swing.)
-	var hh: float = float(seg.ceiling) - 3.0 - DEPTH_Y
-	var hy: float = DEPTH_Y + hh / 2.0
+	# A slit from the depth up to the ceiling: steer through it sideways.
+	# (A floor edge would catch the dip of a long swing, a beam under the
+	# ceiling a slide along it.)
 	var thick := 3.0
 	var left := hx - hw / 2.0
 	var right := hx + hw / 2.0
 	_box("ice", Vector3((-w / 2.0 + left) / 2.0, (DEPTH_Y + top) / 2.0, z), Vector3(left + w / 2.0, top - DEPTH_Y, thick), Vector3.ZERO)
 	_box("ice", Vector3((right + w / 2.0) / 2.0, (DEPTH_Y + top) / 2.0, z), Vector3(w / 2.0 - right, top - DEPTH_Y, thick), Vector3.ZERO)
-	_box("ice", Vector3(hx, (hy + hh / 2.0 + top) / 2.0, z), Vector3(hw + 0.5, top - hy - hh / 2.0, thick), Vector3.ZERO)
 	# Crystals frame the hole: the way through is easy to see.
 	for y in [LEDGE_Y + 4.0, float(seg.ceiling) - 6.0]:
 		_crystal(Vector3(left + 0.5, y, z + thick / 2.0), Vector3(0, 0, 1))
@@ -667,6 +685,23 @@ func _mover(pos: Vector3, size: Vector3, travel: Vector3, period: float, phase: 
 ## mesh as an instance of the hall's multimesh for its material.
 func _box(material: String, pos: Vector3, size: Vector3, rotation: Vector3) -> void:
 	_box_basis(material, pos, size, Basis.from_euler(rotation))
+
+
+## Only drawn, no collision (the rough look of walls and ceiling).
+func _shape(material: String, pos: Vector3, size: Vector3, rotation: Vector3) -> void:
+	if not _meshes.has(material):
+		_meshes[material] = []
+	_meshes[material].append(Transform3D(Basis.from_euler(rotation).scaled_local(size), pos))
+
+
+## Only collision, axis-aligned, not drawn ("ice" does not hold the hook).
+func _solid(material: String, pos: Vector3, size: Vector3) -> void:
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	shape.position = pos
+	(_ice_body if material == "ice" else _body).add_child(shape)
 
 
 func _box_basis(material: String, pos: Vector3, size: Vector3, basis: Basis) -> void:

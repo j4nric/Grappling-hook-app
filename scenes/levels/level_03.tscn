@@ -5,8 +5,8 @@
 [node name="Level" type="Node3D"]
 script = ExtResource("1_level")
 level_name = "Ice Ceiling"
-gold_time = 16.7
-silver_time = 23.6
-bronze_time = 39.4
+gold_time = 8.4
+silver_time = 11.9
+bronze_time = 19.9
 layout_seed = 303
-segments = [{"length": 45.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.6, "crystals": 2, "shafts": 1}, {"length": 70.0, "width": 40.0, "ceiling": 30.0, "ice": 1.0, "stalactites": 1.0, "outcrops": 0.5, "crystals": 2, "shafts": 1}, {"length": 60.0, "width": 40.0, "ceiling": 30.0, "ice": 1.0, "checkpoint": true, "pillars": 3, "stalactites": 0.4, "outcrops": 0.6, "crystals": 3}, {"length": 70.0, "width": 44.0, "ceiling": 32.0, "ice": 0.7, "ice_stalactites": true, "islands": 3, "pillars": 2, "outcrops": 0.4, "crystals": 3, "shafts": 2}, {"length": 40.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.5, "crystals": 1}]
+segments = [{"length": 45.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.3, "crystals": 2, "shafts": 1}, {"length": 70.0, "width": 40.0, "ceiling": 30.0, "ice": 1.0, "stalactites": 0.5, "outcrops": 0.25, "crystals": 2, "shafts": 1}, {"length": 60.0, "width": 40.0, "ceiling": 30.0, "ice": 1.0, "checkpoint": true, "pillars": 2, "stalactites": 0.2, "outcrops": 0.3, "crystals": 3}, {"length": 70.0, "width": 44.0, "ceiling": 32.0, "ice": 0.7, "ice_stalactites": true, "islands": 2, "pillars": 1, "outcrops": 0.2, "crystals": 3, "shafts": 2}, {"length": 40.0, "width": 34.0, "ceiling": 26.0, "floor": "ground", "stalactites": 0.25, "crystals": 1}]
