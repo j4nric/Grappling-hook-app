@@ -1,14 +1,19 @@
 extends CanvasLayer
 ## Level selection. Shown at the start and from the finish screen; pauses the
 ## game while open. Emits level_chosen with the index into Levels.LIST.
+## The "Stats" button switches to the statistics (text from the game).
 
 signal level_chosen(index: int)
+signal stats_requested
 
 const FONT_SIZE := 34
 
 var _list: VBoxContainer
 var _scroll: ScrollContainer
 var _panel: PanelContainer
+var _stats_scroll: ScrollContainer
+var _stats_label: Label
+var _stats_button: Button
 
 
 func _ready() -> void:
@@ -42,6 +47,21 @@ func _ready() -> void:
 	_list.add_theme_constant_override("separation", 16)
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(_list)
+	_stats_scroll = ScrollContainer.new()
+	_stats_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_stats_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_stats_scroll.visible = false
+	root.add_child(_stats_scroll)
+	_stats_label = Label.new()
+	_stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_stats_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_stats_label.add_theme_font_size_override("font_size", 28)
+	_stats_scroll.add_child(_stats_label)
+	_stats_button = Button.new()
+	_stats_button.custom_minimum_size = Vector2(0, 80)
+	_stats_button.add_theme_font_size_override("font_size", 30)
+	_stats_button.pressed.connect(_toggle_stats)
+	root.add_child(_stats_button)
 	visible = false
 
 
@@ -61,6 +81,7 @@ func open(entries: Array) -> void:
 		button.mouse_filter = Control.MOUSE_FILTER_PASS
 		_list.add_child(button)
 	_scroll.scroll_vertical = 0
+	_show_list(true)
 	visible = true
 	get_tree().paused = true
 
@@ -68,6 +89,30 @@ func open(entries: Array) -> void:
 func close() -> void:
 	visible = false
 	get_tree().paused = false
+
+
+## Shows the statistics instead of the levels.
+func show_stats(text: String) -> void:
+	_stats_label.text = text
+	_stats_scroll.scroll_vertical = 0
+	_show_list(false)
+
+
+func is_showing_stats() -> bool:
+	return _stats_scroll.visible
+
+
+func _toggle_stats() -> void:
+	if is_showing_stats():
+		_show_list(true)
+	else:
+		stats_requested.emit()
+
+
+func _show_list(on: bool) -> void:
+	_scroll.visible = on
+	_stats_scroll.visible = not on
+	_stats_button.text = "Stats" if on else "Back"
 
 
 func _choose(index: int) -> void:

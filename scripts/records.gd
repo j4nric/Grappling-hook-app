@@ -77,19 +77,24 @@ static func medal_color(medal_value: Medal) -> Color:
 	return [Color.WHITE, Color(0.8, 0.5, 0.25), Color(0.8, 0.82, 0.88), Color(1.0, 0.82, 0.2)][medal_value]
 
 
-## Ghost: player positions sampled every Ghost.SAMPLE_TIME seconds.
-static func save_ghost(record_id: String, samples: PackedVector3Array) -> void:
+## Ghost of the best run (see Ghost.recording()).
+static func save_ghost(record_id: String, run: Dictionary) -> void:
 	var file := FileAccess.open(_ghost_path(record_id), FileAccess.WRITE)
 	if file:
-		file.store_var(samples)
+		file.store_var(run)
 
 
-static func load_ghost(record_id: String) -> PackedVector3Array:
+## The best run, or an empty Dictionary. Old ghosts were bare positions.
+static func load_ghost(record_id: String) -> Dictionary:
 	var file := FileAccess.open(_ghost_path(record_id), FileAccess.READ)
 	if file == null:
-		return PackedVector3Array()
+		return {}
 	var data = file.get_var()
-	return data if data is PackedVector3Array else PackedVector3Array()
+	if data is PackedVector3Array:
+		return {"positions": data, "anchors": PackedVector3Array()}
+	if data is Dictionary and data.get("positions") is PackedVector3Array:
+		return data
+	return {}
 
 
 static func _ghost_path(record_id: String) -> String:

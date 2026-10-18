@@ -7,7 +7,7 @@ extends "res://tests/test_case.gd"
 func run() -> void:
 	# A newer version of a level replaces the older record and its ghost.
 	Records.submit("level_01@aaaa0000", 20.0)
-	Records.save_ghost("level_01@aaaa0000", PackedVector3Array([Vector3.ZERO, Vector3.ONE]))
+	Records.save_ghost("level_01@aaaa0000", {"positions": PackedVector3Array([Vector3.ZERO, Vector3.ONE])})
 	Records.submit("level_01@bbbb1111", 25.0)
 	check(Records.best_time("level_01@aaaa0000") == INF, "the old version's record is gone")
 	check(Records.load_ghost("level_01@aaaa0000").is_empty(), "the old version's ghost is gone")

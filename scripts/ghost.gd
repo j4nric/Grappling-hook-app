@@ -1,10 +1,16 @@
+class_name Ghost
 extends MeshInstance3D
 ## Ghost of the best run: records the player during a run and replays the
-## best recording next to the live run.
+## best recording next to the live run. A recording ("run") is a Dictionary:
+## "positions" and "anchors" (rope anchor or NO_ANCHOR), one sample every
+## SAMPLE_TIME seconds; the replay (Replay) plays it back in full.
 
 const SAMPLE_TIME := 0.05
+## Anchor of a sample without a rope.
+const NO_ANCHOR := Vector3.INF
 
 var _recording := PackedVector3Array()
+var _anchors := PackedVector3Array()
 var _replay := PackedVector3Array()
 var _record_clock := 0.0
 ## Where time_at_z() last found the ghost (the search goes on from there).
@@ -19,9 +25,10 @@ func _ready() -> void:
 
 
 ## New level or restart: drop the recording, load the replay.
-func reset(replay: PackedVector3Array) -> void:
-	_replay = replay
+func reset(run: Dictionary) -> void:
+	_replay = run.get("positions", PackedVector3Array())
 	_recording.clear()
+	_anchors.clear()
 	_record_clock = 0.0
 	_search = 0
 	visible = false
@@ -51,14 +58,16 @@ func time_at_z(z: float) -> float:
 	return (_search + t) * SAMPLE_TIME
 
 
-func recording() -> PackedVector3Array:
-	return _recording
+func recording() -> Dictionary:
+	return {"positions": _recording, "anchors": _anchors}
 
 
-## Called every frame while the run timer runs, with the run time (s).
-func update_run(time: float, player_position: Vector3) -> void:
+## Called every frame while the run timer runs, with the run time (s) and
+## the rope anchor (NO_ANCHOR without a rope).
+func update_run(time: float, player_position: Vector3, anchor := NO_ANCHOR) -> void:
 	while _record_clock <= time:
 		_recording.append(player_position)
+		_anchors.append(anchor)
 		_record_clock += SAMPLE_TIME
 	if _replay.size() < 2 or not Settings.ghost_enabled:
 		visible = false
