@@ -32,6 +32,7 @@ signal level_loaded(level: Level)
 @onready var environment: Environment = $WorldEnvironment.environment
 @onready var ghost := $Ghost
 @onready var replay: Replay = $Replay
+@onready var cave_editor: CaveEditor = $CaveEditor
 @onready var replay_label: Label = $HUD/Safe/ReplayLabel
 
 ## Finish shot: slow motion this strong for this long (real seconds).
@@ -63,6 +64,8 @@ var darkness := 0.0
 var _base_ambient := 1.0
 ## Record id of the loaded level version (Records.id()).
 var _record_id := ""
+## The loaded level is an edit from the cave editor (own records).
+var _edited := false
 ## Times at the checkpoints of this run and of the best run.
 var _splits: Array = []
 var _best_splits: Array = []
@@ -142,6 +145,7 @@ func load_level(index: int, new_cave := false) -> void:
 	pause_menu.set_button_visible(true)
 	level = Levels.instantiate(level_list[index])
 	level.name = "Level"
+	_edited = CaveEditor.apply_saved(level_list[index], level)
 	level.build()
 	# Move the player before the level exists, so it never overlaps the new
 	# finish line (levels may share its position).
@@ -152,6 +156,9 @@ func load_level(index: int, new_cave := false) -> void:
 	level.killed.connect(_on_killed)
 	level.ring_passed.connect(func() -> void: $CameraRig.kick_fov())
 	_record_id = Records.id(level_list[index], level)
+	if _edited:
+		# Own records: an edit must not replace the real level's best time.
+		_record_id = "edit_" + _record_id
 	_best = Records.best_time(_record_id)
 	restart()
 	$LightLod.track(level)
@@ -517,7 +524,7 @@ func _update_hud() -> void:
 			level.level_name, best_text, level.gold_time, level.silver_time, level.bronze_time])
 	if _finished:
 		flow_label.visible = false
-	level_label.text = "%d  %s" % [level_index + 1, level.level_name]
+	level_label.text = "%d  %s%s" % [level_index + 1, level.level_name, "  (edit)" if _edited else ""]
 	if _best == INF:
 		best_label.text = "Gold %.2f" % level.gold_time
 	else:

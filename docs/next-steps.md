@@ -9,7 +9,10 @@ Größe: S = klein, M = mittel, L = groß.
 
 ## 1. Level-Design (Kern der Runde)
 
-- [ ] **Höhlen-Editor im TUNE-Panel (L):** neuer Tab „Cave“ mit Reglern für die
+- [x] **Höhlen-Editor im TUNE-Panel (L):** (umgesetzt: Tab „Cave“ mit 23 Reglern
+      pro Halle, inkl. offener Decke und schwebender Steine; Skizzen: Querschnitt,
+      Draufsicht aller Hallen, Seitenansicht; Edits bleiben gespeichert und haben
+      eigene Rekorde; „Copy layout“, „Reset cave“) neuer Tab „Cave“ mit Reglern für die
       Wide Cave – Hallenbreite, Deckenhöhe, Hallenlänge, Stalaktiten, Inseln,
       Säulen, Licht, Seed. Die Höhle baut sich beim Loslassen neu (Aufbau dauert
       2–5 ms), „Copy“ schickt das Layout als Text. So wird Level-Design wie

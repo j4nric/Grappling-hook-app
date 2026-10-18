@@ -89,7 +89,34 @@ const PARAMS := [
 	["Effects", "hit_stop_time", 0.0, 0.2, 0.01, "Misc"],
 	["Effects", "streak_speed", 5.0, 100.0, 1.0, "Misc"],
 	["World/SpeedLines", "start_speed", 5.0, 100.0, 1.0, "Misc"],
+	# Cave editor: the halls of the loaded level (not saved as tuning).
+	["CaveEditor", "hall", 0.0, 11.0, 1.0, "Cave"],
+	["CaveEditor", "length", 20.0, 200.0, 5.0, "Cave"],
+	["CaveEditor", "width", 20.0, 120.0, 2.0, "Cave"],
+	["CaveEditor", "ceiling", 12.0, 60.0, 1.0, "Cave"],
+	["CaveEditor", "open", 0.0, 1.0, 1.0, "Cave"],
+	["CaveEditor", "floater_spacing", 0.0, 40.0, 1.0, "Cave"],
+	["CaveEditor", "floater_height", -1.0, 60.0, 1.0, "Cave"],
+	["CaveEditor", "floater_size", 1.0, 8.0, 0.25, "Cave"],
+	["CaveEditor", "slick_walls", 0.0, 1.0, 1.0, "Cave"],
+	["CaveEditor", "floor", 0.0, 2.0, 1.0, "Cave"],
+	["CaveEditor", "stalactites", 0.0, 1.5, 0.05, "Cave"],
+	["CaveEditor", "pillars", 0.0, 8.0, 1.0, "Cave"],
+	["CaveEditor", "islands", 0.0, 8.0, 1.0, "Cave"],
+	["CaveEditor", "outcrops", 0.0, 1.0, 0.05, "Cave"],
+	["CaveEditor", "crystals", 0.0, 10.0, 1.0, "Cave"],
+	["CaveEditor", "shafts", 0.0, 5.0, 1.0, "Cave"],
+	["CaveEditor", "ice", 0.0, 1.0, 0.05, "Cave"],
+	["CaveEditor", "rings", 0.0, 8.0, 1.0, "Cave"],
+	["CaveEditor", "updrafts", 0.0, 5.0, 1.0, "Cave"],
+	["CaveEditor", "dark", 0.0, 1.0, 1.0, "Cave"],
+	["CaveEditor", "checkpoint", 0.0, 1.0, 1.0, "Cave"],
+	["CaveEditor", "halls", 1.0, 12.0, 1.0, "Cave"],
+	["CaveEditor", "seed", 1.0, 999.0, 1.0, "Cave"],
 ]
+## The cave editor's tab: live values of the loaded level, never saved or
+## reset as tuning.
+const CAVE_TAB := "Cave"
 
 ## Tabs whose values change the play (and mark records with TUNE*).
 const GAMEPLAY_TABS := ["Throw", "Rope", "Move"]
@@ -105,6 +132,7 @@ var _panel: PanelContainer
 var _toggle: Button
 var _last_throw: Label
 var _copy: Button
+var _copy_layout: Button
 var _illustration: TuningIllustration
 var _info_title: Label
 var _info_text: Label
@@ -122,6 +150,9 @@ func _ready() -> void:
 	_build_ui()
 	_load()
 	_select(PARAMS[0])
+	var editor := get_parent().get_node_or_null("CaveEditor")
+	if editor:
+		editor.changed.connect(_refresh_cave)
 
 
 func _key(p: Array) -> String:
@@ -134,10 +165,26 @@ func _target(p: Array) -> Node:
 
 func _set_value(p: Array, value: float) -> void:
 	_target(p).set_indexed(p[1], value)
+	_show_value(p, value)
+
+
+func _show_value(p: Array, value: float) -> void:
 	_labels[_key(p)].text = "%s  %s" % [_title(p), _format(p, value)]
 	if _key(p) == _selected:
 		_explain(p)
 
+
+## The cave editor changed (level loaded, hall picked, cave rebuilt): the
+## Cave sliders show the selected hall.
+func _refresh_cave() -> void:
+	for p in PARAMS:
+		if p[5] != CAVE_TAB:
+			continue
+		var slider: HSlider = _sliders[_key(p)]
+		if p[1] == "hall":
+			slider.max_value = maxf(float(_target(p).get("halls")) - 1.0, 0.0)
+		slider.set_value_no_signal(float(_target(p).get(p[1])))
+		_show_value(p, slider.value)
 
 ## Plain name of a slider (TuningInfo), the property name as a fallback.
 func _title(p: Array) -> String:
@@ -146,6 +193,15 @@ func _title(p: Array) -> String:
 
 func _format(p: Array, value: float) -> String:
 	var unit: String = TuningInfo.PARAMS.get(_key(p), ["", ""])[1]
+	match unit:
+		"switch":
+			return "on" if value >= 0.5 else "off"
+		"floor":
+			return CaveEditor.FLOORS[clampi(int(value), 0, 2)]
+		"hall":
+			return "%d of %d" % [int(value) + 1, int(_target(p).get("halls"))]
+		"m auto":
+			return "auto" if value < 0.0 else "%s m" % str(snappedf(value, p[4]))
 	return ("%s %s" % [str(snappedf(value, p[4])), unit]).strip_edges()
 
 
@@ -165,6 +221,10 @@ func _explain(p: Array) -> void:
 	var current := {}
 	for q in PARAMS:
 		current[_key(q)] = _sliders[_key(q)].value
+	var editor := get_parent().get_node_or_null("CaveEditor")
+	if editor:
+		current["cave_segments"] = editor.segments
+		current["cave_hall"] = editor.selected_hall
 	_illustration.show_param(_key(p), info[2], _sliders[_key(p)].value, current)
 
 
@@ -277,6 +337,21 @@ func _build_ui() -> void:
 			scroll.add_child(rows)
 			tab_rows[tab_name] = rows
 		_add_row(tab_rows[tab_name], p)
+	if tab_rows.has(CAVE_TAB):
+		var buttons := HBoxContainer.new()
+		_copy_layout = Button.new()
+		_copy_layout.text = "Copy layout"
+		_copy_layout.custom_minimum_size = Vector2(200, ROW_HEIGHT)
+		_copy_layout.button_down.connect(func() -> void:
+			_copy_text(get_parent().get_node("CaveEditor").layout_text(), _copy_layout, "Copy layout"))
+		buttons.add_child(_copy_layout)
+		var reset_cave := Button.new()
+		reset_cave.text = "Reset cave"
+		reset_cave.custom_minimum_size = Vector2(200, ROW_HEIGHT)
+		reset_cave.pressed.connect(func() -> void: get_parent().get_node("CaveEditor").reset_cave())
+		buttons.add_child(reset_cave)
+		tab_rows[CAVE_TAB].add_child(buttons)
+		tab_rows[CAVE_TAB].move_child(buttons, 0)
 	# A new tab explains its first slider.
 	tabs.tab_changed.connect(func(index: int) -> void:
 		var tab_name := tabs.get_tab_control(index).name
@@ -314,7 +389,10 @@ func _add_row(rows: VBoxContainer, p: Array) -> void:
 			_select(p))
 	row.add_child(slider)
 	_sliders[_key(p)] = slider
-	_set_value(p, slider.value)
+	if p[5] == CAVE_TAB:
+		_show_value(p, slider.value)
+	else:
+		_set_value(p, slider.value)
 
 
 func _circle_texture(diameter: int, color: Color) -> ImageTexture:
@@ -356,6 +434,8 @@ func is_tuned() -> bool:
 
 
 func _is_default(p: Array) -> bool:
+	if p[5] == CAVE_TAB:
+		return true
 	return is_equal_approx(_sliders[_key(p)].value, snappedf(_defaults[_key(p)], p[4]))
 
 
@@ -371,7 +451,10 @@ func values_text() -> String:
 
 
 func _copy_values() -> void:
-	var text := values_text()
+	_copy_text(values_text(), _copy, "Copy")
+
+
+func _copy_text(text: String, button: Button, label: String) -> void:
 	if OS.has_feature("web"):
 		# Browsers (iOS Safari above all) only allow clipboard writes inside a
 		# real input event handler. Godot handles input a frame later, so the
@@ -384,12 +467,14 @@ func _copy_values() -> void:
 		""" % JSON.stringify(text))
 	else:
 		DisplayServer.clipboard_set(text)
-	_copy.text = "Copied"
-	get_tree().create_timer(1.5, true, false, true).timeout.connect(func() -> void: _copy.text = "Copy")
+	button.text = "Copied"
+	get_tree().create_timer(1.5, true, false, true).timeout.connect(func() -> void: button.text = label)
 
 
 func _reset() -> void:
 	for p in PARAMS:
+		if p[5] == CAVE_TAB:
+			continue
 		_sliders[_key(p)].value = _defaults[_key(p)]
 	_save()
 	_update_toggle_text()
