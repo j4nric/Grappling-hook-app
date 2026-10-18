@@ -26,13 +26,14 @@ Belege in Klammern stammen aus Messungen mit dem aktuellen Build.
 
 ## 2. Leistung
 
-- [ ] **Licht-LOD:** bis zu 42 Lichter pro Level (Random Cave #48213), der
+- [x] **Licht-LOD:** bis zu 42 Lichter pro Level (Random Cave #48213), der
       Compatibility-Renderer nimmt pro Objekt höchstens 8 → Lichter flackern an
       Hallengrenzen und kosten Zeit. → Lichtmanager: nur die nächsten N Lichter
-      an, weich ein- und ausblenden.
-- [ ] **Sichtweite für Deko:** Kristalle, Lichtkegel und Staub weit hinten im
+      an, weich ein- und ausblenden. (Umgesetzt: höchstens 10 Lichter im Umkreis
+      von 90 m; Browser-Vergleich mit Software-Rendering: 4,4–6,0 → 9,0–9,2 fps.)
+- [x] **Sichtweite für Deko:** Kristalle, Lichtkegel und Staub weit hinten im
       Nebel nicht zeichnen (`visibility_range`).
-- [ ] **Messbar machen:** Leistungs-Test (Lichter aktiv, Draw-Objekte im Bild,
+- [x] **Messbar machen:** Leistungs-Test (Lichter aktiv, Draw-Objekte im Bild,
       Aufbauzeit) und ein Browser-Benchmark im Bot-Build als Vergleichswert.
 
 ## 3. Figur und Seil (Schwunggefühl sichtbar machen)

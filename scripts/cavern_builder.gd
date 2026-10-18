@@ -25,6 +25,10 @@ const SHAFT := preload("res://scenes/props/light_shaft.tscn")
 const MOVER := preload("res://scripts/mover.gd")
 const FLICKER := preload("res://scripts/flicker.gd")
 const NO_HOOK_GROUP := "no_hook"
+## Beyond these distances (m) the fog has nearly swallowed things: they are
+## not drawn at all (props are small, a hall is long so it reaches further).
+const PROP_VISIBLE_RANGE := 120.0
+const HALL_VISIBLE_RANGE := 230.0
 
 ## Top of the ledges (start, checkpoints, finish).
 const LEDGE_Y := 0.0
@@ -191,6 +195,15 @@ func _transition(prev: Dictionary, next: Dictionary, z: float) -> void:
 			var along := Vector3(side * narrow, 0, run)
 			var normal := Vector3(-side * run, 0, narrow).normalized()
 			_slab("rock", face, normal, along, float(prev.ceiling) - DEPTH_Y + 10.0, 8.0)
+
+
+## Stops drawing node (and its meshes) beyond `distance` from the camera.
+func _limit_range(node: Node, distance: float) -> void:
+	var meshes: Array = node.find_children("*", "GeometryInstance3D", true, false)
+	if node is GeometryInstance3D:
+		meshes.append(node)
+	for mesh: GeometryInstance3D in meshes:
+		mesh.visibility_range_end = distance
 
 
 ## A box whose big face (center `face`, outward `normal`) runs along `along`;
@@ -418,12 +431,14 @@ func _crystal(pos: Vector3, up: Vector3, scale := 1.0) -> void:
 	crystal.transform = Transform3D((spin * basis).scaled_local(Vector3.ONE * scale), pos)
 	var glow: OmniLight3D = crystal.get_node("Glow")
 	glow.omni_range *= sqrt(scale)
+	_limit_range(crystal, PROP_VISIBLE_RANGE)
 	_add(crystal, "Props/Crystal")
 
 
 func _shaft(top: Vector3) -> void:
 	var shaft: Node3D = SHAFT.instantiate()
 	shaft.position = top
+	_limit_range(shaft, PROP_VISIBLE_RANGE)
 	_add(shaft, "Props/Shaft")
 	var light := OmniLight3D.new()
 	light.light_color = Color(0.75, 0.82, 1.0)
@@ -455,6 +470,8 @@ func _banner(pos: Vector3, color: Color, size: Vector3, parent: Node = null) -> 
 	box.material = mat
 	mesh.mesh = box
 	mesh.position = pos
+	# Markers are landmarks: visible further than other props.
+	mesh.visibility_range_end = HALL_VISIBLE_RANGE
 	if parent:
 		parent.add_child(mesh)
 	else:
@@ -528,6 +545,7 @@ func _end_hall() -> void:
 		var instance := MultiMeshInstance3D.new()
 		instance.multimesh = multimesh
 		instance.material_override = MATERIALS[material]
+		instance.visibility_range_end = HALL_VISIBLE_RANGE
 		instance.name = "Hall%d_%s" % [_hall, material]
 		geometry.add_child(instance)
 	_hall += 1

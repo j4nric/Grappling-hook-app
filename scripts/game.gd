@@ -124,6 +124,7 @@ func load_level(index: int, new_cave := false) -> void:
 	_record_id = Records.id(level_list[index], level)
 	_best = Records.best_time(_record_id)
 	restart()
+	$LightLod.track(level)
 	level_loaded.emit(level)
 
 
