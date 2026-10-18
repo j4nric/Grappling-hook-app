@@ -94,6 +94,12 @@ Musik nach Tempo, Tutorial.
 - [x] Medaillen und Daily-Serie im Menü, Zwischenzeiten, Outfits, Backup/Restore
 - [x] Shader aufwärmen, Engine aus dem Cache, game.gd aufgeteilt
 
+## M12 – Gold-Geist und mehr Level (Runde 7)
+- [x] Bot-Läufe in frischer Hauptszene (wiederholbar)
+- [x] Gold-Geist: mitgelieferter Bot-Lauf im Tempo der Gold-Zeit
+- [x] Neue Level „Mushroom Grotto“ und „Shortcut Run“
+- [x] Abkürzungen im Generator häufiger, ohne versperrten Umweg
+
 ## Tuning-Log
 
 | Datum | Wert | vorher → nachher | Grund |
