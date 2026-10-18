@@ -6,6 +6,7 @@ const LIBRARY := "res://assets/materials/"
 
 
 func run() -> void:
+	levels = Levels.LIST
 	var names := ["rock", "rock_dark", "rock_floor", "obstacle", "metal", "ice", "crystal"]
 	for material_name in names:
 		var mat := load(LIBRARY + material_name + ".tres") as StandardMaterial3D
@@ -17,22 +18,24 @@ func run() -> void:
 	check(lava != null and lava.get_shader_parameter("noise") != null, "lava shader has its noise")
 
 	for i in Levels.LIST.size():
-		var level: Node = load(Levels.LIST[i]).instantiate()
+		var level: Level = load(Levels.LIST[i]).instantiate()
+		level.build()
 		var plain := 0
-		for box: CSGBox3D in level.get_node("Geometry").find_children("*", "CSGBox3D", true, false):
-			if not box.material or not box.material.resource_path.begins_with(LIBRARY):
+		var meshes := level.get_node("Geometry").find_children("*", "MultiMeshInstance3D", false, false)
+		for mesh: MultiMeshInstance3D in meshes:
+			if not mesh.material_override or not mesh.material_override.resource_path.begins_with(LIBRARY):
 				plain += 1
-		check(plain == 0, "level %d: all geometry uses library materials (%d plain)" % [i + 1, plain])
+		check(not meshes.is_empty() and plain == 0, "level %d: rock uses library materials (%d plain)" % [i + 1, plain])
 		level.free()
 
 	await load_main()
 	await wait_frames(5)
-	var torch: OmniLight3D = main.level.get_node("Lights/Torch0")
+	var torch: OmniLight3D = main.level.get_node("Lights/Warm")
 	var energies := {}
 	for i in 20:
 		energies[snappedf(torch.light_energy, 0.01)] = true
 		await get_tree().process_frame
-	check(energies.size() > 5, "torches flicker (%d values)" % energies.size())
+	check(energies.size() > 5, "warm lights flicker (%d values)" % energies.size())
 	check(main.get_node("World/Vignette").visible, "vignette over the 3D view")
 	check(main.get_node("Effects")._motes.emitting, "dust motes float in the air")
 

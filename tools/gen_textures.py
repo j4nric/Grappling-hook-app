@@ -242,8 +242,8 @@ MATERIALS = {
                   metallic=0.6, roughness=0.5),
     "ice": dict(albedo="ice_albedo", normal="ice_normal", emission="ice_emission", tint=(1, 1, 1),
                 scale=0.2, roughness=0.25, emission_energy=0.8),
-    "crystal": dict(albedo="crystal_albedo", emission="crystal_emission", tint=(1, 1, 1), scale=0.5,
-                    roughness=0.2, emission_energy=2.5),
+    "crystal": dict(albedo="crystal_albedo", emission="crystal_emission", tint=(0.6, 0.9, 1.0), scale=0.5,
+                    roughness=0.2, emission_energy=0.9),
 }
 
 

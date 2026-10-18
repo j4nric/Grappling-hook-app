@@ -63,12 +63,17 @@ Jedes Level ist ein Tunnel-Abschnitt von 30–90 Sekunden Spielzeit. Bausteine:
 - **Engstellen**: Säulen, die den Schwungweg einschränken
 - **Abzweigungen**: kürzere, aber riskantere Route für Speedrunner
 
-Umgesetzt (`tools/gen_levels.py`, 5 Level):
-1. **First Swing** – Grundlagen, eine Lava-Lücke, hängende Blöcke, Säulen
-2. **Lava Gaps** – viele Bodenlücken, Checkpoints
-3. **Ice Ceiling** – Eis-Abschnitte an Decke und Wänden (Haken hält nicht), Zickzack
-4. **Movers** – seitlich und vertikal fahrende Blöcke
-5. **Shortcut** – eine Zwischendecke teilt den Tunnel: oben schnell, aber schwer zu erreichen
+Umgesetzt als **Kavernen** (`scripts/cavern_builder.gd`, Layout in jeder
+`scenes/levels/*.tscn`): weite Hallen (30–46 m breit, Decke 22–32 m) über einem
+Abgrund im Nebel, Felswände aus versetzten, gedrehten Blöcken, Stalaktiten,
+Säulen aus der Tiefe, schwebende Felsinseln, Wand-Vorsprünge, leuchtende
+Kristalle und Lichtkegel als Orientierung, Felsvorsprünge für Start,
+Checkpoints und Ziel.
+1. **First Swing** – Boden-Halle zum Eingewöhnen, dann erste Abgründe
+2. **Lava Deep** – Lavasee tief unten, Inseln und Säulen
+3. **Ice Ceiling** – Eis-Decken, nur Stalaktiten, Säulen und Vorsprünge halten
+4. **Movers** – fahrende Metallblöcke als Anker, ein Stampfer über Boden
+5. **Gates** – Eiswände mit senkrechtem Schlitz: seitlich durchsteuern
 
 Lava/Abgrund setzt auf den letzten Checkpoint zurück, der Timer läuft weiter.
 

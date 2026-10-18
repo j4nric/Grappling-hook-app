@@ -7,10 +7,10 @@ extends Node3D
 ## Camera that actually renders (inside the low-res pixel viewport). It copies
 ## this rig's camera every frame.
 @export var view_camera: Camera3D
-@export var offset := Vector3(0.0, 2.5, 7.0)
+@export var offset := Vector3(0.0, 3.5, 10.0)
 ## Higher = snappier follow. Lower = more lag / more sense of speed.
 @export var follow_speed := 6.0
-@export var look_ahead := Vector3(0.0, 2.5, -8.0)
+@export var look_ahead := Vector3(0.0, 3.0, -12.0)
 
 ## The camera never goes behind walls: it moves in front of whatever is
 ## between it and the player, keeping this gap (m).

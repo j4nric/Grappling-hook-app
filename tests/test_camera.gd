@@ -36,6 +36,7 @@ func run() -> void:
 	p.reset_physics_interpolation()
 	await wait_frames(30)
 	check(rig.global_position.z < 10.0, "camera stays in front of the back wall (z %.1f)" % rig.global_position.z)
-	main.restart()
+	p.global_position = main.level.start_position() + Vector3(0, 0, -20)
+	p.reset_physics_interpolation()
 	await wait_frames(90)
 	check(absf(rig.global_position.z - (p.global_position.z + rig.offset.z)) < 0.5, "camera backs out to its offset again")

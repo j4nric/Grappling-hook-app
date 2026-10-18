@@ -16,12 +16,19 @@ func check(condition: bool, message: String) -> void:
 		print("    FAIL: ", message)
 
 
-## Level the test plays (index into Levels.LIST).
+## Fixed straight tunnels: mechanics tests need known geometry (ceiling at
+## y=9, finish at z=-200, checkpoint and lava in tunnel 2), not the caves.
+const TUNNELS: Array[String] = ["res://tests/levels/tunnel_01.tscn", "res://tests/levels/tunnel_02.tscn"]
+
+## Levels the game gets (tests of the real levels use Levels.LIST).
+var levels: Array[String] = TUNNELS
+## Level the test plays (index into levels).
 var level_index := 0
 
 
 func load_main() -> void:
 	main = load("res://scenes/main.tscn").instantiate()
+	main.level_list = levels
 	main.start_level = level_index
 	add_child(main)
 	await get_tree().process_frame

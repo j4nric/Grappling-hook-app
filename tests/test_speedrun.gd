@@ -5,7 +5,7 @@ extends "res://tests/test_case.gd"
 func run() -> void:
 	await load_main()
 	var p := player()
-	var path: String = Levels.LIST[0]
+	var path: String = levels[0]
 	var best_label: Label = main.get_node("HUD/Safe/BestLabel")
 	await wait_frames(5)
 	check(best_label.text.begins_with("Gold "), "without a record the HUD shows the gold time")

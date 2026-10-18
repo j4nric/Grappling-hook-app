@@ -1,12 +1,28 @@
 extends SceneTree
 ## Headless test runner. Runs every res://tests/test_*.gd one after another.
 ## godot --headless --fixed-fps 60 --path . --script res://tests/run_tests.gd
-## Exit code 1 if any check failed. TEST_FILTER=chain runs only matching files.
+## Exit code 1 if any check failed, a test file did not load, or a script
+## error happened. TEST_FILTER=chain runs only matching files.
 
 const SAVED_FILES := ["user://tuning_v2.cfg", "user://tuning_v3.cfg", "user://records.cfg"]
 
 
+## Counts script errors (a broken test or game script must fail the run,
+## not just print).
+class ErrorCounter extends Logger:
+	var count := 0
+
+	func _log_error(_function: String, _file: String, _line: int, _code: String, _rationale: String,
+			_editor_notify: bool, error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
+		if error_type == ERROR_TYPE_SCRIPT:
+			count += 1
+
+
+var _errors := ErrorCounter.new()
+
+
 func _initialize() -> void:
+	OS.add_logger(_errors)
 	_run.call_deferred()
 
 
@@ -23,10 +39,20 @@ func _run() -> void:
 	for file in names:
 		_clear_saved_state()
 		print("  ", file)
-		var test: Node = load("res://tests/" + file).new()
+		var errors_before := _errors.count
+		var script: GDScript = load("res://tests/" + file)
+		if script == null or not script.can_instantiate():
+			print("    FAIL: %s does not load" % file)
+			failed += 1
+			continue
+		var test: Node = script.new()
 		root.add_child(test)
 		await test.run()
 		failed += test.failures.size()
+		var new_errors := _errors.count - errors_before
+		if new_errors > 0:
+			print("    FAIL: %d script error(s)" % new_errors)
+			failed += new_errors
 		test.queue_free()
 		paused = false
 		await process_frame

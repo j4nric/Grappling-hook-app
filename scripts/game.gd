@@ -6,12 +6,10 @@ extends Node3D
 signal run_started
 signal level_loaded(level: Level)
 
-## Falling below this Y counts like lava.
-@export var kill_y := -30.0
 ## Longest frame the run timer counts (s). A hitch or a return from the
 ## background must not add a jump to the time.
 @export var max_timer_step := 0.1
-## Level to start directly (index into Levels.LIST); -1 opens the level menu.
+## Level to start directly (index into level_list); -1 opens the level menu.
 @export var start_level := -1
 
 @onready var player := $Player
@@ -28,6 +26,8 @@ signal level_loaded(level: Level)
 @onready var flow_label: Label = $HUD/Safe/FlowLabel
 @onready var ghost := $Ghost
 
+## The levels in play order (tests swap in their own).
+var level_list: Array[String] = Levels.LIST
 var level: Level
 var level_index := 0
 var _respawn := Vector3.ZERO
@@ -39,7 +39,8 @@ var _touch := DisplayServer.is_touchscreen_available()
 var _landscape := false
 ## The controls hint disappears after the first hook that sticks.
 var _hint_dismissed := false
-## Flow: hooks that bit in a row without touching the floor in between.
+## Flow: hooks that bit in a row without landing, missing or bumping into
+## rock in between.
 var flow := 0
 var best_flow := 0
 ## The flow counter shows from this many hooks in a row.
@@ -52,7 +53,12 @@ func _ready() -> void:
 	get_viewport().disable_3d = true
 	player.hook_attached.connect(_on_hook_attached)
 	player.crushed.connect(_on_killed)
+	# The flow breaks on landing, a miss, or bumping into rock with the rope on.
 	player.landed.connect(func(_speed: float) -> void: _set_flow(0))
+	player.hook_missed.connect(func() -> void: _set_flow(0))
+	player.rope_released.connect(func(reason: String) -> void:
+		if reason in ["contact", "blocked"]:
+			_set_flow(0))
 	InputRouter.restart_requested.connect(restart)
 	InputRouter.throw_requested.connect(_on_throw)
 	InputRouter.release_requested.connect(_on_tap)
@@ -77,7 +83,7 @@ func _ready() -> void:
 
 
 func load_level(index: int) -> void:
-	if index < 0 or index >= Levels.LIST.size():
+	if index < 0 or index >= level_list.size():
 		open_menu()
 		return
 	if level:
@@ -85,8 +91,9 @@ func load_level(index: int) -> void:
 		level.queue_free()
 	level_index = index
 	pause_menu.set_button_visible(true)
-	level = load(Levels.LIST[index]).instantiate()
+	level = load(level_list[index]).instantiate()
 	level.name = "Level"
+	level.build()
 	# Move the player before the level exists, so it never overlaps the new
 	# finish line (levels may share its position).
 	player.reset_to(level.get_node("Start").position)
@@ -94,7 +101,7 @@ func load_level(index: int) -> void:
 	level.finished.connect(_on_finished)
 	level.checkpoint_reached.connect(func(point: Vector3) -> void: _respawn = point)
 	level.killed.connect(_on_killed)
-	_best = Records.best_time(Levels.LIST[index])
+	_best = Records.best_time(level_list[index])
 	restart()
 	level_loaded.emit(level)
 
@@ -102,7 +109,7 @@ func load_level(index: int) -> void:
 func open_menu() -> void:
 	pause_menu.set_button_visible(false)
 	var entries := []
-	for path in Levels.LIST:
+	for path in level_list:
 		var scene: Level = load(path).instantiate()
 		var best := Records.best_time(path)
 		var detail := ""
@@ -120,7 +127,7 @@ func _process(delta: float) -> void:
 		_elapsed += minf(TimeScale.timer_delta(delta), max_timer_step)
 		ghost.update_run(_elapsed, player.global_position)
 	TimeScale.update(delta)
-	if player.global_position.y < kill_y:
+	if player.global_position.y < level.kill_y:
 		_on_killed()
 	time_label.text = "%.2f" % _elapsed
 	var size := get_viewport().get_visible_rect().size
@@ -139,7 +146,7 @@ func restart() -> void:
 	_finished = false
 	best_flow = 0
 	_set_flow(0)
-	ghost.reset(Records.load_ghost(Levels.LIST[level_index]))
+	ghost.reset(Records.load_ghost(level_list[level_index]))
 	go_label.visible = false
 	_update_hud()
 
@@ -189,7 +196,7 @@ func _on_finished() -> void:
 		return
 	_finished = true
 	_running = false
-	var path: String = Levels.LIST[level_index]
+	var path: String = level_list[level_index]
 	var new_best := Records.submit(path, _elapsed)
 	if new_best:
 		Records.save_ghost(path, ghost.recording())
@@ -203,7 +210,7 @@ func _on_finished() -> void:
 	finish_panel.get_node("Lines/Flow").text = "Longest flow x%d" % best_flow if best_flow >= FLOW_MIN_SHOWN else ""
 	finish_panel.get_node("Lines/Target").text = _next_target(medal)
 	finish_panel.get_node("Lines/Again").text = "Tap to play again" if _touch else "Click to play again"
-	finish_panel.get_node("Lines/Buttons/Next").visible = level_index + 1 < Levels.LIST.size()
+	finish_panel.get_node("Lines/Buttons/Next").visible = level_index + 1 < level_list.size()
 	_update_hud()
 
 

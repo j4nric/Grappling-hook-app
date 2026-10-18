@@ -1,0 +1,735 @@
+[gd_scene load_steps=21 format=3]
+
+; Fixed straight tunnel for mechanics tests (the old level generator output).
+
+[ext_resource type="Script" path="res://scripts/level.gd" id="1_level"]
+[ext_resource type="Script" path="res://scripts/mover.gd" id="2_mover"]
+[ext_resource type="StandardMaterial3D" path="res://assets/materials/rock_floor.tres" id="m_rock_floor"]
+[ext_resource type="StandardMaterial3D" path="res://assets/materials/rock_dark.tres" id="m_rock_dark"]
+[ext_resource type="StandardMaterial3D" path="res://assets/materials/rock.tres" id="m_rock"]
+[ext_resource type="StandardMaterial3D" path="res://assets/materials/obstacle.tres" id="m_obstacle"]
+[ext_resource type="Script" path="res://scripts/flicker.gd" id="3_flicker"]
+[ext_resource type="ShaderMaterial" path="res://assets/materials/lava.tres" id="m_lava"]
+
+[sub_resource type="StandardMaterial3D" id="mat_torch"]
+albedo_color = Color(1.0, 0.7, 0.3, 1)
+emission_enabled = true
+emission = Color(1.0, 0.55, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="mesh_0"]
+material = SubResource("mat_torch")
+size = Vector3(0.3, 0.6, 0.3)
+
+[sub_resource type="BoxMesh" id="mesh_1"]
+material = ExtResource("m_lava")
+size = Vector3(12, 0.5, 20.0)
+
+[sub_resource type="BoxShape3D" id="shape_0"]
+size = Vector3(12, 3, 20.0)
+
+[sub_resource type="BoxMesh" id="mesh_2"]
+material = ExtResource("m_lava")
+size = Vector3(12, 0.5, 25.0)
+
+[sub_resource type="BoxShape3D" id="shape_1"]
+size = Vector3(12, 3, 25.0)
+
+[sub_resource type="BoxMesh" id="mesh_3"]
+material = ExtResource("m_lava")
+size = Vector3(12, 0.5, 30.0)
+
+[sub_resource type="BoxShape3D" id="shape_2"]
+size = Vector3(12, 3, 30.0)
+
+[sub_resource type="BoxShape3D" id="shape_3"]
+size = Vector3(12, 14.0, 2)
+
+[sub_resource type="StandardMaterial3D" id="mat_checkpoint"]
+albedo_color = Color(1.0, 0.85, 0.2, 1)
+emission_enabled = true
+emission = Color(0.6, 0.5, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="mesh_4"]
+material = SubResource("mat_checkpoint")
+size = Vector3(12, 0.15, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="mat_finish"]
+albedo_color = Color(0.2, 0.85, 0.4, 1)
+emission_enabled = true
+emission = Color(0.2, 0.85, 0.4, 1)
+
+[node name="Level" type="Node3D"]
+script = ExtResource("1_level")
+level_name = "Lava Gaps"
+gold_time = 7.9
+silver_time = 10.7
+bronze_time = 14.8
+
+[node name="Start" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.6, 0)
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" type="Node3D" parent="Geometry"]
+
+[node name="Floor0" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, 5.0)
+use_collision = true
+size = Vector3(12, 1, 10.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor1" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -8.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor2" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -23.0)
+use_collision = true
+size = Vector3(12, 1, 14.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor3" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -57.0)
+use_collision = true
+size = Vector3(12, 1, 14.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor4" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -67.0)
+use_collision = true
+size = Vector3(12, 1, 6.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor5" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -95.5)
+use_collision = true
+size = Vector3(12, 1, 1.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor6" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -103.0)
+use_collision = true
+size = Vector3(12, 1, 14.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor7" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -142.0)
+use_collision = true
+size = Vector3(12, 1, 4.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor8" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -147.0)
+use_collision = true
+size = Vector3(12, 1, 6.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor9" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -186.0)
+use_collision = true
+size = Vector3(12, 1, 12.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor10" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -200.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor11" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -216.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor12" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -232.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Floor13" type="CSGBox3D" parent="Geometry/Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -245.0)
+use_collision = true
+size = Vector3(12, 1, 10.0)
+material = ExtResource("m_rock_floor")
+
+[node name="Ceiling" type="Node3D" parent="Geometry"]
+
+[node name="Ceiling0" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, 5.0)
+use_collision = true
+size = Vector3(12, 1, 10.0)
+material = ExtResource("m_rock_dark")
+
+[node name="Ceiling1" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -8.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock")
+
+[node name="Ceiling2" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -24.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="Ceiling3" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -40.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock")
+
+[node name="Ceiling4" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -56.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="Ceiling5" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -72.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock")
+
+[node name="Ceiling6" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -88.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="Ceiling7" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -104.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock")
+
+[node name="Ceiling8" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -120.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="Ceiling9" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -136.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock")
+
+[node name="Ceiling10" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -152.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="Ceiling11" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -168.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock")
+
+[node name="Ceiling12" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -184.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="Ceiling13" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -200.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock")
+
+[node name="Ceiling14" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -216.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="Ceiling15" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -232.0)
+use_collision = true
+size = Vector3(12, 1, 16.0)
+material = ExtResource("m_rock")
+
+[node name="Ceiling16" type="CSGBox3D" parent="Geometry/Ceiling"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -245.0)
+use_collision = true
+size = Vector3(12, 1, 10.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallLeft" type="Node3D" parent="Geometry"]
+
+[node name="WallLeft0" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, 5.0)
+use_collision = true
+size = Vector3(1, 16.0, 10.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallLeft1" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -8.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallLeft2" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -24.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallLeft3" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -40.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallLeft4" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -56.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallLeft5" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -72.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallLeft6" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -88.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallLeft7" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -104.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallLeft8" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -120.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallLeft9" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -136.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallLeft10" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -152.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallLeft11" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -168.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallLeft12" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -184.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallLeft13" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -200.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallLeft14" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -216.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallLeft15" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -232.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallLeft16" type="CSGBox3D" parent="Geometry/WallLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.0, -245.0)
+use_collision = true
+size = Vector3(1, 16.0, 10.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallRight" type="Node3D" parent="Geometry"]
+
+[node name="WallRight0" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, 5.0)
+use_collision = true
+size = Vector3(1, 16.0, 10.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallRight1" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -8.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallRight2" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -24.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallRight3" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -40.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallRight4" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -56.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallRight5" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -72.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallRight6" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -88.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallRight7" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -104.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallRight8" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -120.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallRight9" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -136.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallRight10" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -152.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallRight11" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -168.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallRight12" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -184.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallRight13" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -200.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallRight14" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -216.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallRight15" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -232.0)
+use_collision = true
+size = Vector3(1, 16.0, 16.0)
+material = ExtResource("m_rock")
+
+[node name="WallRight16" type="CSGBox3D" parent="Geometry/WallRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.0, -245.0)
+use_collision = true
+size = Vector3(1, 16.0, 10.0)
+material = ExtResource("m_rock_dark")
+
+[node name="WallBack" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 10.5)
+use_collision = true
+size = Vector3(12, 16.0, 1)
+material = ExtResource("m_rock")
+
+[node name="WallEnd" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -250.5)
+use_collision = true
+size = Vector3(12, 16.0, 1)
+material = ExtResource("m_rock")
+
+[node name="Obstacles" type="Node3D" parent="Geometry"]
+
+[node name="Block0" type="CSGBox3D" parent="Geometry/Obstacles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 6, -60)
+use_collision = true
+size = Vector3(6, 6, 3)
+material = ExtResource("m_obstacle")
+
+[node name="Block1" type="CSGBox3D" parent="Geometry/Obstacles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 6, -125)
+use_collision = true
+size = Vector3(6, 6, 3)
+material = ExtResource("m_obstacle")
+
+[node name="Lights" type="Node3D" parent="."]
+
+[node name="Torch0" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 5.0, 6.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh0" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.82, 4.5, 6.0)
+mesh = SubResource("mesh_0")
+
+[node name="Torch1" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.1, 5.0, -12.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh1" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.82, 4.5, -12.0)
+mesh = SubResource("mesh_0")
+
+[node name="Torch2" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 5.0, -36.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh2" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.82, 4.5, -36.0)
+mesh = SubResource("mesh_0")
+
+[node name="Torch3" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.1, 5.0, -60.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh3" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.82, 4.5, -60.0)
+mesh = SubResource("mesh_0")
+
+[node name="Torch4" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 5.0, -84.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh4" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.82, 4.5, -84.0)
+mesh = SubResource("mesh_0")
+
+[node name="Torch5" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.1, 5.0, -108.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh5" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.82, 4.5, -108.0)
+mesh = SubResource("mesh_0")
+
+[node name="Torch6" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 5.0, -132.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh6" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.82, 4.5, -132.0)
+mesh = SubResource("mesh_0")
+
+[node name="Torch7" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.1, 5.0, -156.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh7" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.82, 4.5, -156.0)
+mesh = SubResource("mesh_0")
+
+[node name="Torch8" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 5.0, -180.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh8" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.82, 4.5, -180.0)
+mesh = SubResource("mesh_0")
+
+[node name="Torch9" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.1, 5.0, -204.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh9" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.82, 4.5, -204.0)
+mesh = SubResource("mesh_0")
+
+[node name="Torch10" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 5.0, -228.0)
+light_color = Color(1, 0.62, 0.3, 1)
+light_energy = 2.5
+omni_range = 16.0
+script = ExtResource("3_flicker")
+
+[node name="TorchMesh10" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.82, 4.5, -228.0)
+mesh = SubResource("mesh_0")
+
+[node name="KillZones" type="Node3D" parent="."]
+
+[node name="LavaMesh0" type="MeshInstance3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.0, -40.0)
+mesh = SubResource("mesh_1")
+
+[node name="LavaLight0" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.0, -40.0)
+light_color = Color(1, 0.35, 0.1, 1)
+light_energy = 2.5
+omni_range = 14.0
+script = ExtResource("3_flicker")
+amount = 0.15
+speed = 3.0
+
+[node name="Lava0" type="Area3D" parent="KillZones"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.5, -40.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="KillZones/Lava0"]
+shape = SubResource("shape_0")
+
+[node name="LavaMesh1" type="MeshInstance3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.0, -82.5)
+mesh = SubResource("mesh_2")
+
+[node name="LavaLight1" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.0, -82.5)
+light_color = Color(1, 0.35, 0.1, 1)
+light_energy = 2.5
+omni_range = 14.0
+script = ExtResource("3_flicker")
+amount = 0.15
+speed = 3.0
+
+[node name="Lava1" type="Area3D" parent="KillZones"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.5, -82.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="KillZones/Lava1"]
+shape = SubResource("shape_1")
+
+[node name="LavaMesh2" type="MeshInstance3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.0, -125.0)
+mesh = SubResource("mesh_3")
+
+[node name="LavaLight2" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.0, -125.0)
+light_color = Color(1, 0.35, 0.1, 1)
+light_energy = 2.5
+omni_range = 14.0
+script = ExtResource("3_flicker")
+amount = 0.15
+speed = 3.0
+
+[node name="Lava2" type="Area3D" parent="KillZones"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.5, -125.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="KillZones/Lava2"]
+shape = SubResource("shape_2")
+
+[node name="LavaMesh3" type="MeshInstance3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.0, -165.0)
+mesh = SubResource("mesh_3")
+
+[node name="LavaLight3" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.0, -165.0)
+light_color = Color(1, 0.35, 0.1, 1)
+light_energy = 2.5
+omni_range = 14.0
+script = ExtResource("3_flicker")
+amount = 0.15
+speed = 3.0
+
+[node name="Lava3" type="Area3D" parent="KillZones"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.5, -165.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="KillZones/Lava3"]
+shape = SubResource("shape_2")
+
+[node name="Checkpoints" type="Node3D" parent="."]
+
+[node name="Checkpoint0" type="Area3D" parent="Checkpoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -102.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Checkpoints/Checkpoint0"]
+shape = SubResource("shape_3")
+
+[node name="Respawn" type="Marker3D" parent="Checkpoints/Checkpoint0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.6, 0)
+
+[node name="Marker" type="MeshInstance3D" parent="Checkpoints/Checkpoint0"]
+mesh = SubResource("mesh_4")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.7, 0)
+
+[node name="Checkpoint1" type="Area3D" parent="Checkpoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -185.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Checkpoints/Checkpoint1"]
+shape = SubResource("shape_3")
+
+[node name="Respawn" type="Marker3D" parent="Checkpoints/Checkpoint1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.6, 0)
+
+[node name="Marker" type="MeshInstance3D" parent="Checkpoints/Checkpoint1"]
+mesh = SubResource("mesh_4")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.7, 0)
+
+[node name="FinishMarker" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -240)
+size = Vector3(11.5, 13.5, 0.3)
+material = SubResource("mat_finish")
+
+[node name="Finish" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -240)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Finish"]
+shape = SubResource("shape_3")
