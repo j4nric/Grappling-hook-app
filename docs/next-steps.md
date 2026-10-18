@@ -134,8 +134,10 @@ Bestzeiten aus Safari sind dort nicht zu sehen (iOS trennt das, nicht änderbar)
 - [x] **Breites Arbeitslevel „Wide Cave“:** Hallen 80–90 m breit, Decke bis
       36 m, kaum Hindernisse; erster Eintrag im Level-Menü. Hier wird das
       Grund-Design der Level weiterentwickelt.
-- [ ] **Einstellungen verständlich:** Klarname, Beschreibung und kleine
-      animierte Grafik für jeden TUNE-Regler.
+- [x] **Einstellungen verständlich:** Jeder TUNE-Regler hat einen Klarnamen
+      mit Einheit, eine kurze Erklärung und eine kleine animierte Skizze, die
+      mit den aktuellen Werten zeichnet (Antippen eines Reglers oder Namens
+      zeigt sie oben im Panel; der technische Name steht darunter, für Copy).
 
 ## Ideen für Runde 5 (aus Runde 3 gelernt)
 

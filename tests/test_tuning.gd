@@ -31,3 +31,33 @@ func run() -> void:
 	await load_main()
 	check(not is_equal_approx(player().gravity, 30.0), "changed code default wins over the saved value")
 	check(main.get_node("Tuning")._toggle.text == "TUNE", "TUNE without star at defaults")
+
+	# Every slider explains itself: a plain name, a text and a sketch.
+	var t := main.get_node("Tuning")
+	var titles := {}
+	for p in t.PARAMS:
+		var key: String = "%s/%s" % [p[0], p[1]]
+		var info: Array = TuningInfo.PARAMS.get(key, [])
+		check(info.size() == 4 and info[0] != "" and info[3].length() > 20, "%s has a name and an explanation" % key)
+		if info.size() == 4:
+			check(info[2] in TuningIllustration.KINDS, "%s has a known sketch (%s)" % [key, info[2]])
+			check(not titles.has(info[0]), "%s: the name '%s' is unique" % [key, info[0]])
+			titles[info[0]] = true
+	check(TuningInfo.PARAMS.size() == t.PARAMS.size(), "no explanation without a slider")
+	# Each sketch draws (script errors fail the test run), with extreme values too.
+	t._set_open(true)
+	var drawn: int = t._illustration.draw_count
+	for p in t.PARAMS:
+		t._select(p)
+		await wait_frames(2)
+		t._sliders["%s/%s" % [p[0], p[1]]].value = p[3]
+		await wait_frames(1)
+		t._sliders["%s/%s" % [p[0], p[1]]].value = p[2]
+		await wait_frames(1)
+	check(t._illustration.draw_count >= drawn + t.PARAMS.size(), "every sketch is drawn (%d)" % (t._illustration.draw_count - drawn))
+	t._reset()
+	var last: Array = t.PARAMS[-1]
+	check(t.selected_key() == "%s/%s" % [last[0], last[1]], "selecting a slider explains it")
+	check(t._info_text.text.contains(TuningInfo.PARAMS["%s/%s" % [last[0], last[1]]][3]), "the explanation is shown")
+	check(t._labels["Player/hook_gravity"].text.begins_with("Hook drop"), "rows show the plain name")
+	t._set_open(false)
